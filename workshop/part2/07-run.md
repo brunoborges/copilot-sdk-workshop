@@ -11,7 +11,7 @@ In this final step you will run the complete accessibility report recipe against
 Use the deployed target app:
 
 ```text
-https://YOUR_ORG.github.io/copilot-sdk-workshop/target-app/
+https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
 ```
 
 Or, if you prefer to run locally, restart the Blazor app in a separate terminal:
@@ -32,17 +32,13 @@ In another terminal, run:
 dotnet run --project part2
 ```
 
-When prompted, pick a model and enter the target app URL. For example:
+When prompted, pick a model and enter the target app URL:
 
 ```text
-https://YOUR_ORG.github.io/copilot-sdk-workshop/target-app/
+https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
 ```
 
-Or, if running locally:
-
-```text
-http://localhost:5000
-```
+If running locally, use your localhost URL (for example, `http://localhost:5000`).
 
 Wait for the report to stream. Then decide whether to generate tests.
 

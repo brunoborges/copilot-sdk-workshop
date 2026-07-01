@@ -67,23 +67,19 @@ Console.WriteLine("\n\n=== Report Complete ===\n");
 
 ## 3. Try a first run
 
-Make sure the Blazor target app is still running, then run:
+Run:
 
 ```bash
 dotnet run --project part2
 ```
 
-When prompted, pick a model and enter the target app URL. For example:
+When prompted, pick a model and enter the target app URL:
 
 ```text
-https://YOUR_ORG.github.io/copilot-sdk-workshop/target-app/
+https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
 ```
 
-Or, if you are running the Blazor app locally:
-
-```text
-http://localhost:5000
-```
+If you are running the Blazor app locally instead, use your localhost URL (for example, `http://localhost:5000`).
 
 You should see Copilot navigate the page and stream a basic accessibility analysis. The output will not be formatted yet — that comes next.
 

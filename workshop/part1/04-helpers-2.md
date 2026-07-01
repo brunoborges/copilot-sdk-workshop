@@ -16,7 +16,7 @@ Create `part1/Helpers/ChatHelper.cs` and start with the `using` and class shell:
 ```csharp
 using GitHub.Copilot;
 
-namespace hello_copilot_sdk.Helpers;
+namespace HelloCopilotSDK.Helpers;
 
 public static class ChatHelper
 {
@@ -84,7 +84,7 @@ When `Streaming = true`, the SDK raises events as the model generates tokens:
 Create `part1/Helpers/DemoPrompts.cs` and add the dictionary of demo prompts:
 
 ```csharp
-namespace hello_copilot_sdk.Helpers;
+namespace HelloCopilotSDK.Helpers;
 
 public static class DemoPrompts
 {
@@ -138,7 +138,7 @@ Add these methods to `DemoPrompts`:
 Add the `using`:
 
 ```csharp
-using hello_copilot_sdk.Helpers;
+using HelloCopilotSDK.Helpers;
 ```
 
 Replace the chat-loop body with the full version:

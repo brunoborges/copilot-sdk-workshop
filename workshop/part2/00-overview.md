@@ -48,15 +48,16 @@ Before you start, make sure you have:
 
 ## Target app
 
-This workshop analyzes a live Blazor target app. You have two options:
+This workshop analyzes a live Blazor target app. The easiest option is to use the already-deployed app:
 
-1. **Use the deployed target app** (recommended):  
-   `https://YOUR_ORG.github.io/copilot-sdk-workshop/target-app/`
-2. **Run the target app locally**:  
-   `dotnet run --project src/BlazorApp --urls http://localhost:5000`
+**Deployed target app**:  
+`https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/`
 
-> [!NOTE]
-> Replace `YOUR_ORG` with the actual GitHub organization or username where this repository is deployed.
+If you prefer, you can also run the target app locally:
+
+```bash
+dotnet run --project src/BlazorApp --urls http://localhost:5000
+```
 
 ---
 

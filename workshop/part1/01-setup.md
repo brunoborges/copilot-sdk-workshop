@@ -11,11 +11,11 @@ In this step you will create a new .NET 10 console project, add the GitHub Copil
 Open VS Code and a terminal (`Ctrl + `` `), then run:
 
 ```bash
-dotnet new console -n hello-copilot-sdk -o part1
+dotnet new console -n HelloCopilotSDK -o part1
 cd part1
 ```
 
-This creates a minimal console app with `Program.cs` and a `.csproj` file inside the `part1/` folder.
+This creates a minimal console app with `Program.cs` and `HelloCopilotSDK.csproj` inside the `part1/` folder.
 
 ---
 
@@ -32,7 +32,7 @@ dotnet add package GitHub.Copilot.SDK --version 1.0.5
 
 ## 3. Update the project file
 
-Open `hello-copilot-sdk.csproj` (inside the `part1/` folder) and make sure it looks like this:
+Open `HelloCopilotSDK.csproj` (inside the `part1/` folder) and make sure it looks like this:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -40,7 +40,7 @@ Open `hello-copilot-sdk.csproj` (inside the `part1/` folder) and make sure it lo
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>hello_copilot_sdk</RootNamespace>
+    <RootNamespace>HelloCopilotSDK</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>

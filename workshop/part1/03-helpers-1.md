@@ -16,7 +16,7 @@ Create `part1/Helpers/CliChecker.cs` and start with the data record:
 ```csharp
 using System.Diagnostics;
 
-namespace hello_copilot_sdk.Helpers;
+namespace HelloCopilotSDK.Helpers;
 
 public record CopilotStatus(
     bool IsInstalled,
@@ -144,7 +144,7 @@ Create `part1/Helpers/ModelSelector.cs` with the model-listing logic:
 ```csharp
 using GitHub.Copilot;
 
-namespace hello_copilot_sdk.Helpers;
+namespace HelloCopilotSDK.Helpers;
 
 public static class ModelSelector
 {
@@ -204,7 +204,7 @@ Update the top of `part1/Program.cs`:
 
 ```csharp
 using GitHub.Copilot;
-using hello_copilot_sdk.Helpers;
+using HelloCopilotSDK.Helpers;
 ```
 
 Then replace the prerequisite `TODO` with:
