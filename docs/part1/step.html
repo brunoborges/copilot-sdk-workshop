@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Part 1: Hello GitHub Copilot SDK</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="../step.css">
+    <link rel="stylesheet" href="../light-theme.css">
+    <script src="../theme-toggle.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <button class="nav-btn menu-btn" id="menuBtn" onclick="toggleFlyout()" aria-expanded="false" aria-controls="flyoutPanel" aria-label="Open sections">☰</button>
+            <a href="index.html" class="header-brand">
+                <span class="header-icon">🚀</span>
+                <span class="header-title">Part 1: Hello SDK</span>
+            </a>
+            <div class="header-nav">
+                <a href="../index.html" class="nav-btn">🏠 Hub</a>
+                <button class="theme-toggle" onclick="toggleTheme()">☀️ Light</button>
+                <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>← Prev</button>
+                <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Next →</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flyout-overlay" id="flyoutOverlay" onclick="toggleFlyout()"></div>
+    <div class="layout">
+        <aside class="flyout-panel" id="flyoutPanel">
+            <div class="flyout-header">
+                <span class="flyout-title">🚀 Part 1 Sections</span>
+                <button class="flyout-close" onclick="toggleFlyout()" aria-label="Close sections">✕</button>
+            </div>
+            <nav class="flyout-nav" id="flyoutNav"></nav>
+        </aside>
+
+        <main class="main main-full">
+            <div class="content">
+                <div id="markdownContent">
+                    <div class="loading">Loading content</div>
+                </div>
+                <div class="nav-footer" id="navFooter"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const steps = [
+            { id: '00-overview', file: 'workshop/part1/00-overview.md', title: 'Overview', number: '00' },
+            { id: '01-setup', file: 'workshop/part1/01-setup.md', title: 'Setup', number: '01' },
+            { id: '02-program', file: 'workshop/part1/02-program.md', title: 'Program.cs', number: '02' },
+            { id: '03-helpers-1', file: 'workshop/part1/03-helpers-1.md', title: 'Helpers (1/2)', number: '03' },
+            { id: '04-helpers-2', file: 'workshop/part1/04-helpers-2.md', title: 'Helpers (2/2)', number: '04' },
+            { id: '05-run', file: 'workshop/part1/05-run.md', title: 'Run', number: '05' },
+        ];
+
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+        const GITHUB_RAW_BASE = isLocal ? '../../' : 'https://raw.githubusercontent.com/YOUR_ORG/copilot-sdk-workshop/main/';
+        const STEP_ID_PATTERN = /^[a-z0-9-]{1,64}$/;
+        const WHITESPACE_NORMALIZE_PATTERN = /[\s\n]+/g;
+        const COPY_BUTTON_RESET_DELAY_MS = 2000;
+        const copyButtonResetTimers = new WeakMap();
+
+        let currentIndex = 0;
+
+        function getStepFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('step') || '00-overview';
+        }
+
+        function buildStepUrl(stepId) {
+            return `?step=${stepId}`;
+        }
+
+        function toggleFlyout() {
+            const panel = document.getElementById('flyoutPanel');
+            const overlay = document.getElementById('flyoutOverlay');
+            const menuBtn = document.getElementById('menuBtn');
+            const isOpen = panel?.classList.contains('open') ?? false;
+            if (isOpen) {
+                panel?.classList.remove('open');
+                overlay?.classList.remove('open');
+                menuBtn?.setAttribute('aria-expanded', 'false');
+            } else {
+                panel?.classList.add('open');
+                overlay?.classList.add('open');
+                menuBtn?.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        function buildFlyout() {
+            const nav = document.getElementById('flyoutNav');
+            nav.innerHTML = steps.map((step, i) => `
+                <a href="${buildStepUrl(step.id)}" class="flyout-link ${i === currentIndex ? 'active' : ''}">
+                    <span class="flyout-number">${step.number}</span>
+                    <span>${step.title}</span>
+                </a>
+            `).join('');
+        }
+
+        function updateNavButtons() {
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').disabled = currentIndex === steps.length - 1;
+        }
+
+        function buildFooterNav() {
+            const footer = document.getElementById('navFooter');
+            const prev = currentIndex > 0 ? steps[currentIndex - 1] : null;
+            const next = currentIndex < steps.length - 1 ? steps[currentIndex + 1] : null;
+            footer.innerHTML = `
+                <a href="${prev ? buildStepUrl(prev.id) : '#'}" class="nav-footer-btn ${!prev ? 'disabled' : ''}">← ${prev ? prev.title : 'Previous'}</a>
+                <a href="${next ? buildStepUrl(next.id) : '#'}" class="nav-footer-btn ${!next ? 'disabled' : ''}">${next ? next.title : 'Next'} →</a>
+            `;
+        }
+
+        function navigate(direction) {
+            const newIndex = currentIndex + direction;
+            if (newIndex >= 0 && newIndex < steps.length) {
+                window.location.href = buildStepUrl(steps[newIndex].id);
+            }
+        }
+
+        function processMarkdown(md) {
+            md = md.replace(/> \[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*\n((?:> .*(?:\n|$))*)/gi, function(match, type, content) {
+                const cleanContent = content.replace(/^> ?/gm, '').trim();
+                const icons = { NOTE: 'ℹ️', TIP: '💡', IMPORTANT: '❗', WARNING: '⚠️', CAUTION: '🔴' };
+                const colors = { NOTE: 'var(--neon-cyan)', TIP: 'var(--success-green)', IMPORTANT: 'var(--neon-purple)', WARNING: 'var(--warning-yellow)', CAUTION: '#ff6b6b' };
+                const icon = icons[type.toUpperCase()] || 'ℹ️';
+                const color = colors[type.toUpperCase()] || 'var(--neon-cyan)';
+                return `<blockquote style="border-left-color: ${color};"><p style="color: ${color};">${icon} ${type.toUpperCase()}</p><p>${cleanContent}</p></blockquote>\n`;
+            });
+
+            md = md.replace(/\[([^\]]+)\]\((?:\.\/)?(?:workshop\/)?(\d+)-([^)]+)\.md\)/g, function(match, text, num, slug) {
+                const stepId = `${num}-${slug}`;
+                const found = steps.find(s => s.id === stepId || s.file === `workshop/part1/${num}-${slug}.md`);
+                if (found) {
+                    return `[${text}](${buildStepUrl(found.id)})`;
+                }
+                return match;
+            });
+
+            return md;
+        }
+
+        function enableTaskListCheckboxes(stepId) {
+            const markdown = document.querySelector('#markdownContent .markdown');
+            if (!markdown) return;
+
+            const checkboxes = Array.from(markdown.querySelectorAll('input[type="checkbox"]'));
+            if (!checkboxes.length) return;
+
+            const normalizedStepId = STEP_ID_PATTERN.test(stepId) ? stepId : 'unknown-step';
+            const sanitizedStepId = encodeURIComponent(normalizedStepId);
+            const storageKey = `copilot-sdk-workshop-checks:${sanitizedStepId}`;
+            let savedStates = [];
+
+            try {
+                const stored = localStorage.getItem(storageKey);
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed)) {
+                        savedStates = parsed;
+                    }
+                }
+            } catch (error) {
+                console.warn('Unable to load saved checklist state.', error);
+                savedStates = [];
+            }
+
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.removeAttribute('disabled');
+                const listItem = checkbox.closest('li');
+                let itemText = '';
+                if (listItem) {
+                    const listItemClone = listItem.cloneNode(true);
+                    const clonedCheckbox = listItemClone.querySelector('input[type="checkbox"]');
+                    if (clonedCheckbox) {
+                        clonedCheckbox.remove();
+                    }
+                    itemText = (listItemClone.textContent || '').replace(WHITESPACE_NORMALIZE_PATTERN, ' ').trim();
+                }
+                const ariaLabel = itemText ? `Checklist item: ${itemText}` : `Workshop task ${index + 1}`;
+                checkbox.setAttribute('aria-label', ariaLabel);
+
+                if (typeof savedStates[index] === 'boolean') {
+                    checkbox.checked = savedStates[index];
+                }
+
+                checkbox.addEventListener('change', () => {
+                    const states = checkboxes.map((item) => item.checked);
+                    localStorage.setItem(storageKey, JSON.stringify(states));
+                });
+            });
+        }
+
+        async function copyCodeText(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    return;
+                } catch (error) {
+                    console.warn('Clipboard API failed, attempting fallback method.', error);
+                }
+            }
+
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            textarea.style.pointerEvents = 'none';
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (!successful) {
+                    throw new Error('document.execCommand("copy") failed or was blocked by the browser.');
+                }
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        function updateCopyButtonState(button, label, stateClass, ariaLabel) {
+            button.textContent = label;
+            button.setAttribute('aria-label', ariaLabel);
+            button.classList.remove('is-copied', 'is-error');
+            if (stateClass) {
+                button.classList.add(stateClass);
+            }
+
+            const existingTimer = copyButtonResetTimers.get(button);
+            if (existingTimer) {
+                window.clearTimeout(existingTimer);
+                copyButtonResetTimers.delete(button);
+            }
+
+            if (!stateClass) {
+                return;
+            }
+
+            const resetTimer = window.setTimeout(() => {
+                button.textContent = 'Copy';
+                button.setAttribute('aria-label', button.dataset.defaultAriaLabel);
+                button.classList.remove('is-copied', 'is-error');
+                copyButtonResetTimers.delete(button);
+            }, COPY_BUTTON_RESET_DELAY_MS);
+
+            copyButtonResetTimers.set(button, resetTimer);
+        }
+
+        function enableCodeBlockCopyButtons() {
+            const markdown = document.querySelector('#markdownContent .markdown');
+            if (!markdown) return;
+
+            const codeBlocks = Array.from(markdown.querySelectorAll('pre > code'));
+            codeBlocks.forEach((codeBlock) => {
+                const pre = codeBlock.parentElement;
+                if (!pre || pre.parentElement?.classList.contains('code-block-shell')) {
+                    return;
+                }
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'code-block-shell';
+                pre.parentNode.insertBefore(wrapper, pre);
+                wrapper.appendChild(pre);
+
+                const copyButton = document.createElement('button');
+                copyButton.type = 'button';
+                copyButton.className = 'copy-code-btn';
+                copyButton.textContent = 'Copy';
+                copyButton.dataset.defaultAriaLabel = 'Copy code block';
+                copyButton.setAttribute('aria-label', copyButton.dataset.defaultAriaLabel);
+                copyButton.setAttribute('aria-live', 'polite');
+
+                copyButton.addEventListener('click', async () => {
+                    try {
+                        const codeText = codeBlock.textContent || '';
+                        if (!codeText.trim()) {
+                            return;
+                        }
+
+                        await copyCodeText(codeText);
+                        updateCopyButtonState(copyButton, 'Copied!', 'is-copied', 'Copied code block');
+                    } catch (error) {
+                        console.error('Failed to copy code to clipboard:', error);
+                        updateCopyButtonState(copyButton, 'Failed', 'is-error', 'Failed to copy code block');
+                    }
+                });
+
+                wrapper.appendChild(copyButton);
+            });
+        }
+
+        async function loadStep(stepId) {
+            const step = steps.find(s => s.id === stepId);
+            if (!step) {
+                document.getElementById('markdownContent').innerHTML = '<p>Step not found.</p>';
+                return;
+            }
+
+            currentIndex = steps.indexOf(step);
+            buildFlyout();
+            updateNavButtons();
+            buildFooterNav();
+            document.title = `${step.title} - Part 1: Hello SDK`;
+
+            const contentEl = document.getElementById('markdownContent');
+            contentEl.innerHTML = '<div class="loading">Loading content</div>';
+
+            try {
+                const url = GITHUB_RAW_BASE + step.file;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                let md = await res.text();
+                md = processMarkdown(md);
+                const stepDir = step.file.substring(0, step.file.lastIndexOf('/') + 1);
+                md = md.replace(/!\[([^\]]*)\]\((?!https?:\/\/|\/\/)([^)]+)\)/g, (match, alt, path) => {
+                    const cleanPath = path.replace(/^\.\//, '');
+                    return `![${alt}](${GITHUB_RAW_BASE}${stepDir}${cleanPath})`;
+                });
+                contentEl.innerHTML = `<div class="markdown">${marked.parse(md)}</div>`;
+                highlightCodeBlocks();
+                enableCodeBlockCopyButtons();
+                enableTaskListCheckboxes(step.id);
+
+                if (currentIndex === steps.length - 1 && typeof confetti === 'function') {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
+            } catch (err) {
+                contentEl.innerHTML = `
+                    <div class="markdown">
+                        <h1>${step.title}</h1>
+                        <p>Could not load content. Please check the <a href="https://github.com/YOUR_ORG/copilot-sdk-workshop" target="_blank">GitHub repository</a> directly.</p>
+                        <p style="color: var(--text-secondary); font-size: 0.875rem;">Error: ${err.message}</p>
+                    </div>`;
+            }
+        }
+
+        function highlightCodeBlocks() {
+            const codeBlocks = document.querySelectorAll('#markdownContent pre > code');
+            codeBlocks.forEach((codeBlock) => {
+                if (codeBlock.dataset.highlighted === 'true') return;
+                const className = codeBlock.className || '';
+                const html = codeBlock.innerHTML;
+                let highlighted = html;
+                if (className.includes('language-csharp') || className.includes('csharp')) {
+                    highlighted = highlightCSharp(html);
+                } else if (className.includes('language-xml') || className.includes('xml') || className.includes('csproj')) {
+                    highlighted = highlightXml(html);
+                } else if (className.includes('language-bash') || className.includes('bash') || className.includes('shell') || className.includes('cmd') || className.includes('powershell') || className.includes('ps1')) {
+                    highlighted = highlightShell(html);
+                } else if (className.includes('language-text') || className.includes('text') || className.includes('plaintext')) {
+                    highlighted = escapeCodeHtml(html);
+                } else {
+                    highlighted = escapeCodeHtml(html);
+                }
+                codeBlock.innerHTML = highlighted;
+                codeBlock.dataset.highlighted = 'true';
+            });
+        }
+
+        function escapeCodeHtml(code) {
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = code;
+            return textarea.value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function highlightShell(code) {
+            let html = escapeCodeHtml(code);
+            // Comments
+            html = html.replace(/^(#.*$|REM\s.*$|::.*$)/gim, '<span class="shell-comment">$1</span>');
+            // Strings
+            html = html.replace(/("(?:[^"\\]|\\.)*")/g, '<span class="shell-string">$1</span>');
+            html = html.replace(/('(?:[^'\\]|\\.)*')/g, '<span class="shell-string">$1</span>');
+            // Paths/URLs
+            html = html.replace(/(\b(?:https?:\/\/|ftp:\/\/|file:\/\/|www\.)[^\s]+)/g, '<span class="shell-url">$1</span>');
+            // Options/flags
+            html = html.replace(/(\s|^)(--?[A-Za-z0-9][\w-]*)/g, '$1<span class="shell-flag">$2</span>');
+            // Commands (common shell verbs)
+            const commands = ['dotnet', 'npm', 'npx', 'git', 'cd', 'mkdir', 'ls', 'dir', 'cp', 'mv', 'rm', 'cat', 'echo', 'curl', 'pwsh', 'powershell', 'cmd', 'start', 'code', 'explorer', 'set', 'export', 'if', 'else', 'for', 'while', 'do', 'done', 'then', 'fi'];
+            commands.forEach(cmd => {
+                const regex = new RegExp(`(?<!<[^>]*)\\b(${cmd})\\b(?![^<]*<\\/span>)`, 'gi');
+                html = html.replace(regex, '<span class="shell-command">$1</span>');
+            });
+            return html;
+        }
+
+        function highlightXml(code) {
+            let html = escapeCodeHtml(code);
+            // Comments
+            html = html.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="xml-comment">$1</span>');
+            // CDATA
+            html = html.replace(/(&lt;!\[CDATA\[[\s\S]*?\]\]&gt;)/g, '<span class="xml-cdata">$1</span>');
+            // Processing instructions
+            html = html.replace(/(&lt;\?[\s\S]*?\?&gt;)/g, '<span class="xml-proc">$1</span>');
+            // Tags
+            html = html.replace(/(&lt;\/?)([A-Za-z][\w:.-]*)(.*?)(\/?&gt;)/g, (match, open, tagName, attrs, close) => {
+                const highlightedAttrs = attrs.replace(/([A-Za-z_:][\w:.-]*)=/g, '<span class="xml-attr">$1</span>=');
+                return `<span class="xml-bracket">${open}</span><span class="xml-tag">${tagName}</span>${highlightedAttrs}<span class="xml-bracket">${close}</span>`;
+            });
+            return html;
+        }
+
+        function highlightCSharp(code) {
+            // marked.js already escapes HTML in code blocks, so decode first to avoid double-escaping.
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = code;
+
+            // Escape HTML special characters before adding highlight spans.
+            let html = textarea.value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            const keywords = [
+                'using', 'namespace', 'class', 'public', 'private', 'static', 'async', 'await', 'return',
+                'if', 'else', 'while', 'for', 'foreach', 'switch', 'case', 'break', 'continue', 'try',
+                'catch', 'finally', 'throw', 'new', 'var', 'const', 'readonly', 'record', 'struct',
+                'interface', 'enum', 'delegate', 'event', 'virtual', 'override', 'abstract', 'sealed',
+                'internal', 'protected', 'params', 'ref', 'out', 'in', 'is', 'as', 'typeof', 'nameof',
+                'true', 'false', 'null', 'void', 'int', 'string', 'bool', 'double', 'float', 'decimal',
+                'long', 'short', 'byte', 'char', 'object', 'dynamic', 'implicit', 'explicit', 'operator',
+                'get', 'set', 'init', 'value', 'where', 'yield', 'lock', 'unchecked', 'checked', 'unsafe',
+                'fixed', 'sizeof', 'stackalloc', 'from', 'select', 'where', 'orderby', 'group', 'into'
+            ];
+
+            const types = [
+                'Task', 'TaskCompletionSource', 'List', 'Dictionary', 'Console', 'Process', 'ProcessStartInfo',
+                'Exception', 'InvalidOperationException', 'String', 'Int32', 'Boolean', 'DateTime', 'Uri',
+                'HttpClient', 'SqlConnection', 'SqlCommand', 'SqlDataReader', 'MessageOptions', 'SessionConfig',
+                'CopilotClient', 'CopilotSession', 'CopilotStatus', 'ModelInfo', 'PermissionHandler',
+                'McpServerConfig', 'McpStdioServerConfig', 'AssistantMessageDeltaEvent', 'AssistantMessageEvent',
+                'SessionIdleEvent', 'SessionErrorEvent', 'SessionEvent'
+            ];
+
+            const methods = [
+                'WriteLine', 'Write', 'ReadLine', 'Trim', 'ToLowerInvariant', 'ToUpperInvariant', 'Split',
+                'StartsWith', 'Contains', 'Replace', 'Substring', 'IndexOf', 'Parse', 'TryParse', 'ToString',
+                'StartAsync', 'StopAsync', 'CreateSessionAsync', 'SendAsync', 'PingAsync', 'ListModelsAsync',
+                'WaitForExitAsync', 'ReadToEndAsync', 'DisposeAsync', 'TrySetResult', 'SelectModelAsync',
+                'CheckCopilotStatusAsync', 'IsReady', 'RunCommandAsync', 'PrintDemoPrompts', 'GetDemoPrompt',
+                'SendMessageAndStreamResponse'
+            ];
+
+            const properties = [
+                'Data', 'DeltaContent', 'Content', 'Message', 'Model', 'Streaming', 'McpServers', 'OnPermissionRequest',
+                'Command', 'Args', 'Tools', 'Name', 'Id', 'Billing', 'Multiplier', 'IsInstalled', 'IsTokenSet',
+                'IsAuthenticated', 'ErrorMessage', 'ExitCode', 'FileName', 'Arguments', 'RedirectStandardOutput',
+                'RedirectStandardError', 'UseShellExecute', 'CreateNoWindow', 'StandardOutput', 'StandardError',
+                'Prompt', 'Length', 'Count', 'Keys', 'Values'
+            ];
+
+            const namespaces = [
+                'System', 'System.Diagnostics', 'System.Threading.Tasks', 'System.Collections.Generic',
+                'GitHub.Copilot', 'hello_copilot_sdk.Helpers'
+            ];
+
+            // Strings (including verbatim and interpolated)
+            html = html.replace(/(@?"(?:[^"\\]|\\.)*")/g, '<span class="csharp-string">$1</span>');
+            html = html.replace(/('(?:[^'\\]|\\.)*')/g, '<span class="csharp-string">$1</span>');
+
+            // Numbers
+            html = html.replace(/\b(\d+(?:\.\d+)?(?:m|f|d|u|l|ul|L|U)?)\b/g, '<span class="csharp-number">$1</span>');
+
+            // Directives
+            html = html.replace(/^(#:\w+)/gm, '<span class="csharp-directive">$1</span>');
+
+            // Namespaces
+            namespaces.forEach(ns => {
+                const regex = new RegExp(`\\b(${ns})\\b`, 'g');
+                html = html.replace(regex, '<span class="csharp-namespace">$1</span>');
+            });
+
+            // Types
+            types.forEach(type => {
+                const regex = new RegExp(`\\b(${type})\\b`, 'g');
+                html = html.replace(regex, '<span class="csharp-type">$1</span>');
+            });
+
+            // Methods
+            methods.forEach(method => {
+                const regex = new RegExp(`\\b(${method})\\b(?=\\s*\\()`, 'g');
+                html = html.replace(regex, '<span class="csharp-method">$1</span>');
+            });
+
+            // Properties
+            properties.forEach(prop => {
+                const regex = new RegExp(`(?<=\\.)\\b(${prop})\\b`, 'g');
+                html = html.replace(regex, '<span class="csharp-property">$1</span>');
+            });
+
+            // Keywords (avoid replacing inside already highlighted spans)
+            keywords.forEach(kw => {
+                const regex = new RegExp(`(?<!<[^>]*)\\b(${kw})\\b(?![^<]*<\\/span>)`, 'g');
+                html = html.replace(regex, '<span class="csharp-keyword">$1</span>');
+            });
+
+            // Comments (run last so they override any spans inside the comment text)
+            html = html.replace(/(\/\/.*$)/gm, '<span class="csharp-comment">$1</span>');
+
+            return html;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') navigate(-1);
+            if (e.key === 'ArrowRight') navigate(1);
+        });
+
+        loadStep(getStepFromURL());
+    </script>
+</body>
+</html>

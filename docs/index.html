@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copilot SDK Workshop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="light-theme.css">
+    <script src="theme-toggle.js"></script>
+</head>
+<body>
+    <header class="home-header">
+        <a href="index.html" class="home-brand">
+            <span class="home-brand-icon">🤖</span>
+            <span class="home-brand-title">Copilot SDK</span>
+        </a>
+        <nav class="home-top-nav">
+            <a href="target-app/index.html" target="_blank">🎯 Target App ↗</a>
+            <a href="https://github.com/github/copilot-sdk/tree/main/dotnet" target="_blank">📚 Docs ↗</a>
+        </nav>
+        <button class="theme-toggle" onclick="toggleTheme()">☀️ Light</button>
+    </header>
+
+    <main class="home-main">
+            <section class="hero">
+                <div class="container">
+                    <div class="hero-badge">🤖 .NET GitHub Copilot SDK Workshops</div>
+                    <h1>Copilot SDK Workshop</h1>
+                    <p class="hero-subtitle">
+                        Learn the GitHub Copilot SDK for .NET through two hands-on workshops.
+                        Build an interactive CLI chat client, then generate WCAG-aligned accessibility reports with the Playwright MCP server.
+                    </p>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value">2</div>
+                            <div class="stat-label">Workshops</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">~90min</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">.NET 10</div>
+                            <div class="stat-label">Stack</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="workshop workshop-parts">
+                <div class="container">
+                    <h2 class="section-title">Choose a Workshop</h2>
+                    <div class="parts-list parts-list-large">
+                        <a href="part1/index.html" class="part-card part-card-large">
+                            <div class="part-number part-number-large">🚀</div>
+                            <div class="part-content">
+                                <div class="part-label">Part 1</div>
+                                <h3>Hello GitHub Copilot SDK</h3>
+                                <p>Build an interactive console chat client. Check prerequisites, list models, stream responses, and add demo prompts.</p>
+                                <div class="part-meta">~45 min • Beginner-friendly</div>
+                            </div>
+                            <span class="part-time">Start →</span>
+                        </a>
+                        <a href="part2/index.html" class="part-card part-card-large">
+                            <div class="part-number part-number-large">♿</div>
+                            <div class="part-content">
+                                <div class="part-label">Part 2</div>
+                                <h3>Accessibility Report</h3>
+                                <p>Use the Copilot SDK + Playwright MCP server to analyze a live webpage and generate a structured WCAG-aligned report.</p>
+                                <div class="part-meta">~45 min • Intermediate</div>
+                            </div>
+                            <span class="part-time">Start →</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="prereqs">
+                <div class="container">
+                    <h2 class="section-title">Prerequisites</h2>
+                    <p class="section-copy">Make sure these are installed and configured before you start either workshop.</p>
+                    <div class="prereqs-grid">
+                        <div class="prereq-card">
+                            <div class="prereq-icon">🛠️</div>
+                            <h3>.NET 10 SDK</h3>
+                            <p>Required for both workshops.</p>
+                            <a href="https://dotnet.microsoft.com/download/dotnet/10.0" target="_blank">Download ↗</a>
+                        </div>
+                        <div class="prereq-card">
+                            <div class="prereq-icon">🟩</div>
+                            <h3>Node.js 22+</h3>
+                            <p>Needed for the Playwright MCP server in Part 2.</p>
+                            <a href="https://nodejs.org/" target="_blank">Download ↗</a>
+                        </div>
+                        <div class="prereq-card">
+                            <div class="prereq-icon">📝</div>
+                            <h3>Visual Studio Code</h3>
+                            <p>Recommended editor for the exercises.</p>
+                            <a href="https://code.visualstudio.com/" target="_blank">Download ↗</a>
+                        </div>
+                        <div class="prereq-card">
+                            <div class="prereq-icon">🤖</div>
+                            <h3>GitHub Copilot</h3>
+                            <p>Subscription or trial with CLI access.</p>
+                            <a href="https://github.com/features/copilot" target="_blank">Learn more ↗</a>
+                        </div>
+                        <div class="prereq-card wide">
+                            <div class="prereq-icon">🔐</div>
+                            <div class="prereq-body">
+                                <h3>GitHub Copilot CLI</h3>
+                                <p>Install and authenticate the Copilot CLI so the SDK can create sessions. Run <code>copilot auth login</code> or set a <code>GH_TOKEN</code> environment variable with the <strong>Copilot Requests</strong> scope.</p>
+                                <a href="https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-the-command-line" target="_blank">CLI docs ↗</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="features">
+                <div class="container">
+                    <h2 class="section-title">What You'll Learn</h2>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🚀</div>
+                            <h3>CopilotClient & Sessions</h3>
+                            <p>Start the client, create streaming sessions, and understand the session lifecycle.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">💬</div>
+                            <h3>Streaming Responses</h3>
+                            <p>Handle real-time assistant message deltas, idle events, and errors.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🧰</div>
+                            <h3>MCP Server Integration</h3>
+                            <p>Wire up the Playwright MCP server so Copilot can drive a real browser.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">♿</div>
+                            <h3>Accessibility Automation</h3>
+                            <p>Generate WCAG-aligned reports and Playwright tests from a live webpage.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="workshop">
+                <div class="container">
+                    <h2 class="section-title">Resources</h2>
+                    <div class="parts-list">
+                        <a href="target-app/index.html" class="part-card" target="_blank">
+                            <div class="part-number">🎯</div>
+                            <div class="part-content">
+                                <h3>Blazor Target App</h3>
+                                <p>The live webpage used by Part 2. Contains intentional accessibility issues to analyze.</p>
+                            </div>
+                            <span class="part-time">Open ↗</span>
+                        </a>
+                        <a href="https://github.com/github/copilot-sdk/tree/main/dotnet" class="part-card" target="_blank">
+                            <div class="part-number">📚</div>
+                            <div class="part-content">
+                                <h3>Official .NET SDK Docs</h3>
+                                <p>Reference documentation for GitHub.Copilot.SDK from the official repository.</p>
+                            </div>
+                            <span class="part-time">Open ↗</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </main>
+</body>
+</html>

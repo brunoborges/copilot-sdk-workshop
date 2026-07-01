@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Part 2: Accessibility Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../light-theme.css">
+    <script src="../theme-toggle.js"></script>
+</head>
+<body>
+    <header class="home-header">
+        <a href="../index.html" class="home-brand">
+            <span class="home-brand-icon">🤖</span>
+            <span class="home-brand-title">Copilot SDK</span>
+        </a>
+        <nav class="home-top-nav">
+            <a href="../index.html">🏠 Home</a>
+            <a href="../part1/index.html">🚀 Part 1</a>
+            <a href="../target-app/index.html" target="_blank">🎯 Target App ↗</a>
+            <a href="https://github.com/github/copilot-sdk/tree/main/dotnet" target="_blank">📚 Docs ↗</a>
+        </nav>
+        <button class="theme-toggle" onclick="toggleTheme()">☀️ Light</button>
+    </header>
+
+    <main class="home-main">
+            <section class="hero">
+                <div class="container">
+                    <div class="hero-badge">♿ Part 2</div>
+                    <h1>Accessibility Report</h1>
+                    <p class="hero-subtitle">
+                        Use the GitHub Copilot SDK and the Playwright MCP server to analyze a live webpage
+                        and generate a WCAG-aligned accessibility report with optional Playwright tests.
+                    </p>
+                    <div class="hero-cta">
+                        <a href="step.html?step=00-overview" class="btn btn-primary">🚀 Start Part 2</a>
+                        <a href="../target-app/index.html" class="btn btn-secondary" target="_blank">🎯 Open Target App</a>
+                        <a href="../index.html" class="btn btn-secondary">← Back to Hub</a>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value">~45min</div>
+                            <div class="stat-label">Duration</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">8</div>
+                            <div class="stat-label">Steps</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">.NET 10</div>
+                            <div class="stat-label">Stack</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="workshop">
+                <div class="container">
+                    <h2 class="section-title">Steps</h2>
+                    <div class="parts-list">
+                        <a href="step.html?step=00-overview" class="part-card">
+                            <div class="part-number">00</div>
+                            <div class="part-content">
+                                <h3>Overview</h3>
+                                <p>What you'll build, prerequisites, and target app options.</p>
+                            </div>
+                            <span class="part-time">5 min</span>
+                        </a>
+                        <a href="step.html?step=01-setup" class="part-card">
+                            <div class="part-number">01</div>
+                            <div class="part-content">
+                                <h3>Setup</h3>
+                                <p>Install Node.js, set up the Playwright MCP recipe, and choose a target app.</p>
+                            </div>
+                            <span class="part-time">10 min</span>
+                        </a>
+                        <a href="step.html?step=02-client" class="part-card">
+                            <div class="part-number">02</div>
+                            <div class="part-content">
+                                <h3>Client & MCP</h3>
+                                <p>Create a Copilot session with the Playwright MCP server attached.</p>
+                            </div>
+                            <span class="part-time">10 min</span>
+                        </a>
+                        <a href="step.html?step=03-url" class="part-card">
+                            <div class="part-number">03</div>
+                            <div class="part-content">
+                                <h3>URL Input</h3>
+                                <p>Prompt for a URL, validate it, and prepare the analysis prompt.</p>
+                            </div>
+                            <span class="part-time">5 min</span>
+                        </a>
+                        <a href="step.html?step=04-streaming" class="part-card">
+                            <div class="part-number">04</div>
+                            <div class="part-content">
+                                <h3>Streaming</h3>
+                                <p>Stream the report to the console and wait for completion.</p>
+                            </div>
+                            <span class="part-time">5 min</span>
+                        </a>
+                        <a href="step.html?step=05-prompt" class="part-card">
+                            <div class="part-number">05</div>
+                            <div class="part-content">
+                                <h3>Report Prompt</h3>
+                                <p>Craft a structured WCAG-aligned prompt with emoji indicators.</p>
+                            </div>
+                            <span class="part-time">10 min</span>
+                        </a>
+                        <a href="step.html?step=06-tests" class="part-card">
+                            <div class="part-number">06</div>
+                            <div class="part-content">
+                                <h3>Generate Tests</h3>
+                                <p>Optionally generate Playwright accessibility tests from the report.</p>
+                            </div>
+                            <span class="part-time">10 min</span>
+                        </a>
+                        <a href="step.html?step=07-run" class="part-card">
+                            <div class="part-number">07</div>
+                            <div class="part-content">
+                                <h3>Run & Review</h3>
+                                <p>Run the full recipe, review findings, and fix an issue.</p>
+                            </div>
+                            <span class="part-time">10 min</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </main>
+</body>
+</html>

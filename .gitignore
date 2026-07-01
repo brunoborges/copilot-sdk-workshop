@@ -1,0 +1,27 @@
+# .NET build outputs
+bin/
+obj/
+out/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# User-specific files
+*.user
+*.suo
+*.userprefs
+
+# NuGet
+*.nupkg
+packages/
+
+# Test results
+TestResults/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary inspection projects
+temp-inspect/
