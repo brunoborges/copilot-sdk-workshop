@@ -61,7 +61,6 @@
             { id: '07-run', file: 'workshop/part2/07-run.md', title: 'Run & Review', number: '07' },
         ];
 
-        const CONTENT_BASE_URL = new URL('../../', window.location.href);
         const STEP_ID_PATTERN = /^[a-z0-9-]{1,64}$/;
         const WHITESPACE_NORMALIZE_PATTERN = /[\s\n]+/g;
         const COPY_BUTTON_RESET_DELAY_MS = 2000;
@@ -76,6 +75,13 @@
 
         function buildStepUrl(stepId) {
             return `?step=${stepId}`;
+        }
+
+        function getContentBaseUrl() {
+            const pathSegments = window.location.pathname.split('/').filter(Boolean);
+            const docsSegmentIndex = pathSegments.indexOf('docs');
+            const relativeRoot = docsSegmentIndex >= 0 ? '../../' : '../';
+            return new URL(relativeRoot, window.location.href);
         }
 
         function getRepositoryUrl() {
@@ -330,7 +336,8 @@
             contentEl.innerHTML = '<div class="loading">Loading content</div>';
 
             try {
-                const url = new URL(step.file, CONTENT_BASE_URL).toString();
+                const contentBaseUrl = getContentBaseUrl();
+                const url = new URL(step.file, contentBaseUrl).toString();
                 const res = await fetch(url);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 let md = await res.text();
@@ -338,7 +345,7 @@
                 const stepDir = step.file.substring(0, step.file.lastIndexOf('/') + 1);
                 md = md.replace(/!\[([^\]]*)\]\((?!https?:\/\/|\/\/)([^)]+)\)/g, (match, alt, path) => {
                     const cleanPath = path.replace(/^\.\//, '');
-                    const assetUrl = new URL(`${stepDir}${cleanPath}`, CONTENT_BASE_URL).toString();
+                    const assetUrl = new URL(`${stepDir}${cleanPath}`, contentBaseUrl).toString();
                     return `![${alt}](${assetUrl})`;
                 });
                 contentEl.innerHTML = `<div class="markdown">${marked.parse(md)}</div>`;
