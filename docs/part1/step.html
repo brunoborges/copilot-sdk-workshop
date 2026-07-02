@@ -75,11 +75,20 @@
             return `?step=${stepId}`;
         }
 
-        function getContentBaseUrl() {
+        function getSiteRootUrl() {
+            const hostname = window.location.hostname.toLowerCase();
             const pathSegments = window.location.pathname.split('/').filter(Boolean);
-            const docsSegmentIndex = pathSegments.indexOf('docs');
-            const relativeRoot = docsSegmentIndex >= 0 ? '../../' : '../';
-            return new URL(relativeRoot, window.location.href);
+            const githubPagesSuffix = '.github.io';
+
+            if (hostname.endsWith(githubPagesSuffix) && pathSegments.length > 0) {
+                return new URL(`/${pathSegments[0]}/`, window.location.origin);
+            }
+
+            if (pathSegments[0] === 'docs') {
+                return new URL('/', window.location.origin);
+            }
+
+            return new URL('/', window.location.origin);
         }
 
         function getRepositoryUrl() {
@@ -334,8 +343,8 @@
             contentEl.innerHTML = '<div class="loading">Loading content</div>';
 
             try {
-                const contentBaseUrl = getContentBaseUrl();
-                const url = new URL(step.file, contentBaseUrl).toString();
+                const siteRootUrl = getSiteRootUrl();
+                const url = new URL(step.file, siteRootUrl).toString();
                 const res = await fetch(url);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 let md = await res.text();
@@ -343,7 +352,7 @@
                 const stepDir = step.file.substring(0, step.file.lastIndexOf('/') + 1);
                 md = md.replace(/!\[([^\]]*)\]\((?!https?:\/\/|\/\/)([^)]+)\)/g, (match, alt, path) => {
                     const cleanPath = path.replace(/^\.\//, '');
-                    const assetUrl = new URL(`${stepDir}${cleanPath}`, contentBaseUrl).toString();
+                    const assetUrl = new URL(`${stepDir}${cleanPath}`, siteRootUrl).toString();
                     return `![${alt}](${assetUrl})`;
                 });
                 contentEl.innerHTML = `<div class="markdown">${marked.parse(md)}</div>`;
