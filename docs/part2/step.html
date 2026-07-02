@@ -61,8 +61,7 @@
             { id: '07-run', file: 'workshop/part2/07-run.md', title: 'Run & Review', number: '07' },
         ];
 
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
-        const GITHUB_RAW_BASE = isLocal ? '../../' : 'https://raw.githubusercontent.com/YOUR_ORG/copilot-sdk-workshop/main/';
+        const CONTENT_BASE_URL = new URL('../../', window.location.href);
         const STEP_ID_PATTERN = /^[a-z0-9-]{1,64}$/;
         const WHITESPACE_NORMALIZE_PATTERN = /[\s\n]+/g;
         const COPY_BUTTON_RESET_DELAY_MS = 2000;
@@ -77,6 +76,20 @@
 
         function buildStepUrl(stepId) {
             return `?step=${stepId}`;
+        }
+
+        function getRepositoryUrl() {
+            const hostname = window.location.hostname.toLowerCase();
+            const pathSegments = window.location.pathname.split('/').filter(Boolean);
+            const githubPagesSuffix = '.github.io';
+
+            if (!hostname.endsWith(githubPagesSuffix) || pathSegments.length === 0) {
+                return null;
+            }
+
+            const owner = hostname.slice(0, -githubPagesSuffix.length);
+            const repository = pathSegments[0];
+            return `https://github.com/${owner}/${repository}`;
         }
 
         function toggleFlyout() {
@@ -317,7 +330,7 @@
             contentEl.innerHTML = '<div class="loading">Loading content</div>';
 
             try {
-                const url = GITHUB_RAW_BASE + step.file;
+                const url = new URL(step.file, CONTENT_BASE_URL).toString();
                 const res = await fetch(url);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 let md = await res.text();
@@ -325,7 +338,8 @@
                 const stepDir = step.file.substring(0, step.file.lastIndexOf('/') + 1);
                 md = md.replace(/!\[([^\]]*)\]\((?!https?:\/\/|\/\/)([^)]+)\)/g, (match, alt, path) => {
                     const cleanPath = path.replace(/^\.\//, '');
-                    return `![${alt}](${GITHUB_RAW_BASE}${stepDir}${cleanPath})`;
+                    const assetUrl = new URL(`${stepDir}${cleanPath}`, CONTENT_BASE_URL).toString();
+                    return `![${alt}](${assetUrl})`;
                 });
                 contentEl.innerHTML = `<div class="markdown">${marked.parse(md)}</div>`;
                 highlightCodeBlocks();
@@ -339,7 +353,7 @@
                 contentEl.innerHTML = `
                     <div class="markdown">
                         <h1>${step.title}</h1>
-                        <p>Could not load content. Please check the <a href="https://github.com/YOUR_ORG/copilot-sdk-workshop" target="_blank">GitHub repository</a> directly.</p>
+                        <p>Could not load content.${getRepositoryUrl() ? ` Please check the <a href="${getRepositoryUrl()}" target="_blank">GitHub repository</a> directly.` : ''}</p>
                         <p style="color: var(--text-secondary); font-size: 0.875rem;">Error: ${err.message}</p>
                     </div>`;
             }

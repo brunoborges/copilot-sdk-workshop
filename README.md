@@ -14,7 +14,7 @@ The workshops are published as a GitHub Pages site. Each workshop has its own la
 After you enable GitHub Pages, the site will be available at:
 
 ```text
-https://YOUR_ORG.github.io/copilot-sdk-workshop/
+https://jamesmontemagno.github.io/copilot-sdk-workshop/
 ```
 
 Update the `GITHUB_RAW_BASE` constants in [`docs/part1/step.html`](docs/part1/step.html) and [`docs/part2/step.html`](docs/part2/step.html) to point to your organization and repository before deploying.
@@ -22,7 +22,7 @@ Update the `GITHUB_RAW_BASE` constants in [`docs/part1/step.html`](docs/part1/st
 The Blazor target app for Part 2 is deployed automatically at:
 
 ```text
-https://YOUR_ORG.github.io/copilot-sdk-workshop/target-app/
+https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
 ```
 
 ---
