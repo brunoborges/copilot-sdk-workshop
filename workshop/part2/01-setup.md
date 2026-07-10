@@ -21,12 +21,23 @@ Node.js 22 or later is recommended.
 
 ---
 
-## 2. Install Microsoft Edge
+## 2. Choose a browser
 
-This workshop uses `@playwright/mcp@0.0.77` with `--browser=msedge` to launch the locally installed [Microsoft Edge](https://www.microsoft.com/edge/download) browser. Install Edge before continuing if it is not already available on your machine. Edge is included with current Windows installations.
+This workshop uses `@playwright/mcp@0.0.77`. By default, its code uses `--browser=msedge` to launch the locally installed [Microsoft Edge](https://www.microsoft.com/edge/download) browser. Edge is included with current Windows installations.
+
+Choose the option that matches the browser runtime available on your machine:
+
+| Browser | Argument | Requirement |
+|---------|----------|-------------|
+| Microsoft Edge (default) | `--browser=msedge` | Install Microsoft Edge. |
+| Google Chrome | `--browser=chrome` | Install Google Chrome. |
+| Firefox | `--browser=firefox` | Playwright downloads its managed Firefox runtime automatically on first use. |
+| WebKit | `--browser=webkit` | Playwright downloads its managed WebKit runtime automatically on first use. WebKit is supported on macOS and Linux, not Windows. |
+
+To use a different option, replace `--browser=msedge` with the matching argument wherever it appears in the Part 2 code snippets or the completed sample.
 
 > [!IMPORTANT]
-> This configuration uses the Edge browser channel rather than Playwright's downloaded browser runtime. Running `npx playwright install` alone does not install Edge or satisfy this requirement.
+> Edge and Chrome use locally installed browser channels. Running `npx playwright install` downloads Playwright runtimes, but does not install Edge or Chrome.
 
 ---
 
@@ -110,7 +121,7 @@ After a few seconds you will see a URL such as `http://localhost:5000` or `https
 ## Checkpoint
 
 - [ ] `node --version` and `npx --version` work.
-- [ ] Microsoft Edge is installed.
+- [ ] A browser option from the table is available.
 - [ ] `part2/AccessibilityReport.csproj` exists and targets `net10.0`.
 - [ ] `GitHub.Copilot.SDK` package is added.
 - [ ] You have a target app URL (deployed or localhost).

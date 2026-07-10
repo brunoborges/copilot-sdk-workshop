@@ -112,6 +112,8 @@ var sessionConfig = new SessionConfig
 | `Args = ["@playwright/mcp@0.0.77", "--browser=msedge"]` | Runs the Playwright MCP version used by this workshop and launches Microsoft Edge. |
 | `Tools = ["*"]` | Allows the session to use all Playwright tools. |
 
+To use a different browser, replace `--browser=msedge` with one of the browser arguments in [Setup](01-setup.md).
+
 > [!IMPORTANT]
 > `PermissionHandler.ApproveAll` is convenient for a workshop, but in production you should review permission requests carefully.
 
