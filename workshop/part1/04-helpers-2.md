@@ -141,9 +141,17 @@ Add the `using`:
 using HelloCopilotSDK.Helpers;
 ```
 
-Replace the chat-loop body with the full version:
+Replace the session declaration and chat-loop body with the full version:
 
 ```csharp
+var session = await client.CreateSessionAsync(new SessionConfig
+{
+    Model = selectedModel,
+    Streaming = true
+});
+
+try
+{
 // 4. Interactive chat loop
 DemoPrompts.PrintDemoPrompts();
 Console.WriteLine("💬 Interactive Chat Mode");
@@ -171,12 +179,14 @@ while (true)
     if (command == "model")
     {
         selectedModel = await ModelSelector.SelectModelAsync();
-        await session.DisposeAsync();
-        var newSession = await client.CreateSessionAsync(new SessionConfig
+        var replacementSession = await client.CreateSessionAsync(new SessionConfig
         {
             Model = selectedModel,
             Streaming = true
         });
+        var previousSession = session;
+        session = replacementSession;
+        await previousSession.DisposeAsync();
         Console.WriteLine("🔄 Model switched. Continue chatting.\n");
         continue;
     }
@@ -209,10 +219,15 @@ while (true)
     await ChatHelper.SendMessageAndStreamResponse(session, input);
     Console.WriteLine();
 }
+}
+finally
+{
+    await session.DisposeAsync();
+}
 ```
 
 > [!NOTE]
-> The `model` command disposes the current session and creates a new one with the newly selected model. In a production app you might want to extract session management into a small service class.
+> The `model` command creates a replacement session before switching the active reference and disposing the previous session. This keeps later demo prompts and free-form messages streaming from the newly selected model. The `finally` block disposes whichever session is active when the app exits.
 
 ---
 
