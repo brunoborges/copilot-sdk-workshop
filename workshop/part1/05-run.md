@@ -32,7 +32,7 @@ Enter choice (1-N) [default: 1]: 1
 ✅ Selected: Claude 3.5 Sonnet
 
 🚀 Starting Copilot client...
-   ✅ Copilot client responded: hello
+   ✅ Copilot client responded: pong: hello
 
 📚 Demo Prompts
    demo 1: Code Review
