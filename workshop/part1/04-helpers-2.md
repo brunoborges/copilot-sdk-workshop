@@ -23,6 +23,7 @@ public static class ChatHelper
     public static async Task SendMessageAndStreamResponse(CopilotSession session, string message)
     {
         var tcs = new TaskCompletionSource();
+        var hasStreamedContent = false;
 
         // Event handler added in the next chunk.
 
@@ -44,11 +45,18 @@ Inside `SendMessageAndStreamResponse`, add the handler before `session.SendAsync
             switch (evt)
             {
                 case AssistantMessageDeltaEvent delta:
-                    Console.Write(delta.Data.DeltaContent);
+                    if (!string.IsNullOrEmpty(delta.Data.DeltaContent))
+                    {
+                        hasStreamedContent = true;
+                        Console.Write(delta.Data.DeltaContent);
+                    }
                     break;
 
                 case AssistantMessageEvent msg:
-                    Console.Write(msg.Data.Content);
+                    if (!hasStreamedContent)
+                    {
+                        Console.Write(msg.Data.Content);
+                    }
                     break;
 
                 case SessionIdleEvent:
@@ -74,6 +82,8 @@ When `Streaming = true`, the SDK raises events as the model generates tokens:
 | `AssistantMessageEvent` | A complete non-streaming message (fallback). |
 | `SessionIdleEvent` | The model has finished responding. |
 | `SessionErrorEvent` | Something went wrong. |
+
+The SDK emits a complete `AssistantMessageEvent` after a streamed response. `hasStreamedContent` prevents that completed message from repeating deltas already printed to the console, while still displaying a response when no streaming content arrives.
 
 `TaskCompletionSource` lets us turn the event-based stream into an `await`-able method.
 
