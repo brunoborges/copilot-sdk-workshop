@@ -178,7 +178,7 @@ while (true)
 
     if (command == "model")
     {
-        selectedModel = await ModelSelector.SelectModelAsync();
+        selectedModel = await ModelSelector.SelectModelAsync(client);
         var replacementSession = await client.CreateSessionAsync(new SessionConfig
         {
             Model = selectedModel,

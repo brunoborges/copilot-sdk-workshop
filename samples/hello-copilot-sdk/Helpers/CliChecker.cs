@@ -2,50 +2,31 @@ using System.Diagnostics;
 
 namespace hello_copilot_sdk.Helpers;
 
-public record CopilotStatus(
+public record CopilotCliStatus(
     bool IsInstalled,
-    bool IsTokenSet,
-    bool IsAuthenticated,
     string? ErrorMessage);
 
 public static class CliChecker
 {
-    public static bool IsReady(CopilotStatus status)
-        => status.IsInstalled && (status.IsTokenSet || status.IsAuthenticated);
-
-    public static async Task<CopilotStatus> CheckCopilotStatusAsync()
+    public static async Task<CopilotCliStatus> CheckCopilotCliAsync()
     {
-        var isTokenSet = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GH_TOKEN"));
-
         try
         {
             var version = await RunCommandAsync("copilot", "--version");
             if (string.IsNullOrWhiteSpace(version))
             {
-                return new CopilotStatus(false, isTokenSet, false, "Copilot CLI is installed but returned no version.");
-            }
-        }
-        catch (Exception ex)
-        {
-            return new CopilotStatus(false, isTokenSet, false, $"Copilot CLI not found: {ex.Message}");
-        }
-
-        try
-        {
-            var authOutput = await RunCommandAsync("copilot", "auth status");
-            var isAuthenticated = authOutput.Contains("Logged in", StringComparison.OrdinalIgnoreCase)
-                               || authOutput.Contains("Authenticated", StringComparison.OrdinalIgnoreCase);
-
-            if (!isAuthenticated && !isTokenSet)
-            {
-                return new CopilotStatus(true, false, false, "Not authenticated. Run 'copilot auth login' or set GH_TOKEN.");
+                return new CopilotCliStatus(false, "Copilot CLI is installed but returned no version.");
             }
 
-            return new CopilotStatus(true, isTokenSet, isAuthenticated, null);
+            return new CopilotCliStatus(true, null);
         }
-        catch (Exception ex)
+        catch (System.ComponentModel.Win32Exception ex)
         {
-            return new CopilotStatus(true, isTokenSet, false, $"Could not verify auth status: {ex.Message}");
+            return new CopilotCliStatus(false, $"Copilot CLI not found: {ex.Message}");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return new CopilotCliStatus(false, $"Copilot CLI could not run: {ex.Message}");
         }
     }
 
@@ -68,11 +49,12 @@ public static class CliChecker
         var output = await process.StandardOutput.ReadToEndAsync();
         var error = await process.StandardError.ReadToEndAsync();
 
-        if (process.ExitCode != 0 && string.IsNullOrWhiteSpace(output))
+        if (process.ExitCode != 0)
         {
-            throw new InvalidOperationException(error);
+            throw new InvalidOperationException(
+                string.IsNullOrWhiteSpace(error) ? output : error);
         }
 
-        return output + error;
+        return output;
     }
 }

@@ -42,7 +42,7 @@ Before you start, make sure you have:
 - [ ] The [GitHub Copilot CLI](https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-the-command-line) installed and authenticated.
 
 > [!TIP]
-> You can authenticate the Copilot CLI interactively with `copilot auth login`, or set a `GH_TOKEN` environment variable with the **Copilot Requests** scope.
+> Sign in to the Copilot CLI with `copilot login`, or set a `GH_TOKEN` environment variable with the **Copilot Requests** scope.
 
 ---
 

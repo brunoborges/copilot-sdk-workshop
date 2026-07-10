@@ -64,19 +64,15 @@ Run:
 copilot --version
 ```
 
-You should see a version number. Then run:
+You should see a version number. Then sign in:
 
 ```bash
-copilot auth status
-```
-
-If you are not logged in, run:
-
-```bash
-copilot auth login
+copilot login
 ```
 
 Alternatively, set a `GH_TOKEN` environment variable with the **Copilot Requests** scope.
+
+The Copilot CLI does not provide a standalone authentication-status command. The app verifies that your credentials work when it starts the SDK client and loads the available models.
 
 ---
 
@@ -94,7 +90,7 @@ mkdir Helpers
 
 - [ ] `dotnet --version` reports .NET 10.x.
 - [ ] `copilot --version` works.
-- [ ] `copilot auth status` shows you are authenticated, or `GH_TOKEN` is set.
+- [ ] `copilot login` completes, or `GH_TOKEN` is set.
 - [ ] The project builds: `dotnet build part1` succeeds.
 
 Next, you'll write the main program in [Part 1: Program.cs](02-program.md).

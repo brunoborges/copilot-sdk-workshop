@@ -4,9 +4,9 @@ namespace hello_copilot_sdk.Helpers;
 
 public static class ModelSelector
 {
-    public static async Task<string?> SelectModelAsync()
+    public static async Task<string?> SelectModelAsync(CopilotClient client)
     {
-        var models = await GetModelsFromSdkAsync();
+        var models = (await client.ListModelsAsync())?.ToList();
 
         if (models is null || models.Count == 0)
         {
@@ -39,12 +39,4 @@ public static class ModelSelector
         return selected.Id;
     }
 
-    private static async Task<List<ModelInfo>?> GetModelsFromSdkAsync()
-    {
-        using var client = new CopilotClient();
-        await client.StartAsync();
-        var models = await client.ListModelsAsync();
-        await client.StopAsync();
-        return models?.ToList();
-    }
 }

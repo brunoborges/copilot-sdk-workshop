@@ -7,31 +7,40 @@ Console.WriteLine("=====================================\n");
 
 // 1. Check prerequisites
 Console.WriteLine("🔍 Checking prerequisites...");
-var copilotStatus = await CliChecker.CheckCopilotStatusAsync();
+var cliStatus = await CliChecker.CheckCopilotCliAsync();
 
-if (!CliChecker.IsReady(copilotStatus))
+if (!cliStatus.IsInstalled)
 {
-    Console.WriteLine("❌ " + (copilotStatus.ErrorMessage ?? "Copilot is not ready."));
-    Console.WriteLine("   Install the CLI: https://github.com/cli/cli#installation");
-    Console.WriteLine("   Then run: copilot auth login");
-    Console.WriteLine("   Or set a GH_TOKEN environment variable with Copilot Requests scope.");
+    Console.WriteLine("❌ " + (cliStatus.ErrorMessage ?? "Copilot CLI is not ready."));
+    Console.WriteLine("   Install the CLI: https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli");
     return;
 }
 
 Console.WriteLine("   ✅ Copilot CLI installed");
-Console.WriteLine(copilotStatus.IsTokenSet ? "   ✅ GH_TOKEN set" : "   ✅ Authenticated with Copilot CLI");
 
-// 2. Select a model
-var selectedModel = await ModelSelector.SelectModelAsync();
-
-// 3. Start the Copilot client and create a session
+// 2. Start the Copilot client and verify the current credentials through the SDK.
 Console.WriteLine("🚀 Starting Copilot client...");
 await using var client = new CopilotClient();
-await client.StartAsync();
+string? selectedModel;
+
+try
+{
+    await client.StartAsync();
+    selectedModel = await ModelSelector.SelectModelAsync(client);
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine("❌ Copilot authentication could not be verified.");
+    Console.WriteLine("   Run: copilot login");
+    Console.WriteLine("   Or set a GH_TOKEN environment variable with Copilot Requests scope.");
+    Console.WriteLine($"   Details: {ex.Message}");
+    return;
+}
 
 var pingResponse = await client.PingAsync("hello");
 Console.WriteLine($"   ✅ Copilot client responded: {pingResponse.Message}\n");
 
+// 3. Create a session.
 var session = await client.CreateSessionAsync(new SessionConfig
 {
     Model = selectedModel,
@@ -66,7 +75,7 @@ try
 
         if (command == "model")
         {
-            selectedModel = await ModelSelector.SelectModelAsync();
+            selectedModel = await ModelSelector.SelectModelAsync(client);
             var replacementSession = await client.CreateSessionAsync(new SessionConfig
             {
                 Model = selectedModel,

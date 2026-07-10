@@ -12,7 +12,7 @@ Welcome! In this workshop you will build an interactive console chat client usin
 
 A console app that:
 
-1. Checks that the GitHub Copilot CLI is installed and authenticated.
+1. Checks that the GitHub Copilot CLI is installed, then verifies credentials by listing models through the SDK.
 2. Lists available Copilot models and lets you pick one.
 3. Starts a `CopilotClient` and creates a streaming `CopilotSession`.
 4. Provides an interactive chat loop with demo prompts.
@@ -38,7 +38,7 @@ Before you start, make sure you have:
 - [ ] The [GitHub Copilot CLI](https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-the-command-line) installed and authenticated.
 
 > [!TIP]
-> You can authenticate the Copilot CLI interactively with `copilot auth login`, or set a `GH_TOKEN` environment variable with the **Copilot Requests** scope.
+> Sign in to the Copilot CLI with `copilot login`, or set a `GH_TOKEN` environment variable with the **Copilot Requests** scope.
 
 ---
 
