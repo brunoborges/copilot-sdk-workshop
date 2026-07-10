@@ -23,7 +23,7 @@ Node.js 22 or later is recommended.
 
 ## 2. Choose a browser
 
-This workshop uses `@playwright/mcp@0.0.77`. By default, its code uses `--browser=msedge` to launch the locally installed [Microsoft Edge](https://www.microsoft.com/edge/download) browser. Edge is included with current Windows installations.
+This workshop uses `@playwright/mcp@0.0.78`. By default, its code uses `--browser=msedge` to launch the locally installed [Microsoft Edge](https://www.microsoft.com/edge/download) browser. Edge is included with current Windows installations.
 
 Choose the option that matches the browser runtime available on your machine:
 

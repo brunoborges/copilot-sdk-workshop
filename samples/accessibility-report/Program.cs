@@ -71,7 +71,7 @@ await using var session = await client.CreateSessionAsync(new SessionConfig
         ["playwright"] = new McpStdioServerConfig
         {
             Command = "npx",
-            Args = ["@playwright/mcp@0.0.77", "--browser=msedge"],
+            Args = ["@playwright/mcp@0.0.78", "--browser=msedge"],
             Tools = ["*"]
         }
     },
