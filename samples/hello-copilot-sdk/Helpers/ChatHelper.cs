@@ -7,17 +7,25 @@ public static class ChatHelper
     public static async Task SendMessageAndStreamResponse(CopilotSession session, string message)
     {
         var tcs = new TaskCompletionSource();
+        var hasStreamedContent = false;
 
         session.On<SessionEvent>(evt =>
         {
             switch (evt)
             {
                 case AssistantMessageDeltaEvent delta:
-                    Console.Write(delta.Data.DeltaContent);
+                    if (!string.IsNullOrEmpty(delta.Data.DeltaContent))
+                    {
+                        hasStreamedContent = true;
+                        Console.Write(delta.Data.DeltaContent);
+                    }
                     break;
 
                 case AssistantMessageEvent msg:
-                    Console.Write(msg.Data.Content);
+                    if (!hasStreamedContent)
+                    {
+                        Console.Write(msg.Data.Content);
+                    }
                     break;
 
                 case SessionIdleEvent:

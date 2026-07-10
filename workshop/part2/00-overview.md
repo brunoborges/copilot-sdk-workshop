@@ -37,12 +37,13 @@ Before you start, make sure you have:
 
 - [ ] [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) installed.
 - [ ] [Node.js 22+](https://nodejs.org/) installed (needed for the Playwright MCP server).
+- [ ] [Microsoft Edge](https://www.microsoft.com/edge/download) (the default) or [Google Chrome](https://www.google.com/chrome/) installed (choose the matching Playwright MCP browser option in Setup).
 - [ ] [Visual Studio Code](https://code.visualstudio.com/) installed.
 - [ ] A [GitHub Copilot](https://github.com/features/copilot) subscription or trial.
 - [ ] The [GitHub Copilot CLI](https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-the-command-line) installed and authenticated.
 
 > [!TIP]
-> You can authenticate the Copilot CLI interactively with `copilot auth login`, or set a `GH_TOKEN` environment variable with the **Copilot Requests** scope.
+> Sign in to the Copilot CLI with `copilot login`, or set a `GH_TOKEN` environment variable with the **Copilot Requests** scope.
 
 ---
 

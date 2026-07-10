@@ -17,7 +17,7 @@ After you enable GitHub Pages, the site will be available at:
 https://jamesmontemagno.github.io/copilot-sdk-workshop/
 ```
 
-Update the `GITHUB_RAW_BASE` constants in [`docs/part1/step.html`](docs/part1/step.html) and [`docs/part2/step.html`](docs/part2/step.html) to point to your organization and repository before deploying.
+No step-viewer URL configuration is required before deployment. The Part 1 and Part 2 viewers derive the site root from the current URL, so walkthrough content resolves correctly for both a repository GitHub Pages site and a local preview served from the repository root.
 
 The Blazor target app for Part 2 is deployed automatically at:
 
@@ -31,9 +31,10 @@ https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [Node.js 22+](https://nodejs.org/) (for the Playwright MCP server)
+- A supported browser for Part 2: [Microsoft Edge](https://www.microsoft.com/edge/download) (the default) or [Google Chrome](https://www.google.com/chrome/) installed locally
 - [Visual Studio Code](https://code.visualstudio.com/)
 - [GitHub Copilot](https://github.com/features/copilot) subscription or trial
-- [GitHub Copilot CLI](https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-the-command-line) installed and authenticated
+- [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli) installed; run `copilot login` before using a sample
 
 ---
 
@@ -42,6 +43,7 @@ https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
 ### Part 1: Hello Copilot SDK
 
 ```bash
+copilot login
 cd samples/hello-copilot-sdk
 dotnet run
 ```
@@ -57,8 +59,7 @@ dotnet run
 2. In another terminal, run the report:
 
    ```bash
-   cd samples/accessibility-report
-   dotnet run --file accessibility-report.cs
+   dotnet run --project samples/accessibility-report
    ```
 
 3. Enter the target app URL when prompted.

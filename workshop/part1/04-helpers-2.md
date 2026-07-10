@@ -23,6 +23,7 @@ public static class ChatHelper
     public static async Task SendMessageAndStreamResponse(CopilotSession session, string message)
     {
         var tcs = new TaskCompletionSource();
+        var hasStreamedContent = false;
 
         // Event handler added in the next chunk.
 
@@ -44,11 +45,18 @@ Inside `SendMessageAndStreamResponse`, add the handler before `session.SendAsync
             switch (evt)
             {
                 case AssistantMessageDeltaEvent delta:
-                    Console.Write(delta.Data.DeltaContent);
+                    if (!string.IsNullOrEmpty(delta.Data.DeltaContent))
+                    {
+                        hasStreamedContent = true;
+                        Console.Write(delta.Data.DeltaContent);
+                    }
                     break;
 
                 case AssistantMessageEvent msg:
-                    Console.Write(msg.Data.Content);
+                    if (!hasStreamedContent)
+                    {
+                        Console.Write(msg.Data.Content);
+                    }
                     break;
 
                 case SessionIdleEvent:
@@ -74,6 +82,8 @@ When `Streaming = true`, the SDK raises events as the model generates tokens:
 | `AssistantMessageEvent` | A complete non-streaming message (fallback). |
 | `SessionIdleEvent` | The model has finished responding. |
 | `SessionErrorEvent` | Something went wrong. |
+
+The SDK emits a complete `AssistantMessageEvent` after a streamed response. `hasStreamedContent` prevents that completed message from repeating deltas already printed to the console, while still displaying a response when no streaming content arrives.
 
 `TaskCompletionSource` lets us turn the event-based stream into an `await`-able method.
 
@@ -141,9 +151,17 @@ Add the `using`:
 using HelloCopilotSDK.Helpers;
 ```
 
-Replace the chat-loop body with the full version:
+Replace the session declaration and chat-loop body with the full version:
 
 ```csharp
+var session = await client.CreateSessionAsync(new SessionConfig
+{
+    Model = selectedModel,
+    Streaming = true
+});
+
+try
+{
 // 4. Interactive chat loop
 DemoPrompts.PrintDemoPrompts();
 Console.WriteLine("💬 Interactive Chat Mode");
@@ -170,13 +188,15 @@ while (true)
 
     if (command == "model")
     {
-        selectedModel = await ModelSelector.SelectModelAsync();
-        await session.DisposeAsync();
-        var newSession = await client.CreateSessionAsync(new SessionConfig
+        selectedModel = await ModelSelector.SelectModelAsync(client);
+        var replacementSession = await client.CreateSessionAsync(new SessionConfig
         {
             Model = selectedModel,
             Streaming = true
         });
+        var previousSession = session;
+        session = replacementSession;
+        await previousSession.DisposeAsync();
         Console.WriteLine("🔄 Model switched. Continue chatting.\n");
         continue;
     }
@@ -209,10 +229,15 @@ while (true)
     await ChatHelper.SendMessageAndStreamResponse(session, input);
     Console.WriteLine();
 }
+}
+finally
+{
+    await session.DisposeAsync();
+}
 ```
 
 > [!NOTE]
-> The `model` command disposes the current session and creates a new one with the newly selected model. In a production app you might want to extract session management into a small service class.
+> The `model` command creates a replacement session before switching the active reference and disposing the previous session. This keeps later demo prompts and free-form messages streaming from the newly selected model. The `finally` block disposes whichever session is active when the app exits.
 
 ---
 

@@ -21,8 +21,8 @@ You should see output similar to:
 
 🔍 Checking prerequisites...
    ✅ Copilot CLI installed
-   ✅ Authenticated with Copilot CLI
 
+🚀 Starting Copilot client...
 🤖 Select a model:
    1. Claude 3.5 Sonnet (multiplier: 1x)
    2. GPT-4o (multiplier: 1x)
@@ -31,7 +31,6 @@ You should see output similar to:
 Enter choice (1-N) [default: 1]: 1
 ✅ Selected: Claude 3.5 Sonnet
 
-🚀 Starting Copilot client...
    ✅ Copilot client responded: pong: hello
 
 📚 Demo Prompts
@@ -96,7 +95,7 @@ Try these ideas:
 | Problem | Solution |
 |---------|----------|
 | "Copilot CLI not found" | Install the CLI with `winget install GitHub.Copilot`, `brew install copilot-cli`, or `npm install -g @github/copilot`. |
-| "Not authenticated" | Run `copilot auth login` or set `GH_TOKEN`. |
+| "Copilot authentication could not be verified" | Run `copilot login` or set `GH_TOKEN`. |
 | Empty model list | Check your network and Copilot subscription; the SDK needs to reach GitHub's model endpoint. |
 | Responses are slow | Streaming makes latency feel lower, but large prompts still take time. |
 
