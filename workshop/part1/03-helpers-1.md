@@ -4,7 +4,7 @@
 
 In this step you will add two helpers:
 
-1. `CliChecker.cs` — verifies the Copilot CLI is installed and the user is authenticated.
+1. `CliChecker.cs` — verifies that the Copilot CLI is installed.
 2. `ModelSelector.cs` — lists available models and lets you pick one.
 
 ---
@@ -18,10 +18,8 @@ using System.Diagnostics;
 
 namespace HelloCopilotSDK.Helpers;
 
-public record CopilotStatus(
+public record CopilotCliStatus(
     bool IsInstalled,
-    bool IsTokenSet,
-    bool IsAuthenticated,
     string? ErrorMessage);
 ```
 
@@ -29,80 +27,41 @@ A `record` is a concise way to hold immutable status data.
 
 ---
 
-## 2. Add the ready check
+## 2. Check the Copilot CLI installation
 
-Still in `part1/Helpers/CliChecker.cs`, add the `CliChecker` class:
+Still in `part1/Helpers/CliChecker.cs`, add the `CliChecker` class and check the version:
 
 ```csharp
 public static class CliChecker
 {
-    public static bool IsReady(CopilotStatus status)
-        => status.IsInstalled && (status.IsTokenSet || status.IsAuthenticated);
-}
-```
-
-`IsReady` returns `true` when the CLI is installed **and** the user has either a token or an authenticated CLI session.
-
----
-
-## 3. Check the Copilot CLI version
-
-Add the first async method to `CliChecker`:
-
-```csharp
-    public static async Task<CopilotStatus> CheckCopilotStatusAsync()
+    public static async Task<CopilotCliStatus> CheckCopilotCliAsync()
     {
-        var isTokenSet = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GH_TOKEN"));
-
         try
         {
             var version = await RunCommandAsync("copilot", "--version");
             if (string.IsNullOrWhiteSpace(version))
             {
-                return new CopilotStatus(false, isTokenSet, false, "Copilot CLI is installed but returned no version.");
+                return new CopilotCliStatus(false, "Copilot CLI is installed but returned no version.");
             }
-        }
-        catch (Exception ex)
-        {
-            return new CopilotStatus(false, isTokenSet, false, $"Copilot CLI not found: {ex.Message}");
-        }
 
-        // Auth check will go here in the next chunk.
-        return new CopilotStatus(true, isTokenSet, false, null);
+            return new CopilotCliStatus(true, null);
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            return new CopilotCliStatus(false, $"Copilot CLI not found: {ex.Message}");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return new CopilotCliStatus(false, $"Copilot CLI could not run: {ex.Message}");
+        }
     }
 ```
 
-Run `dotnet build part1` now to make sure the file compiles.
+This confirms only that the CLI can run. The SDK verifies the current credentials when it starts the client and lists models.
 
 ---
 
-## 4. Check authentication
-
-Replace the placeholder return with the auth check:
-
-```csharp
-        try
-        {
-            var authOutput = await RunCommandAsync("copilot", "auth status");
-            var isAuthenticated = authOutput.Contains("Logged in", StringComparison.OrdinalIgnoreCase)
-                               || authOutput.Contains("Authenticated", StringComparison.OrdinalIgnoreCase);
-
-            if (!isAuthenticated && !isTokenSet)
-            {
-                return new CopilotStatus(true, false, false, "Not authenticated. Run 'copilot auth login' or set GH_TOKEN.");
-            }
-
-            return new CopilotStatus(true, isTokenSet, isAuthenticated, null);
-        }
-        catch (Exception ex)
-        {
-            return new CopilotStatus(true, isTokenSet, false, $"Could not verify auth status: {ex.Message}");
-        }
-```
-
----
-
-## 5. Add the command runner
+## 3. Add the command runner
 
 Add the private helper that runs shell commands:
 
@@ -126,18 +85,19 @@ Add the private helper that runs shell commands:
         var output = await process.StandardOutput.ReadToEndAsync();
         var error = await process.StandardError.ReadToEndAsync();
 
-        if (process.ExitCode != 0 && string.IsNullOrWhiteSpace(output))
+        if (process.ExitCode != 0)
         {
-            throw new InvalidOperationException(error);
+            throw new InvalidOperationException(
+                string.IsNullOrWhiteSpace(error) ? output : error);
         }
 
-        return output + error;
+        return output;
     }
 ```
 
 ---
 
-## 6. Create ModelSelector.cs
+## 4. Create ModelSelector.cs
 
 Create `part1/Helpers/ModelSelector.cs` with the model-listing logic:
 
@@ -148,9 +108,9 @@ namespace HelloCopilotSDK.Helpers;
 
 public static class ModelSelector
 {
-    public static async Task<string?> SelectModelAsync()
+    public static async Task<string?> SelectModelAsync(CopilotClient client)
     {
-        var models = await GetModelsFromSdkAsync();
+        var models = (await client.ListModelsAsync())?.ToList();
 
         if (models is null || models.Count == 0)
         {
@@ -183,22 +143,14 @@ public static class ModelSelector
         return selected.Id;
     }
 
-    private static async Task<List<ModelInfo>?> GetModelsFromSdkAsync()
-    {
-        using var client = new CopilotClient();
-        await client.StartAsync();
-        var models = await client.ListModelsAsync();
-        await client.StopAsync();
-        return models?.ToList();
-    }
 }
 ```
 
-`ModelInfo` is provided by the SDK and contains `Id`, `Name`, and `PricingMultiplier`.
+`ModelInfo` is provided by the SDK and contains `Id`, `Name`, and billing metadata. Calling `ListModelsAsync` on the started client confirms the configured credentials are usable.
 
 ---
 
-## 7. Wire the helpers into Program.cs
+## 5. Wire the helpers into Program.cs
 
 Update the top of `part1/Program.cs`:
 
@@ -207,31 +159,40 @@ using GitHub.Copilot;
 using HelloCopilotSDK.Helpers;
 ```
 
-Then replace the prerequisite `TODO` with:
+Then replace the prerequisite and model-selection `TODO` comments, plus the client initialization, with:
 
 ```csharp
 // 1. Check prerequisites
 Console.WriteLine("🔍 Checking prerequisites...");
-var copilotStatus = await CliChecker.CheckCopilotStatusAsync();
+var cliStatus = await CliChecker.CheckCopilotCliAsync();
 
-if (!CliChecker.IsReady(copilotStatus))
+if (!cliStatus.IsInstalled)
 {
-    Console.WriteLine("❌ " + (copilotStatus.ErrorMessage ?? "Copilot is not ready."));
-    Console.WriteLine("   Install the CLI: https://github.com/cli/cli#installation");
-    Console.WriteLine("   Then run: copilot auth login");
-    Console.WriteLine("   Or set a GH_TOKEN environment variable with Copilot Requests scope.");
+    Console.WriteLine("❌ " + (cliStatus.ErrorMessage ?? "Copilot CLI is not ready."));
+    Console.WriteLine("   Install the CLI: https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli");
     return;
 }
 
 Console.WriteLine("   ✅ Copilot CLI installed");
-Console.WriteLine(copilotStatus.IsTokenSet ? "   ✅ GH_TOKEN set" : "   ✅ Authenticated with Copilot CLI");
-```
 
-Replace the model-selection `TODO` with:
+// 2. Start the Copilot client and verify the current credentials through the SDK.
+Console.WriteLine("🚀 Starting Copilot client...");
+await using var client = new CopilotClient();
+string? selectedModel;
 
-```csharp
-// 2. Select a model
-var selectedModel = await ModelSelector.SelectModelAsync();
+try
+{
+    await client.StartAsync();
+    selectedModel = await ModelSelector.SelectModelAsync(client);
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine("❌ Copilot authentication could not be verified.");
+    Console.WriteLine("   Run: copilot login");
+    Console.WriteLine("   Or set a GH_TOKEN environment variable with Copilot Requests scope.");
+    Console.WriteLine($"   Details: {ex.Message}");
+    return;
+}
 ```
 
 > [!NOTE]
@@ -249,14 +210,14 @@ await using var session = await client.CreateSessionAsync(new SessionConfig
 
 ---
 
-## 4. Build and run
+## 6. Build and run
 
 ```bash
 dotnet build part1
 dotnet run --project part1
 ```
 
-You should see the prerequisite check, a model list, and the chat prompt. Typing a message will not stream a response yet — that is the next step.
+You should see the CLI installation check, a model list, and the chat prompt. If the SDK cannot use your credentials, run `copilot login` and try again. Typing a message will not stream a response yet — that is the next step.
 
 ---
 

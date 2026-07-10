@@ -33,7 +33,7 @@ https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
 - [Node.js 22+](https://nodejs.org/) (for the Playwright MCP server)
 - [Visual Studio Code](https://code.visualstudio.com/)
 - [GitHub Copilot](https://github.com/features/copilot) subscription or trial
-- [GitHub Copilot CLI](https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-the-command-line) installed and authenticated
+- [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli) installed; run `copilot login` before using a sample
 
 ---
 
@@ -42,6 +42,7 @@ https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
 ### Part 1: Hello Copilot SDK
 
 ```bash
+copilot login
 cd samples/hello-copilot-sdk
 dotnet run
 ```
