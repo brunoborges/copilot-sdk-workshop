@@ -21,7 +21,27 @@ Node.js 22 or later is recommended.
 
 ---
 
-## 2. Create the console project
+## 2. Choose a browser
+
+This workshop uses `@playwright/mcp@0.0.78`. By default, its code uses `--browser=msedge` to launch the locally installed [Microsoft Edge](https://www.microsoft.com/edge/download) browser. Edge is included with current Windows installations.
+
+Choose the option that matches the browser runtime available on your machine:
+
+| Browser | Argument | Requirement |
+|---------|----------|-------------|
+| Microsoft Edge (default) | `--browser=msedge` | Install Microsoft Edge. |
+| Google Chrome | `--browser=chrome` | Install Google Chrome. |
+| Firefox | `--browser=firefox` | Playwright downloads its managed Firefox runtime automatically on first use. |
+| WebKit | `--browser=webkit` | Playwright downloads its managed WebKit runtime automatically on first use. WebKit is supported on macOS and Linux, not Windows. |
+
+To use a different option, replace `--browser=msedge` with the matching argument wherever it appears in the Part 2 code snippets or the completed sample.
+
+> [!IMPORTANT]
+> Edge and Chrome use locally installed browser channels. Running `npx playwright install` downloads Playwright runtimes, but does not install Edge or Chrome.
+
+---
+
+## 3. Create the console project
 
 From the repository root, run:
 
@@ -34,7 +54,7 @@ This creates a standard .NET 10 console project with `AccessibilityReport.csproj
 
 ---
 
-## 3. Add the GitHub Copilot SDK package
+## 4. Add the GitHub Copilot SDK package
 
 ```bash
 dotnet add package GitHub.Copilot.SDK --version 1.0.5
@@ -45,7 +65,7 @@ dotnet add package GitHub.Copilot.SDK --version 1.0.5
 
 ---
 
-## 4. Update the project file
+## 5. Update the project file
 
 Open `part2/AccessibilityReport.csproj` and make sure it looks like this:
 
@@ -69,7 +89,7 @@ Open `part2/AccessibilityReport.csproj` and make sure it looks like this:
 
 ---
 
-## 5. Choose a target webpage
+## 6. Choose a target webpage
 
 The accessibility report needs a webpage to analyze. We have included a small Blazor app with intentional accessibility issues.
 
@@ -101,6 +121,7 @@ After a few seconds you will see a URL such as `http://localhost:5000` or `https
 ## Checkpoint
 
 - [ ] `node --version` and `npx --version` work.
+- [ ] A browser option from the table is available.
 - [ ] `part2/AccessibilityReport.csproj` exists and targets `net10.0`.
 - [ ] `GitHub.Copilot.SDK` package is added.
 - [ ] You have a target app URL (deployed or localhost).
