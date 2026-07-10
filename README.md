@@ -17,7 +17,7 @@ After you enable GitHub Pages, the site will be available at:
 https://jamesmontemagno.github.io/copilot-sdk-workshop/
 ```
 
-Update the `GITHUB_RAW_BASE` constants in [`docs/part1/step.html`](docs/part1/step.html) and [`docs/part2/step.html`](docs/part2/step.html) to point to your organization and repository before deploying.
+No step-viewer URL configuration is required before deployment. The Part 1 and Part 2 viewers derive the site root from the current URL, so walkthrough content resolves correctly for both a repository GitHub Pages site and a local preview served from the repository root.
 
 The Blazor target app for Part 2 is deployed automatically at:
 
