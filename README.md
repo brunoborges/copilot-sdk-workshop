@@ -58,8 +58,7 @@ dotnet run
 2. In another terminal, run the report:
 
    ```bash
-   cd samples/accessibility-report
-   dotnet run --file accessibility-report.cs
+   dotnet run --project samples/accessibility-report
    ```
 
 3. Enter the target app URL when prompted.

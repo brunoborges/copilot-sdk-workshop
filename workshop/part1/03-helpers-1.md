@@ -201,12 +201,14 @@ catch (InvalidOperationException ex)
 Finally, update the `SessionConfig`:
 
 ```csharp
-await using var session = await client.CreateSessionAsync(new SessionConfig
+var session = await client.CreateSessionAsync(new SessionConfig
 {
     Model = selectedModel,
     Streaming = true
 });
 ```
+
+The next step lets the user replace `session` after selecting a different model, so it must remain assignable. That step also adds `try`/`finally` disposal for the session that is active when the app exits.
 
 ---
 
