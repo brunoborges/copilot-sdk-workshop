@@ -93,7 +93,7 @@ var sessionConfig = new SessionConfig
         ["playwright"] = new McpStdioServerConfig
         {
             Command = "npx",
-            Args = ["@playwright/mcp@latest"],
+            Args = ["@playwright/mcp@0.0.77", "--browser=msedge"],
             Tools = ["*"]
         }
     },
@@ -109,7 +109,7 @@ var sessionConfig = new SessionConfig
 | `OnPermissionRequest = PermissionHandler.ApproveAll` | Auto-approves MCP tool permission requests. |
 | `McpServers["playwright"]` | Registers the Playwright MCP server as a stdio process. |
 | `Command = "npx"` | Launches the MCP server through npx. |
-| `Args = ["@playwright/mcp@latest"]` | Runs the latest Playwright MCP package. |
+| `Args = ["@playwright/mcp@0.0.77", "--browser=msedge"]` | Runs the Playwright MCP version used by this workshop and launches Microsoft Edge. |
 | `Tools = ["*"]` | Allows the session to use all Playwright tools. |
 
 > [!IMPORTANT]
@@ -187,7 +187,7 @@ var sessionConfig = new SessionConfig
         ["playwright"] = new McpStdioServerConfig
         {
             Command = "npx",
-            Args = ["@playwright/mcp@latest"],
+            Args = ["@playwright/mcp@0.0.77", "--browser=msedge"],
             Tools = ["*"]
         }
     },

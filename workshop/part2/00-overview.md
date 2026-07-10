@@ -37,7 +37,7 @@ Before you start, make sure you have:
 
 - [ ] [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) installed.
 - [ ] [Node.js 22+](https://nodejs.org/) installed (needed for the Playwright MCP server).
-- [ ] [Google Chrome](https://www.google.com/chrome/) installed (the Playwright MCP configuration launches the locally installed Chrome browser).
+- [ ] [Microsoft Edge](https://www.microsoft.com/edge/download) installed (the Playwright MCP configuration launches the locally installed Edge browser).
 - [ ] [Visual Studio Code](https://code.visualstudio.com/) installed.
 - [ ] A [GitHub Copilot](https://github.com/features/copilot) subscription or trial.
 - [ ] The [GitHub Copilot CLI](https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-the-command-line) installed and authenticated.

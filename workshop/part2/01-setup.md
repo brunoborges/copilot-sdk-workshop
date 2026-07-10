@@ -21,12 +21,12 @@ Node.js 22 or later is recommended.
 
 ---
 
-## 2. Install Google Chrome
+## 2. Install Microsoft Edge
 
-The Playwright MCP configuration used in this workshop launches the locally installed [Google Chrome](https://www.google.com/chrome/) browser. Install Chrome before continuing if it is not already available on your machine.
+This workshop uses `@playwright/mcp@0.0.77` with `--browser=msedge` to launch the locally installed [Microsoft Edge](https://www.microsoft.com/edge/download) browser. Install Edge before continuing if it is not already available on your machine. Edge is included with current Windows installations.
 
 > [!IMPORTANT]
-> This configuration uses Chrome rather than Playwright's downloaded browser runtime. Running `npx playwright install` alone does not satisfy this requirement.
+> This configuration uses the Edge browser channel rather than Playwright's downloaded browser runtime. Running `npx playwright install` alone does not install Edge or satisfy this requirement.
 
 ---
 
@@ -110,7 +110,7 @@ After a few seconds you will see a URL such as `http://localhost:5000` or `https
 ## Checkpoint
 
 - [ ] `node --version` and `npx --version` work.
-- [ ] Google Chrome is installed.
+- [ ] Microsoft Edge is installed.
 - [ ] `part2/AccessibilityReport.csproj` exists and targets `net10.0`.
 - [ ] `GitHub.Copilot.SDK` package is added.
 - [ ] You have a target app URL (deployed or localhost).
