@@ -31,6 +31,7 @@ https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [Node.js 22+](https://nodejs.org/) (for the Playwright MCP server)
+- [Google Chrome](https://www.google.com/chrome/) (the Part 2 Playwright MCP configuration launches the locally installed Chrome browser)
 - [Visual Studio Code](https://code.visualstudio.com/)
 - [GitHub Copilot](https://github.com/features/copilot) subscription or trial
 - [GitHub Copilot CLI](https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-the-command-line) installed and authenticated

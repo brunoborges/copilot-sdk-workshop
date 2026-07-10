@@ -21,7 +21,16 @@ Node.js 22 or later is recommended.
 
 ---
 
-## 2. Create the console project
+## 2. Install Google Chrome
+
+The Playwright MCP configuration used in this workshop launches the locally installed [Google Chrome](https://www.google.com/chrome/) browser. Install Chrome before continuing if it is not already available on your machine.
+
+> [!IMPORTANT]
+> This configuration uses Chrome rather than Playwright's downloaded browser runtime. Running `npx playwright install` alone does not satisfy this requirement.
+
+---
+
+## 3. Create the console project
 
 From the repository root, run:
 
@@ -34,7 +43,7 @@ This creates a standard .NET 10 console project with `AccessibilityReport.csproj
 
 ---
 
-## 3. Add the GitHub Copilot SDK package
+## 4. Add the GitHub Copilot SDK package
 
 ```bash
 dotnet add package GitHub.Copilot.SDK --version 1.0.5
@@ -45,7 +54,7 @@ dotnet add package GitHub.Copilot.SDK --version 1.0.5
 
 ---
 
-## 4. Update the project file
+## 5. Update the project file
 
 Open `part2/AccessibilityReport.csproj` and make sure it looks like this:
 
@@ -69,7 +78,7 @@ Open `part2/AccessibilityReport.csproj` and make sure it looks like this:
 
 ---
 
-## 5. Choose a target webpage
+## 6. Choose a target webpage
 
 The accessibility report needs a webpage to analyze. We have included a small Blazor app with intentional accessibility issues.
 
@@ -101,6 +110,7 @@ After a few seconds you will see a URL such as `http://localhost:5000` or `https
 ## Checkpoint
 
 - [ ] `node --version` and `npx --version` work.
+- [ ] Google Chrome is installed.
 - [ ] `part2/AccessibilityReport.csproj` exists and targets `net10.0`.
 - [ ] `GitHub.Copilot.SDK` package is added.
 - [ ] You have a target app URL (deployed or localhost).
