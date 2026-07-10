@@ -30,7 +30,7 @@ await using var client = new CopilotClient();
 await client.StartAsync();
 
 var pingResponse = await client.PingAsync("hello");
-Console.WriteLine($"   ✅ Copilot client responded: {pingResponse}\n");
+Console.WriteLine($"   ✅ Copilot client responded: {pingResponse.Message}\n");
 
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
