@@ -36,9 +36,40 @@ https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
 - [GitHub Copilot](https://github.com/features/copilot) subscription or trial
 - [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli) installed; run `copilot login` before using a sample
 
+Install the CLI using your platform's package manager:
+
+```powershell
+# Windows
+winget install GitHub.Copilot
+```
+
+```bash
+# macOS and Linux with Homebrew
+brew install copilot-cli
+
+# Any platform with Node.js 22+
+npm install -g @github/copilot
+```
+
+The SDK can download its bundled runtime during the build. This workshop instead uses the locally installed CLI when available, avoiding that download. Windows installs made with WinGet and Homebrew installs on macOS are detected automatically. On macOS or Linux with a custom CLI location, set the CLI location before restoring, building, or running:
+
+```bash
+export COPILOT_CLI_BINARY_PATH="$(command -v copilot)"
+```
+
+In PowerShell, use:
+
+```powershell
+$env:COPILOT_CLI_BINARY_PATH = (Get-Command copilot).Source
+```
+
 ---
 
 ## Quick start
+
+### Workshop starter
+
+The baseline project is available in [`start/HelloCopilotSDK`](start/HelloCopilotSDK). It contains the project setup and an SDK connectivity check, ready for Part 1.
 
 ### Part 1: Hello Copilot SDK
 

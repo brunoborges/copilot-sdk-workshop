@@ -22,11 +22,11 @@ This creates a minimal console app with `Program.cs` and `HelloCopilotSDK.csproj
 ## 2. Add the GitHub Copilot SDK package
 
 ```bash
-dotnet add package GitHub.Copilot.SDK --version 1.0.5
+dotnet add package GitHub.Copilot.SDK --version 1.0.7
 ```
 
 > [!NOTE]
-> The SDK is evolving quickly. If you want the latest version, omit `--version 1.0.5`. The samples in this repo pin the version for reproducibility.
+> The SDK is evolving quickly. If you want the latest version, omit `--version 1.0.7`. The samples in this repo pin the version for reproducibility.
 
 ---
 
@@ -46,7 +46,7 @@ Open `HelloCopilotSDK.csproj` (inside the `part1/` folder) and make sure it look
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GitHub.Copilot.SDK" Version="1.0.5" />
+    <PackageReference Include="GitHub.Copilot.SDK" Version="1.0.7" />
   </ItemGroup>
 
 </Project>
@@ -56,7 +56,39 @@ Open `HelloCopilotSDK.csproj` (inside the `part1/` folder) and make sure it look
 
 ---
 
-## 4. Verify the Copilot CLI
+## 4. Install and verify the Copilot CLI
+
+Install the CLI before building. The SDK otherwise downloads a bundled runtime from npm during the build, which can fail on networks that intercept TLS traffic.
+
+**Windows (WinGet):**
+
+```powershell
+winget install GitHub.Copilot
+```
+
+**macOS and Linux (Homebrew):**
+
+```bash
+brew install copilot-cli
+```
+
+**Any platform (Node.js 22+):**
+
+```bash
+npm install -g @github/copilot
+```
+
+The workshop repository detects the WinGet install location on Windows and the standard Homebrew locations on macOS: `/opt/homebrew/bin/copilot` (Apple Silicon) and `/usr/local/bin/copilot` (Intel). On macOS or Linux with a custom CLI location, set this before building or running so the SDK uses the installed CLI instead of downloading its runtime:
+
+```bash
+export COPILOT_CLI_BINARY_PATH="$(command -v copilot)"
+```
+
+In PowerShell, use:
+
+```powershell
+$env:COPILOT_CLI_BINARY_PATH = (Get-Command copilot).Source
+```
 
 Run:
 

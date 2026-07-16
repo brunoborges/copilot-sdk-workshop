@@ -57,11 +57,11 @@ This creates a standard .NET 10 console project with `AccessibilityReport.csproj
 ## 4. Add the GitHub Copilot SDK package
 
 ```bash
-dotnet add package GitHub.Copilot.SDK --version 1.0.5
+dotnet add package GitHub.Copilot.SDK --version 1.0.7
 ```
 
 > [!NOTE]
-> The SDK is evolving quickly. If you want the latest version, omit `--version 1.0.5`. The samples in this repo pin the version for reproducibility.
+> The SDK is evolving quickly. If you want the latest version, omit `--version 1.0.7`. The samples in this repo pin the version for reproducibility.
 
 ---
 
@@ -81,7 +81,7 @@ Open `part2/AccessibilityReport.csproj` and make sure it looks like this:
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GitHub.Copilot.SDK" Version="1.0.5" />
+    <PackageReference Include="GitHub.Copilot.SDK" Version="1.0.7" />
   </ItemGroup>
 
 </Project>
