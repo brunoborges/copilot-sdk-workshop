@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copilot SDK Workshop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="../step.css">
+    <link rel="stylesheet" href="../light-theme.css">
+    <script src="../theme-toggle.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <button class="nav-btn menu-btn" id="menuBtn" onclick="toggleFlyout()" aria-expanded="false" aria-controls="flyoutPanel" aria-label="Open sections">☰</button>
+            <a href="../index.html" class="header-brand">
+                <span class="header-icon">🤖</span>
+                <span class="header-title">Copilot SDK Workshop</span>
+            </a>
+            <div class="header-nav">
+                <a href="../index.html" class="nav-btn">🏠 Hub</a>
+                <button class="theme-toggle" onclick="toggleTheme()">☀️ Light</button>
+                <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">← Prev</button>
+                <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Next →</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flyout-overlay" id="flyoutOverlay" onclick="toggleFlyout()"></div>
+    <div class="layout">
+        <aside class="flyout-panel" id="flyoutPanel">
+            <div class="flyout-header">
+                <span class="flyout-title">🤖 Workshop Steps</span>
+                <button class="flyout-close" onclick="toggleFlyout()" aria-label="Close sections">✕</button>
+            </div>
+            <nav class="flyout-nav" id="flyoutNav"></nav>
+        </aside>
+        <main class="main main-full">
+            <div class="content">
+                <div id="markdownContent"><div class="loading">Loading content</div></div>
+                <div class="nav-footer" id="navFooter"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const steps = [
+            { id: '00-overview', file: 'workshop/00-overview.md', title: 'Overview', number: '00' },
+            { id: '01-setup', file: 'workshop/01-setup.md', title: 'Setup', number: '01' },
+            { id: '02-client', file: 'workshop/02-client.md', title: 'Client & Model Selection', number: '02' },
+            { id: '03-streaming', file: 'workshop/03-streaming.md', title: 'Session & Streaming', number: '03' },
+            { id: '04-local-tools', file: 'workshop/04-local-tools.md', title: 'Local Tool Calling', number: '04' },
+            { id: '05-interactive', file: 'workshop/05-interactive.md', title: 'Interactive Assistant', number: '05' },
+            { id: '06-browser-setup', file: 'workshop/06-browser-setup.md', title: 'Browser Setup', number: '06' },
+            { id: '07-mcp-session', file: 'workshop/07-mcp-session.md', title: 'MCP Session', number: '07' },
+            { id: '08-url-input', file: 'workshop/08-url-input.md', title: 'URL Input', number: '08' },
+            { id: '09-tool-activity', file: 'workshop/09-tool-activity.md', title: 'Tool Activity', number: '09' },
+            { id: '10-report-prompt', file: 'workshop/10-report-prompt.md', title: 'Report Prompt', number: '10' },
+            { id: '11-generate-tests', file: 'workshop/11-generate-tests.md', title: 'Generate Tests', number: '11' },
+            { id: '12-run-review', file: 'workshop/12-run-review.md', title: 'Run & Review', number: '12' }
+        ];
+
+        let currentIndex = 0;
+
+        function getStepId() {
+            const requested = new URLSearchParams(window.location.search).get('step');
+            return steps.some(step => step.id === requested) ? requested : steps[0].id;
+        }
+
+        function getSiteRootUrl() {
+            const hostname = window.location.hostname.toLowerCase();
+            const segments = window.location.pathname.split('/').filter(Boolean);
+            if (hostname.endsWith('.github.io') && segments.length > 0) {
+                return new URL(`/${segments[0]}/`, window.location.origin);
+            }
+            return new URL('/', window.location.origin);
+        }
+
+        function stepUrl(step) {
+            return `?step=${step.id}`;
+        }
+
+        function toggleFlyout() {
+            const panel = document.getElementById('flyoutPanel');
+            const overlay = document.getElementById('flyoutOverlay');
+            const button = document.getElementById('menuBtn');
+            const open = panel.classList.toggle('open');
+            overlay.classList.toggle('open', open);
+            button.setAttribute('aria-expanded', String(open));
+        }
+
+        function buildNavigation() {
+            document.getElementById('flyoutNav').innerHTML = steps.map((step, index) => `
+                <a href="${stepUrl(step)}" class="flyout-link ${index === currentIndex ? 'active' : ''}">
+                    <span class="flyout-number">${step.number}</span><span>${step.title}</span>
+                </a>`).join('');
+
+            const previous = steps[currentIndex - 1];
+            const next = steps[currentIndex + 1];
+            document.getElementById('prevBtn').disabled = !previous;
+            document.getElementById('nextBtn').disabled = !next;
+            document.getElementById('navFooter').innerHTML = `
+                <a href="${previous ? stepUrl(previous) : '#'}" class="nav-footer-btn ${previous ? '' : 'disabled'}">← ${previous?.title ?? 'Previous'}</a>
+                <a href="${next ? stepUrl(next) : '#'}" class="nav-footer-btn ${next ? '' : 'disabled'}">${next?.title ?? 'Next'} →</a>`;
+        }
+
+        function navigate(offset) {
+            const target = steps[currentIndex + offset];
+            if (target) {
+                window.location.href = stepUrl(target);
+            }
+        }
+
+        function processMarkdown(markdown) {
+            return markdown.replace(/\]\((\d{2}-[a-z0-9-]+)\.md\)/g, (match, stepId) => {
+                const target = steps.find(step => step.id === stepId);
+                return target ? `](${stepUrl(target)})` : match;
+            });
+        }
+
+        async function loadStep() {
+            const stepId = getStepId();
+            currentIndex = steps.findIndex(step => step.id === stepId);
+            const step = steps[currentIndex];
+            buildNavigation();
+
+            try {
+                const response = await fetch(new URL(step.file, getSiteRootUrl()));
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const markdown = processMarkdown(await response.text());
+                document.getElementById('markdownContent').innerHTML = `<article class="markdown">${marked.parse(markdown)}</article>`;
+            } catch (error) {
+                document.getElementById('markdownContent').innerHTML = `<div class="error-message"><h2>Unable to load this step</h2><p>${error.message}</p></div>`;
+            }
+        }
+
+        loadStep();
+    </script>
+</body>
+</html>

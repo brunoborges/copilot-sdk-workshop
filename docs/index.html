@@ -26,16 +26,16 @@
     <main class="home-main">
             <section class="hero">
                 <div class="container">
-                    <div class="hero-badge">🤖 .NET GitHub Copilot SDK Workshops</div>
+                    <div class="hero-badge">🤖 .NET GitHub Copilot SDK Workshop</div>
                     <h1>Copilot SDK Workshop</h1>
                     <p class="hero-subtitle">
-                        Learn the GitHub Copilot SDK for .NET through two hands-on workshops.
-                        Build an interactive CLI chat client, then generate WCAG-aligned accessibility reports with the Playwright MCP server.
+                        Learn the GitHub Copilot SDK for .NET in one hands-on build.
+                        Start with a local tool-calling accessibility assistant and finish with a Playwright MCP-powered reporter.
                     </p>
                     <div class="stats">
                         <div class="stat">
-                            <div class="stat-value">2</div>
-                            <div class="stat-label">Workshops</div>
+                            <div class="stat-value">1</div>
+                            <div class="stat-label">Continuous Build</div>
                         </div>
                         <div class="stat">
                             <div class="stat-value">~90min</div>
@@ -51,25 +51,15 @@
 
             <section class="workshop workshop-parts">
                 <div class="container">
-                    <h2 class="section-title">Choose a Workshop</h2>
+                    <h2 class="section-title">Build the Application</h2>
                     <div class="parts-list parts-list-large">
-                        <a href="part1/index.html" class="part-card part-card-large">
-                            <div class="part-number part-number-large">🚀</div>
+                        <a href="workshop/step.html?step=00-overview" class="part-card part-card-large">
+                            <div class="part-number part-number-large">🤖</div>
                             <div class="part-content">
-                                <div class="part-label">Part 1</div>
-                                <h3>Hello GitHub Copilot SDK</h3>
-                                <p>Build an interactive console chat client. Check prerequisites, list models, stream responses, and add demo prompts.</p>
-                                <div class="part-meta">~45 min • Beginner-friendly</div>
-                            </div>
-                            <span class="part-time">Start →</span>
-                        </a>
-                        <a href="part2/index.html" class="part-card part-card-large">
-                            <div class="part-number part-number-large">♿</div>
-                            <div class="part-content">
-                                <div class="part-label">Part 2</div>
-                                <h3>Accessibility Report</h3>
-                                <p>Use the Copilot SDK + Playwright MCP server to analyze a live webpage and generate a structured WCAG-aligned report.</p>
-                                <div class="part-meta">~45 min • Intermediate</div>
+                                <div class="part-label">One Continuous Workshop</div>
+                                <h3>From Local Tools to Playwright MCP</h3>
+                                <p>Build one accessibility application: initialize the SDK, stream responses, add a local C# tool, then add browser tools, reports, and tests.</p>
+                                <div class="part-meta">~90 min • Intermediate</div>
                             </div>
                             <span class="part-time">Start →</span>
                         </a>
@@ -80,18 +70,18 @@
             <section class="prereqs">
                 <div class="container">
                     <h2 class="section-title">Prerequisites</h2>
-                    <p class="section-copy">Make sure these are installed and configured before you start either workshop.</p>
+                    <p class="section-copy">Make sure these are installed and configured before you start the workshop.</p>
                     <div class="prereqs-grid">
                         <div class="prereq-card">
                             <div class="prereq-icon">🛠️</div>
                             <h3>.NET 10 SDK</h3>
-                            <p>Required for both workshops.</p>
+                            <p>Required throughout the workshop.</p>
                             <a href="https://dotnet.microsoft.com/download/dotnet/10.0" target="_blank">Download ↗</a>
                         </div>
                         <div class="prereq-card">
                             <div class="prereq-icon">🟩</div>
                             <h3>Node.js 22+</h3>
-                            <p>Needed for the Playwright MCP server in Part 2.</p>
+                            <p>Needed when the workshop adds Playwright MCP browser tools.</p>
                             <a href="https://nodejs.org/" target="_blank">Download ↗</a>
                         </div>
                         <div class="prereq-card">
@@ -135,7 +125,7 @@
                         <div class="feature-card">
                             <div class="feature-icon">🧰</div>
                             <h3>MCP Server Integration</h3>
-                            <p>Wire up the Playwright MCP server so Copilot can drive a real browser.</p>
+                            <p>Move from an in-process tool to Playwright MCP so Copilot can drive a real browser.</p>
                         </div>
                         <div class="feature-card">
                             <div class="feature-icon">♿</div>
@@ -154,7 +144,7 @@
                             <div class="part-number">🎯</div>
                             <div class="part-content">
                                 <h3>Blazor Target App</h3>
-                                <p>The live webpage used by Part 2. Contains intentional accessibility issues to analyze.</p>
+                                <p>The live webpage used by the browser-tool portion of the workshop. It contains intentional accessibility issues to analyze.</p>
                             </div>
                             <span class="part-time">Open ↗</span>
                         </a>

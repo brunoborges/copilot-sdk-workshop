@@ -1,11 +1,8 @@
 # Copilot SDK Workshop
 
-A hands-on workshop for the GitHub Copilot SDK (.NET). Build two real projects:
+A hands-on, continuous workshop for the GitHub Copilot SDK (.NET). Build one accessibility application from start to finish: begin with a local C# WCAG lookup tool, then add the Playwright MCP server to analyze a live webpage and generate tests.
 
-1. **Hello Copilot SDK** — an interactive console chat client.
-2. **Accessibility Report** — a single-file recipe that uses the Copilot SDK + Playwright MCP server to analyze a live webpage.
-
-The workshops are published as a GitHub Pages site. Each workshop has its own landing page and step-by-step walkthroughs.
+The workshop is published as a GitHub Pages site with one ordered walkthrough.
 
 ---
 
@@ -17,9 +14,9 @@ After you enable GitHub Pages, the site will be available at:
 https://jamesmontemagno.github.io/copilot-sdk-workshop/
 ```
 
-No step-viewer URL configuration is required before deployment. The Part 1 and Part 2 viewers derive the site root from the current URL, so walkthrough content resolves correctly for both a repository GitHub Pages site and a local preview served from the repository root.
+No step-viewer URL configuration is required before deployment. The workshop viewer derives the site root from the current URL, so walkthrough content resolves correctly for both a repository GitHub Pages site and a local preview served from the repository root.
 
-The Blazor target app for Part 2 is deployed automatically at:
+The Blazor target app used by the browser-tool steps is deployed automatically at:
 
 ```text
 https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
@@ -31,7 +28,7 @@ https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [Node.js 22+](https://nodejs.org/) (for the Playwright MCP server)
-- A supported browser for Part 2: [Microsoft Edge](https://www.microsoft.com/edge/download) (the default) or [Google Chrome](https://www.google.com/chrome/) installed locally
+- A supported browser for the Playwright MCP steps: [Microsoft Edge](https://www.microsoft.com/edge/download) (the default) or [Google Chrome](https://www.google.com/chrome/) installed locally
 - [Visual Studio Code](https://code.visualstudio.com/)
 - [GitHub Copilot](https://github.com/features/copilot) subscription or trial
 - [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli) installed; run `copilot login` before using a sample
@@ -69,31 +66,16 @@ $env:COPILOT_CLI_BINARY_PATH = (Get-Command copilot).Source
 
 ### Workshop starter
 
-The baseline project is available in [`start/HelloCopilotSDK`](start/HelloCopilotSDK). It contains the project setup and an SDK connectivity check, ready for Part 1.
+The baseline project is available in [`start/HelloCopilotSDK`](start/HelloCopilotSDK). It contains the project setup, rule catalog, and workshop scenarios.
 
-### Part 1: Hello Copilot SDK
+### Complete workshop
 
 ```bash
 copilot login
-cd samples/hello-copilot-sdk
-dotnet run
+open docs/workshop/step.html
 ```
 
-### Part 2: Accessibility Report
-
-1. Open the deployed target app (or run it locally):
-
-   ```bash
-   dotnet run --project src/BlazorApp
-   ```
-
-2. In another terminal, run the report:
-
-   ```bash
-   dotnet run --project samples/accessibility-report
-   ```
-
-3. Enter the target app URL when prompted.
+The workshop copies the starter to `workshop-app`, builds local tool calling, then adds Playwright MCP to that same project.
 
 ---
 
@@ -119,15 +101,12 @@ Then open `http://localhost:8000/docs/index.html`.
 copilot-sdk-workshop/
 ├── docs/                         # GitHub Pages static site
 │   ├── index.html                # Workshop hub
-│   ├── part1/                    # Part 1 landing + step viewer
-│   ├── part2/                    # Part 2 landing + step viewer
+│   ├── workshop/                 # Unified workshop viewer
 │   └── target-app/               # Deployed Blazor target app
-├── workshop/
-│   ├── part1/                    # Part 1 walkthroughs
-│   └── part2/                    # Part 2 walkthroughs
+├── workshop/                     # Unified walkthrough steps
 ├── samples/
-│   ├── hello-copilot-sdk/        # Part 1 final code
-│   └── accessibility-report/     # Part 2 final code
+│   ├── hello-copilot-sdk/        # Local-tool checkpoint
+│   └── accessibility-report/     # Completed MCP checkpoint
 ├── src/BlazorApp/                # Source for the target app
 ├── .github/workflows/deploy.yml  # GitHub Pages deployment
 └── README.md

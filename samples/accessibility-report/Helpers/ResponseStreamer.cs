@@ -1,48 +1,37 @@
 using GitHub.Copilot;
 
-namespace HelloCopilotSDK.Helpers;
+namespace AccessibilityReport.Helpers;
 
 public static class ResponseStreamer
 {
     public static async Task SendAndPrintAsync(CopilotSession session, string prompt)
     {
         var done = new TaskCompletionSource();
-        var hasStreamedContent = false;
+        var streamed = false;
 
         using var subscription = session.On<SessionEvent>(evt =>
         {
             switch (evt)
             {
-                case AssistantMessageDeltaEvent delta:
-                    if (!string.IsNullOrEmpty(delta.Data.DeltaContent))
-                    {
-                        hasStreamedContent = true;
-                        Console.Write(delta.Data.DeltaContent);
-                    }
+                case AssistantMessageDeltaEvent delta when !string.IsNullOrEmpty(delta.Data.DeltaContent):
+                    streamed = true;
+                    Console.Write(delta.Data.DeltaContent);
                     break;
-
-                case AssistantMessageEvent msg:
-                    if (!hasStreamedContent)
-                    {
-                        Console.Write(msg.Data.Content);
-                    }
+                case AssistantMessageEvent message when !streamed:
+                    Console.Write(message.Data.Content);
                     break;
-
                 case ToolExecutionStartEvent:
-                    Console.Write("\n🔧 Looking up accessibility guidance...\n");
+                    Console.WriteLine("\n🔧 Copilot is using a tool...");
                     break;
-
                 case ToolExecutionCompleteEvent:
-                    Console.Write("✅ Accessibility guidance found.\n");
+                    Console.WriteLine("✅ Tool completed.");
                     break;
-
                 case SessionIdleEvent:
                     Console.WriteLine();
                     done.TrySetResult();
                     break;
-
-                case SessionErrorEvent err:
-                    Console.WriteLine($"\n❌ Error: {err.Data.Message}");
+                case SessionErrorEvent error:
+                    Console.WriteLine($"\n❌ Error: {error.Data.Message}");
                     done.TrySetResult();
                     break;
             }

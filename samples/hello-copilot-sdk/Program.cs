@@ -1,123 +1,89 @@
 using GitHub.Copilot;
-using hello_copilot_sdk.Helpers;
+using HelloCopilotSDK.Helpers;
 
-Console.WriteLine("=====================================");
-Console.WriteLine("   🤖 Hello GitHub Copilot SDK (.NET)");
-Console.WriteLine("=====================================\n");
+Console.WriteLine("===============================================");
+Console.WriteLine("   ♿ Copilot Accessibility Rule Assistant");
+Console.WriteLine("===============================================\n");
 
-// 1. Check prerequisites
-Console.WriteLine("🔍 Checking prerequisites...");
-var cliStatus = await CliChecker.CheckCopilotCliAsync();
-
-if (!cliStatus.IsInstalled)
-{
-    Console.WriteLine("❌ " + (cliStatus.ErrorMessage ?? "Copilot CLI is not ready."));
-    Console.WriteLine("   Install the CLI: https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli");
-    return;
-}
-
-Console.WriteLine("   ✅ Copilot CLI installed");
-
-// 2. Start the Copilot client and verify the current credentials through the SDK.
-Console.WriteLine("🚀 Starting Copilot client...");
 await using var client = new CopilotClient();
-string? selectedModel;
-
-try
-{
-    await client.StartAsync();
-    selectedModel = await ModelSelector.SelectModelAsync(client);
-}
-catch (InvalidOperationException ex)
-{
-    Console.WriteLine("❌ Copilot authentication could not be verified.");
-    Console.WriteLine("   Run: copilot login");
-    Console.WriteLine("   Or set a GH_TOKEN environment variable with Copilot Requests scope.");
-    Console.WriteLine($"   Details: {ex.Message}");
-    return;
-}
+await client.StartAsync();
 
 var pingResponse = await client.PingAsync("hello");
-Console.WriteLine($"   ✅ Copilot client responded: {pingResponse.Message}\n");
+Console.WriteLine($"✅ Copilot client responded: {pingResponse.Message}");
 
-// 3. Create a session.
-var session = await client.CreateSessionAsync(new SessionConfig
-{
-    Model = selectedModel,
-    Streaming = true
-});
+var selectedModel = await ModelSelector.SelectModelAsync(client);
+var session = await CreateSessionAsync(client, selectedModel);
 
 try
 {
-    // 4. Interactive chat loop
-    DemoPrompts.PrintDemoPrompts();
-    Console.WriteLine("💬 Interactive Chat Mode");
-    Console.WriteLine("   Type a message and press Enter.");
-    Console.WriteLine("   Commands: model | clear | demo <1-6> | exit\n");
+    PrintHelp();
 
     while (true)
     {
         Console.Write("You: ");
-        var input = Console.ReadLine();
+        var input = Console.ReadLine()?.Trim();
 
         if (string.IsNullOrWhiteSpace(input))
         {
             continue;
         }
 
-        var command = input.Trim().ToLowerInvariant();
-
-        if (command is "exit" or "quit")
+        if (input is "exit" or "quit")
         {
             Console.WriteLine("\n👋 Goodbye!");
             break;
         }
 
-        if (command == "model")
+        if (input == "help")
         {
-            selectedModel = await ModelSelector.SelectModelAsync(client);
-            var replacementSession = await client.CreateSessionAsync(new SessionConfig
-            {
-                Model = selectedModel,
-                Streaming = true
-            });
-            var previousSession = session;
-            session = replacementSession;
-            await previousSession.DisposeAsync();
-            Console.WriteLine("🔄 Model switched. Continue chatting.\n");
+            PrintHelp();
             continue;
         }
 
-        if (command == "clear")
+        if (input == "clear")
         {
             Console.Clear();
-            DemoPrompts.PrintDemoPrompts();
-            Console.WriteLine("💬 Interactive Chat Mode\n");
+            PrintHelp();
             continue;
         }
 
-        if (command.StartsWith("demo ", StringComparison.OrdinalIgnoreCase))
+        if (input == "model")
         {
-            var prompt = DemoPrompts.GetDemoPrompt(input);
-            if (prompt is null)
-            {
-                Console.WriteLine("❌ Unknown demo. Use demo 1 through demo 6.\n");
-                continue;
-            }
-
-            Console.WriteLine($"\n🎯 Running: {input}");
-            Console.Write("Copilot: ");
-            await ChatHelper.SendMessageAndStreamResponse(session, prompt);
-            Console.WriteLine();
+            selectedModel = await ModelSelector.SelectModelAsync(client);
+            var replacementSession = await CreateSessionAsync(client, selectedModel);
+            await session.DisposeAsync();
+            session = replacementSession;
+            Console.WriteLine("🔄 Model switched. The accessibility tool is still available.\n");
             continue;
         }
+
+        var prompt = input.StartsWith("rule ", StringComparison.OrdinalIgnoreCase)
+            ? $"Use the accessibility_rule_lookup tool to answer this question: {input[5..]}"
+            : input;
 
         Console.Write("Copilot: ");
-        await ChatHelper.SendMessageAndStreamResponse(session, input);
-        Console.WriteLine();
+        await ResponseStreamer.SendAndPrintAsync(session, prompt);
     }
 }
 finally
 {
     await session.DisposeAsync();
+}
+
+static Task<CopilotSession> CreateSessionAsync(CopilotClient client, string? model) =>
+    client.CreateSessionAsync(new SessionConfig
+    {
+        Model = model,
+        Streaming = true,
+        Tools = [AccessibilityRuleCatalog.CreateLookupTool()]
+    });
+
+static void PrintHelp()
+{
+    Console.WriteLine("\nAsk an accessibility question in plain language.");
+    Console.WriteLine("Examples:");
+    Console.WriteLine("  rule What WCAG rule applies when an image has no alt text?");
+    Console.WriteLine("  rule How do I fix an input without a label?");
+    Console.WriteLine("  rule Why does a page need a main landmark?");
+    Console.WriteLine("Commands: model | clear | help | exit\n");
 }

@@ -1,6 +1,6 @@
 using GitHub.Copilot;
 
-namespace hello_copilot_sdk.Helpers;
+namespace HelloCopilotSDK.Helpers;
 
 public static class ModelSelector
 {
@@ -38,5 +38,4 @@ public static class ModelSelector
         Console.WriteLine($"✅ Selected: {selected.Name}\n");
         return selected.Id;
     }
-
 }

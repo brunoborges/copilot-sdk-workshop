@@ -34,8 +34,7 @@ instructions that teach students how to install it.
    `GitHub.Copilot.SDK`. The expected locations include:
    - `samples/hello-copilot-sdk/`
    - `samples/accessibility-report/`
-   - `workshop/part1/`
-   - `workshop/part2/`
+   - `workshop/`
 2. Determine the currently pinned version and query the configured NuGet source for
    the newest stable release. Do not select a prerelease version unless the currently
    pinned version is itself a prerelease. If no newer eligible release exists, stop
