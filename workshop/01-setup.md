@@ -2,9 +2,19 @@
 
 > **Duration:** ~10 minutes
 
-Install the prerequisites and copy the single project you will use for the entire workshop.
+Clone the workshop, open it in VS Code, install the prerequisites, and copy the single project you will use for the entire workshop.
 
-## 1. Install and authenticate the Copilot CLI
+## 1. Clone the workshop and open it in VS Code
+
+```bash
+git clone https://github.com/jamesmontemagno/copilot-sdk-workshop.git
+cd copilot-sdk-workshop
+code .
+```
+
+If the `code` command is not available, open Visual Studio Code and select **File > Open Folder** to choose the cloned `copilot-sdk-workshop` folder.
+
+## 2. Install and authenticate the Copilot CLI
 
 ```powershell
 # Windows
@@ -37,7 +47,7 @@ In PowerShell:
 $env:COPILOT_CLI_BINARY_PATH = (Get-Command copilot).Source
 ```
 
-## 2. Copy the starter
+## 3. Copy the starter
 
 From the repository root:
 
@@ -53,7 +63,7 @@ cp -R start/HelloCopilotSDK workshop-app
 
 Use `workshop-app` for every remaining step. It contains the .NET 10 project, Copilot SDK package, local accessibility-rule data, and example scenarios.
 
-## 3. Build
+## 4. Build
 
 ```bash
 dotnet build workshop-app
@@ -61,6 +71,7 @@ dotnet build workshop-app
 
 ## Checkpoint
 
+- [ ] The `copilot-sdk-workshop` folder is open in Visual Studio Code.
 - [ ] `copilot login` completed.
 - [ ] `workshop-app/HelloCopilotSDK.csproj` exists.
 - [ ] The project builds.

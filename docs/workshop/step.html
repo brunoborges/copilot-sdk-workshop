@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
     <link rel="stylesheet" href="../step.css">
     <link rel="stylesheet" href="../light-theme.css">
     <script src="../theme-toggle.js"></script>
@@ -131,6 +133,9 @@
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const markdown = processMarkdown(await response.text());
                 document.getElementById('markdownContent').innerHTML = `<article class="markdown">${marked.parse(markdown)}</article>`;
+                document.querySelectorAll('#markdownContent pre code').forEach((codeBlock) => {
+                    hljs.highlightElement(codeBlock);
+                });
             } catch (error) {
                 document.getElementById('markdownContent').innerHTML = `<div class="error-message"><h2>Unable to load this step</h2><p>${error.message}</p></div>`;
             }
