@@ -1,24 +1,24 @@
-(function () {
-    const saved = localStorage.getItem('theme');
-    if (saved) {
-        document.documentElement.setAttribute('data-theme', saved);
-    }
+(function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const preferredTheme = window.matchMedia('(prefers-color-scheme: light)').matches
+        ? 'light'
+        : 'dark';
+    document.documentElement.dataset.theme = savedTheme ?? preferredTheme;
 })();
 
 function toggleTheme() {
-    const html = document.documentElement;
-    const current = html.getAttribute('data-theme');
-    const next = current === 'light' ? 'dark' : 'light';
-    html.setAttribute('data-theme', next);
-    localStorage.setItem('theme', next);
+    const nextTheme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = nextTheme;
+    localStorage.setItem('theme', nextTheme);
     updateToggleIcon();
 }
 
 function updateToggleIcon() {
-    const btn = document.querySelector('.theme-toggle');
-    if (!btn) return;
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-    btn.innerHTML = isLight ? '🌙 Dark' : '☀️ Light';
+    const isLight = document.documentElement.dataset.theme === 'light';
+    document.querySelectorAll('.theme-toggle').forEach(button => {
+        button.textContent = isLight ? 'Dark theme' : 'Light theme';
+        button.setAttribute('aria-label', `Switch to ${isLight ? 'dark' : 'light'} theme`);
+    });
 }
 
 document.addEventListener('DOMContentLoaded', updateToggleIcon);

@@ -8,11 +8,42 @@ public static class AccessibilityRuleCatalog
 {
     private static readonly AccessibilityRule[] Rules =
     [
-        new("1.1.1", "Non-text Content", "An informative image has no useful text alternative.", "Add concise, meaningful alt text. Use alt=\"\" only for decorative images."),
-        new("1.3.1", "Info and Relationships", "A page lacks a main landmark or uses headings that do not describe its structure.", "Use semantic landmarks such as <main> and preserve a logical heading hierarchy."),
-        new("1.4.3", "Contrast (Minimum)", "Text does not have enough contrast against its background.", "Provide at least 4.5:1 contrast for normal text and 3:1 for large text."),
-        new("2.4.7", "Focus Visible", "Keyboard focus cannot be seen clearly.", "Keep a visible, high-contrast focus indicator for every interactive element."),
-        new("3.3.2", "Labels or Instructions", "A form input has no programmatic label or clear instruction.", "Associate a visible <label> with the input using matching for and id values.")
+        new(
+            "1.1.1",
+            "Non-text Content",
+            "An informative image has no useful text alternative.",
+            "Add concise alt text that communicates the image's purpose. Use alt=\"\" only for decorative images.",
+            ["image", "alt text", "text alternative"]),
+        new(
+            "1.3.1",
+            "Info and Relationships",
+            "Page structure or relationships are only conveyed visually.",
+            "Use semantic landmarks and a logical heading hierarchy so structure is programmatically available.",
+            ["main landmark", "heading hierarchy", "page structure", "semantic"]),
+        new(
+            "1.4.3",
+            "Contrast (Minimum)",
+            "Text does not have enough contrast against its background.",
+            "Provide at least 4.5:1 contrast for normal text and 3:1 for large text.",
+            ["contrast", "low contrast", "color"]),
+        new(
+            "2.4.7",
+            "Focus Visible",
+            "Keyboard focus cannot be seen clearly.",
+            "Keep a visible, high-contrast focus indicator on every interactive element.",
+            ["focus", "keyboard", "outline"]),
+        new(
+            "3.3.2",
+            "Labels or Instructions",
+            "A form does not provide a persistent visible label or necessary instructions.",
+            "Provide visible labels and instructions that explain the expected input.",
+            ["visible label", "instructions", "required field", "input format"]),
+        new(
+            "4.1.2",
+            "Name, Role, Value",
+            "A form control has no programmatically determinable accessible name.",
+            "Associate a visible <label> with the input by using matching for and id values.",
+            ["accessible name", "programmatic label", "unlabeled input", "name role value"])
     ];
 
     public static AIFunction CreateLookupTool() => CopilotTool.DefineTool(
@@ -25,26 +56,25 @@ public static class AccessibilityRuleCatalog
             Description = "Looks up read-only WCAG accessibility guidance from this application's rule catalog."
         });
 
-    private static AccessibilityRule Lookup(string query)
+    public static AccessibilityRule Lookup(string query)
     {
-        var normalizedQuery = query.ToLowerInvariant();
+        var normalizedQuery = query.Trim();
         return Rules.FirstOrDefault(rule =>
                    normalizedQuery.Contains(rule.Criterion, StringComparison.OrdinalIgnoreCase) ||
                    normalizedQuery.Contains(rule.Title, StringComparison.OrdinalIgnoreCase) ||
                    rule.Keywords.Any(keyword => normalizedQuery.Contains(keyword, StringComparison.OrdinalIgnoreCase)))
-               ?? new AccessibilityRule("No exact match", "General accessibility guidance", "The issue is not in the small workshop catalog.", "Inspect semantic HTML, labels, keyboard access, text alternatives, and contrast.");
+               ?? new AccessibilityRule(
+                   "No exact match",
+                   "Criterion not found",
+                   "The issue is not represented in the workshop catalog.",
+                   "Verify the evidence and consult the complete WCAG reference.",
+                   []);
     }
 
-    private sealed record AccessibilityRule(string Criterion, string Title, string WhenItApplies, string Recommendation)
-    {
-        public string[] Keywords => Title switch
-        {
-            "Non-text Content" => ["image", "alt", "photo"],
-            "Info and Relationships" => ["main", "landmark", "heading", "structure"],
-            "Contrast (Minimum)" => ["contrast", "color", "colour"],
-            "Focus Visible" => ["focus", "keyboard", "outline"],
-            "Labels or Instructions" => ["label", "input", "form"],
-            _ => []
-        };
-    }
+    public sealed record AccessibilityRule(
+        string Criterion,
+        string Title,
+        string WhenItApplies,
+        string Recommendation,
+        string[] Keywords);
 }

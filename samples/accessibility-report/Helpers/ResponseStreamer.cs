@@ -6,38 +6,37 @@ public static class ResponseStreamer
 {
     public static async Task SendAndPrintAsync(CopilotSession session, string prompt)
     {
-        var done = new TaskCompletionSource();
-        var streamed = false;
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var receivedDelta = false;
 
-        using var subscription = session.On<SessionEvent>(evt =>
+        using var subscription = session.On<SessionEvent>(sessionEvent =>
         {
-            switch (evt)
+            switch (sessionEvent)
             {
                 case AssistantMessageDeltaEvent delta when !string.IsNullOrEmpty(delta.Data.DeltaContent):
-                    streamed = true;
+                    receivedDelta = true;
                     Console.Write(delta.Data.DeltaContent);
                     break;
-                case AssistantMessageEvent message when !streamed:
+                case AssistantMessageEvent message when !receivedDelta:
                     Console.Write(message.Data.Content);
                     break;
-                case ToolExecutionStartEvent:
-                    Console.WriteLine("\n🔧 Copilot is using a tool...");
+                case ToolExecutionStartEvent tool:
+                    Console.WriteLine($"\n[tool:start] {tool.Data.ToolName}");
                     break;
-                case ToolExecutionCompleteEvent:
-                    Console.WriteLine("✅ Tool completed.");
+                case ToolExecutionCompleteEvent tool:
+                    Console.WriteLine($"[tool:done] success={tool.Data.Success}");
                     break;
                 case SessionIdleEvent:
                     Console.WriteLine();
-                    done.TrySetResult();
+                    completed.TrySetResult();
                     break;
                 case SessionErrorEvent error:
-                    Console.WriteLine($"\n❌ Error: {error.Data.Message}");
-                    done.TrySetResult();
+                    completed.TrySetException(new InvalidOperationException(error.Data.Message));
                     break;
             }
         });
 
         await session.SendAsync(new MessageOptions { Prompt = prompt });
-        await done.Task;
+        await completed.Task;
     }
 }

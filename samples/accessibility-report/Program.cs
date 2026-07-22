@@ -5,49 +5,59 @@ Console.WriteLine("=== Accessibility Report Generator ===\n");
 
 await using var client = new CopilotClient();
 await client.StartAsync();
-var selectedModel = await ModelSelector.SelectModelAsync(client);
+
+var ping = await client.PingAsync("workshop");
+Console.WriteLine($"Connected to the Copilot runtime: {ping.Message}\n");
 
 Console.Write("Enter URL to analyze: ");
-var url = Console.ReadLine()?.Trim();
+var urlInput = Console.ReadLine()?.Trim();
 
-if (string.IsNullOrWhiteSpace(url))
+if (string.IsNullOrWhiteSpace(urlInput))
 {
-    Console.WriteLine("No URL provided. Exiting.");
+    Console.Error.WriteLine("Enter a URL to analyze.");
     return;
 }
 
-if (!url.StartsWith("http://") && !url.StartsWith("https://"))
+if (!urlInput.Contains("://", StringComparison.Ordinal))
 {
-    url = "https://" + url;
+    urlInput = $"https://{urlInput}";
 }
+
+if (!Uri.TryCreate(urlInput, UriKind.Absolute, out var targetUri) ||
+    targetUri.Scheme is not ("http" or "https"))
+{
+    Console.Error.WriteLine("Enter an absolute HTTP or HTTPS URL.");
+    return;
+}
+
+var workingDirectory = Directory.GetCurrentDirectory();
 
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
-    Model = selectedModel,
     Streaming = true,
-    OnPermissionRequest = PermissionHandler.ApproveAll,
-    Tools = [AccessibilityRuleCatalog.CreateLookupTool()],
+    OnPermissionRequest = WorkshopPermissionHandler.CreateForTarget(targetUri),
+    Tools =
+    [
+        AccessibilityRuleCatalog.CreateLookupTool(),
+        PlaywrightSnapshotReader.CreateTool(workingDirectory)
+    ],
+    AvailableTools =
+    [
+        "accessibility_rule_lookup",
+        "read_latest_accessibility_snapshot",
+        "playwright-browser_navigate"
+    ],
     McpServers = new Dictionary<string, McpServerConfig>
     {
         ["playwright"] = new McpStdioServerConfig
         {
             Command = "npx",
-            Args = ["@playwright/mcp@0.0.78", "--browser=msedge"],
-            Tools = ["*"]
+            Args = ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"],
+            WorkingDirectory = workingDirectory,
+            Tools = ["browser_navigate"]
         }
     }
 });
 
-Console.WriteLine($"\nAnalyzing: {url}\n");
-await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(url));
-
-Console.Write("\nWould you like to generate Playwright accessibility tests? (y/n): ");
-if (Console.ReadLine()?.Trim().ToLowerInvariant() is "y" or "yes")
-{
-    Console.Write("Language for tests [TypeScript]: ");
-    var language = Console.ReadLine()?.Trim();
-    language = string.IsNullOrWhiteSpace(language) ? "TypeScript" : language;
-
-    Console.WriteLine("\nGenerating tests...\n");
-    await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateTestPrompt(url, language));
-}
+Console.WriteLine($"\nAnalyzing: {targetUri.AbsoluteUri}\n");
+await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(targetUri));
