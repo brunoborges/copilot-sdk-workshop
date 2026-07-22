@@ -1,4 +1,2 @@
-using GitHub.Copilot;
-
-Console.WriteLine("Hello, GitHub Copilot SDK!");
-Console.WriteLine("Follow the workshop to start a client, select a model, stream responses, and add a local accessibility tool.");
+Console.WriteLine("The Copilot SDK workshop starter is ready.");
+Console.WriteLine("Continue with Step 1 to create your first Copilot session.");

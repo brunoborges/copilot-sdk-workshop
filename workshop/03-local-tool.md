@@ -1,0 +1,184 @@
+# Step 3: Add application-owned knowledge
+
+> **Time:** 15 minutes
+
+## Outcome
+
+After this step, Copilot can call a typed C# function to retrieve an exact WCAG criterion and
+remediation from the catalog shipped with your application.
+
+## What this means
+
+**Tool calling** lets the model request a capability while it is answering. A **local tool** is a
+C# function that runs inside your application process. The model can decide when to request it,
+but your code owns its data, validation, execution, and result.
+
+The starter already contains the domain data in `AccessibilityRuleCatalog.Rules`. You will add a
+lookup over that array, then expose the lookup with `CopilotTool.DefineTool`.
+
+## Why it matters
+
+The model's general knowledge is not a substitute for authoritative application data. A local
+tool gives the agent:
+
+- exact data maintained by your application;
+- deterministic, testable C# behavior;
+- a small result instead of the full catalog in every prompt.
+
+> **Where it fits:** The session can now call `accessibility_rule_lookup`, which runs in the same
+> process as the console application.
+
+## Make the change
+
+### 1. Add the catalog lookup tool
+
+At the top of `workshop-app/Helpers/AccessibilityRuleCatalog.cs`, insert:
+
+```csharp
+using System.ComponentModel;
+using GitHub.Copilot;
+using Microsoft.Extensions.AI;
+```
+
+Inside `AccessibilityRuleCatalog`, after the existing `Rules` array, insert:
+
+```csharp
+public static AIFunction CreateLookupTool() => CopilotTool.DefineTool(
+    ([Description("The accessibility issue or WCAG criterion to look up.")] string query) =>
+        Task.FromResult(Lookup(query)),
+    toolOptions: new CopilotToolOptions { SkipPermission = true },
+    factoryOptions: new AIFunctionFactoryOptions
+    {
+        Name = "accessibility_rule_lookup",
+        Description = "Looks up read-only WCAG guidance maintained by this application."
+    });
+
+public static AccessibilityRule Lookup(string query)
+{
+    var normalizedQuery = query.Trim();
+    return Rules.FirstOrDefault(rule =>
+               normalizedQuery.Contains(rule.Criterion, StringComparison.OrdinalIgnoreCase) ||
+               normalizedQuery.Contains(rule.Title, StringComparison.OrdinalIgnoreCase) ||
+               rule.Keywords.Any(keyword =>
+                   normalizedQuery.Contains(keyword, StringComparison.OrdinalIgnoreCase)))
+           ?? new AccessibilityRule(
+               "No exact match",
+               "Criterion not found",
+               "The issue is not represented in the workshop catalog.",
+               "Verify the evidence and consult the complete WCAG reference.",
+               []);
+}
+```
+
+`SkipPermission = true` is intentional: this tool is a read-only lookup over data the application
+owns. In the next step, the external MCP process will use a permission boundary instead.
+
+### 2. Show tool activity
+
+In `ResponseStreamer.cs`, insert these cases before `SessionIdleEvent`:
+
+```csharp
+case ToolExecutionStartEvent tool:
+    Console.WriteLine($"\n[tool:start] {tool.Data.ToolName}");
+    break;
+case ToolExecutionCompleteEvent tool:
+    Console.WriteLine($"[tool:done] success={tool.Data.Success}");
+    break;
+```
+
+### 3. Register and request the tool
+
+Replace the session configuration and send call in `Program.cs`:
+
+```csharp
+await using var session = await client.CreateSessionAsync(new SessionConfig
+{
+    Streaming = true,
+    Tools = [AccessibilityRuleCatalog.CreateLookupTool()],
+    AvailableTools = ["accessibility_rule_lookup"]
+});
+
+Console.WriteLine("\nCopilot:");
+await ResponseStreamer.SendAndPrintAsync(
+    session,
+    "Use accessibility_rule_lookup to explain how to fix an input with no accessible name.");
+```
+
+## Run it
+
+```bash
+dotnet run --project workshop-app
+```
+
+Look for the tool name and the precise mapping to 4.1.2:
+
+```text
+[tool:start] accessibility_rule_lookup
+[tool:done] success=True
+
+WCAG 4.1.2 Name, Role, Value ...
+```
+
+The prose can vary; the criterion and catalog recommendation should not.
+
+<details>
+<summary>Troubleshooting this run</summary>
+
+| Symptom | Fix |
+|---|---|
+| No tool event appears | Keep the explicit `Use accessibility_rule_lookup` instruction in this learning checkpoint. |
+| The compiler cannot find `AIFunction` | Add `using Microsoft.Extensions.AI;` to the catalog file. |
+| The result says no exact match | Confirm the prompt contains `accessible name`, a keyword in the starter data. |
+
+</details>
+
+> **You are ready to continue when:** the terminal names `accessibility_rule_lookup` and the answer
+> uses criterion 4.1.2 from the catalog.
+
+## Check your understanding
+
+Should calculating an order total from application-owned line items be a local tool or an MCP
+server?
+
+<details>
+<summary>Check your answer</summary>
+
+Usually a local tool. The application owns both the data and deterministic calculation, so an
+in-process function is simpler to test and does not cross an external process boundary.
+
+</details>
+
+<details>
+<summary>Complete Step 3 checkpoint</summary>
+
+The full, compiling reference is
+[`checkpoints/03-local-tool`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/03-local-tool).
+
+```csharp
+using GitHub.Copilot;
+using HelloCopilotSDK.Helpers;
+
+Console.WriteLine("=== Application-owned WCAG guidance ===\n");
+
+await using var client = new CopilotClient();
+await client.StartAsync();
+
+var ping = await client.PingAsync("workshop");
+Console.WriteLine($"Connected to the Copilot runtime: {ping.Message}\n");
+
+await using var session = await client.CreateSessionAsync(new SessionConfig
+{
+    Streaming = true,
+    Tools = [AccessibilityRuleCatalog.CreateLookupTool()],
+    AvailableTools = ["accessibility_rule_lookup"]
+});
+
+Console.WriteLine("Copilot:");
+await ResponseStreamer.SendAndPrintAsync(
+    session,
+    "Use accessibility_rule_lookup to explain how to fix an input with no accessible name.");
+```
+
+</details>
+
+Continue to [Step 4: Connect an external tool safely](04-mcp-safety.md).
