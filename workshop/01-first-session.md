@@ -4,25 +4,25 @@
 
 ## What you'll build
 
-After this step, the console application will connect to the Copilot runtime, create one
-conversation, send a prompt, and print a complete response.
+You'll connect the console application to the Copilot runtime, create a conversation, send a
+prompt, and print the response.
 
 ## Meet the GitHub Copilot SDK and runtime
 
-The **GitHub Copilot SDK** is the .NET API your application uses to run Copilot as an agent.
-The **Copilot runtime** performs the agent work: it receives prompts, calls models, and manages
-tools. Your C# code reaches that runtime through `CopilotClient`.
+The **GitHub Copilot SDK** is the .NET API your application uses to run Copilot as an agent. The
+**Copilot runtime** receives prompts, calls models, and manages tools. `CopilotClient` connects your
+C# code to that runtime.
 
-A `CopilotSession` is one continuing agent conversation. It holds the messages and tool results
-that form that conversation's context. Reuse one client for the application, and create a session
-for each independent conversation.
+A `CopilotSession` represents one continuing conversation. It holds the messages and tool results
+that make up the conversation's context. Keep one client alive for the application, then create a
+session for each independent conversation.
 
 ## Why clients and sessions stay separate
 
-This separation lets your application own connection lifetime independently from conversation
-state. It also gives you the smallest useful success before adding streaming or tools.
+Keeping those responsibilities separate lets the runtime connection outlive any one conversation.
+It also gives you a small working example before streaming and tools enter the picture.
 
-> **Where it fits:** Your console app now contains `CopilotClient -> CopilotSession -> model response`.
+At this point, the console app is simply `CopilotClient -> CopilotSession -> model response`.
 
 ## Fire up your first Copilot session
 
@@ -51,8 +51,8 @@ if (response is null)
 Console.WriteLine($"\nCopilot: {response.Data.Content}");
 ```
 
-`PingAsync` is a connection check. `SendAndWaitAsync` sends the prompt and returns after the
-session becomes idle, which is ideal when you only need the completed answer.
+`PingAsync` checks the runtime connection. `SendAndWaitAsync` sends the prompt and returns after the
+session becomes idle, so it works well when you only need the completed answer.
 
 ## Run it
 
@@ -60,7 +60,7 @@ session becomes idle, which is ideal when you only need the completed answer.
 dotnet run --project workshop-app
 ```
 
-Your wording will vary, but the shape should be:
+Your exact response will vary, but the output should have this shape:
 
 ```text
 === First Copilot session ===
@@ -77,11 +77,11 @@ Copilot: An accessible name lets assistive technology identify the input's purpo
 |---|---|
 | Authentication or authorization error | Run `copilot login` again, then rerun the project. |
 | Runtime executable not found | Set `COPILOT_CLI_BINARY_PATH` using the preflight instructions. |
-| The request times out | Check network access to GitHub Copilot and retry; the code deliberately surfaces the failure. |
+| The request times out | Check network access to GitHub Copilot and retry; this example does not hide the failure. |
 
 </details>
 
-> **You are ready to continue when:** the terminal prints one complete Copilot response.
+> **You're ready for streaming when:** the terminal prints one complete Copilot response.
 
 ## Check your understanding
 
@@ -91,16 +91,17 @@ conversation's context?
 <details>
 <summary>Check your answer</summary>
 
-Reuse `CopilotClient` for the runtime connection. A `CopilotSession` owns one conversation's
-messages and tool context.
+Keep `CopilotClient` for the lifetime of the runtime connection. A `CopilotSession` owns the
+messages and tool context for one conversation.
 
 </details>
 
 <details>
 <summary>Complete Step 1 checkpoint</summary>
 
-The full, compiling reference is
-[`checkpoints/01-first-session`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/01-first-session).
+To compare your work with a complete project, open the
+[`checkpoints/01-first-session`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/01-first-session)
+checkpoint.
 
 ```csharp
 using GitHub.Copilot;

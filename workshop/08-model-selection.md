@@ -5,21 +5,20 @@
 
 ## What you'll customize
 
-After this extension, the application will list models available to the signed-in user and use the
-selected model for the report session.
+You'll list the models available to the signed-in user and use the selected model for the report
+session.
 
 ## How model selection works
 
-The Copilot runtime can expose more than one model. `ListModelsAsync` returns the models available
-for the current account, while `SessionConfig.Model` selects one for a new session.
+The Copilot runtime may expose more than one model. `ListModelsAsync` returns the models available
+for the current account. `SessionConfig.Model` selects one when you create a session.
 
 ## Swap models without changing the architecture
 
-Model choice can affect latency, capability, and billing. It does not change your local tools, MCP
-configuration, or permission policy, so it is easier to understand after the core architecture.
+Changing the model can affect latency, capability, and billing. It does not change the local tools,
+MCP configuration, or permission policy, which is why this topic comes after the core architecture.
 
-> **Where it fits:** Model selection configures `CopilotSession`; it does not replace the client or
-> either tool boundary.
+Model selection configures `CopilotSession`. It does not replace the client or either tool boundary.
 
 ## Add a model picker
 
@@ -91,13 +90,13 @@ Choose a model, enter the workshop target URL, and confirm the same scoped tools
 
 | Symptom | Fix |
 |---|---|
-| No models are listed | The helper deliberately falls back to the account default; verify authentication if this is unexpected. |
+| No models are listed | The helper falls back to the account default; verify authentication if this is unexpected. |
 | A number is outside the range | The helper safely uses the first model. |
 | Tools disappear | Add only `Model = selectedModel`; retain `Tools`, `McpServers`, and `OnPermissionRequest`. |
 
 </details>
 
-> **You are ready to finish when:** the selected model is named and the report still uses both
+> **The extension is complete when:** the selected model is named and the report still uses both
 > scoped tool types.
 
 ## Check your understanding
@@ -107,8 +106,8 @@ Why was model selection moved out of Step 1?
 <details>
 <summary>Check your answer</summary>
 
-It is configuration rather than a core agent concept. Deferring it gives learners a useful Copilot
-response sooner and keeps the first lesson focused on client and session responsibilities.
+Model selection is configuration rather than a core agent concept. Leaving it until the end gets
+you to a useful Copilot response sooner and keeps the first lesson focused on clients and sessions.
 
 </details>
 

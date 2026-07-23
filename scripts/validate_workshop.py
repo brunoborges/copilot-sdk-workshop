@@ -84,6 +84,17 @@ LESSON_HEADINGS = {
         "## Add a model picker",
     ],
 }
+LESSON_READINESS = {
+    "00-preflight.md": "**Start Step 1 when:**",
+    "01-first-session.md": "**You're ready for streaming when:**",
+    "02-streaming.md": "**You're ready to add tools when:**",
+    "03-local-tool.md": "**You're ready for Playwright when:**",
+    "04-mcp-safety.md": "**You're ready to combine tools when:**",
+    "05-combine-tools.md": "**You're ready to shape the report when:**",
+    "06-structured-report.md": "**You're ready for the final run when:**",
+    "07-run-explain.md": "**You have completed the core workshop when:**",
+    "08-model-selection.md": "**The extension is complete when:**",
+}
 CORE_REQUIRED_SECTIONS = [
     "## Run it",
     "## Check your understanding",
@@ -164,6 +175,10 @@ for lesson_name in LESSONS:
         lesson_text = lesson_path.read_text(encoding="utf-8")
         for heading in LESSON_HEADINGS[lesson_name]:
             require(heading in lesson_text, f"{lesson_name} is missing tailored heading: {heading}")
+        require(
+            LESSON_READINESS[lesson_name] in lesson_text,
+            f"{lesson_name} is missing its readiness statement",
+        )
         for generic_heading in [
             "## Outcome",
             "## What this means",
@@ -203,11 +218,6 @@ for lesson_name in CORE_LESSONS:
     lesson_text = lesson_path.read_text(encoding="utf-8")
     for section in CORE_REQUIRED_SECTIONS:
         require(section in lesson_text, f"{lesson_name} is missing required section: {section}")
-    require(
-        "You are ready to continue when:" in lesson_text
-        or "You have completed the core workshop when:" in lesson_text,
-        f"{lesson_name} is missing a readiness statement",
-    )
 
 for checkpoint in CHECKPOINTS:
     project = ROOT / "checkpoints" / checkpoint / "HelloCopilotSDK.csproj"

@@ -5,8 +5,8 @@
 
 ## What you'll have ready
 
-You will have the repository, authenticated Copilot CLI, .NET project, Node.js runtime, and
-Playwright MCP package ready before the first lesson.
+By the end of preflight, you'll have the repository cloned, the Copilot CLI authenticated, the
+starter project built, and Playwright MCP downloaded and ready.
 
 ## What you need
 
@@ -18,7 +18,7 @@ Playwright MCP package ready before the first lesson.
 | [GitHub Copilot access](https://github.com/features/copilot) | Authorizes Copilot requests | `copilot login` |
 | Microsoft Edge (default) or Google Chrome | Lets Playwright inspect the target page | Open the browser once before the workshop |
 
-Expected version output looks like this:
+Your commands should return output in this shape:
 
 ```text
 $ dotnet --version
@@ -37,8 +37,7 @@ cd copilot-sdk-workshop
 code .
 ```
 
-If `code` is unavailable, open the cloned `copilot-sdk-workshop` folder from your editor's
-**Open Folder** command.
+If `code` is not on your path, use your editor's **Open Folder** command instead.
 
 ## 2. Authenticate Copilot
 
@@ -49,8 +48,8 @@ Install the CLI with the method from the
 copilot login
 ```
 
-The repository detects common WinGet and Homebrew locations. If `dotnet build` later says it
-cannot find the Copilot CLI, set its path for the current terminal:
+The repository recognizes common WinGet and Homebrew installs. If `dotnet build` cannot find the
+Copilot CLI, set its path for the current terminal:
 
 <div class="workshop-tabs" data-tabs>
   <div role="tablist" aria-label="Set the Copilot CLI path">
@@ -67,15 +66,15 @@ cannot find the Copilot CLI, set its path for the current terminal:
 
 ## 3. Warm up Playwright MCP
 
-This command downloads the pinned package once and prints its options without starting a server:
+Run this once to download the pinned package and print its options without starting a server:
 
 ```bash
 npx -y @playwright/mcp@0.0.78 --help
 ```
 
-The workshop uses a pinned version so every learner receives the same tool names and behavior.
-The code uses Microsoft Edge with `--browser=msedge`. If you prepared Google Chrome instead, use
-`--browser=chrome` when that argument appears in Step 4.
+The package version is pinned so everyone sees the same tool names and behavior. The code uses
+Microsoft Edge with `--browser=msedge`. If you prepared Google Chrome instead, use
+`--browser=chrome` when the argument appears in Step 4.
 
 ## 4. Copy and build the starter
 
@@ -94,7 +93,7 @@ dotnet build workshop-app</code></pre>
   </div>
 </div>
 
-The final lines should be:
+A successful build ends with:
 
 ```text
 Build succeeded.
@@ -102,7 +101,7 @@ Build succeeded.
     0 Error(s)
 ```
 
-Open the controlled target page once so you know it is reachable:
+Open the controlled target page once to make sure you can reach it:
 
 ```text
 {{TARGET_APP_URL}}
@@ -121,7 +120,7 @@ Open the controlled target page once so you know it is reachable:
 
 </details>
 
-> **You are ready to continue when:** `dotnet build workshop-app` succeeds, `copilot login`
-> is complete, and the target page opens.
+> **Start Step 1 when:** `dotnet build workshop-app` succeeds, `copilot login` is complete, and the
+> target page opens.
 
 Continue to [Step 1: Create your first Copilot session](01-first-session.md).

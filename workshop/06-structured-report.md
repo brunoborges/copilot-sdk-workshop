@@ -4,26 +4,25 @@
 
 ## What you'll produce
 
-After this step, the application will produce a concise report that separates page evidence,
-criterion mapping, remediation, and the limits of the review.
+You'll produce a concise report that separates page evidence, criterion mapping, remediation, and
+the limits of the review.
 
 ## Separate evidence from interpretation
 
-An agent response contains both **evidence** and **interpretation**. Evidence is what Playwright
-actually observed, such as an input with no accessible name. Interpretation is the criterion
-mapping and remediation built from that evidence and the catalog result.
+An agent response contains **evidence** and **interpretation**. Evidence is what Playwright
+observed, such as an input with no accessible name. Interpretation is the criterion mapping and
+remediation based on that evidence and the catalog result.
 
-Output constraints tell the agent what to include, what to omit, and how to represent uncertainty.
-They improve consistency without turning a prompt into a claim that the review is exhaustive.
+A clear output contract tells the agent what to include, what to leave out, and how to handle
+uncertainty. It makes reports more consistent without claiming that the review is exhaustive.
 
 ## Be useful without overstating the result
 
-Accessibility conformance cannot be established by one automated snapshot. The report should make
-useful, high-confidence findings without invented statistics, decorative severity labels, or a
-broad claim that the page passes or fails WCAG.
+One automated snapshot cannot establish accessibility conformance. The report should stick to
+high-confidence findings without invented statistics, decorative severity labels, or a broad claim
+that the page passes or fails WCAG.
 
-> **Where it fits:** The agent now transforms `browser evidence + catalog result` into a bounded,
-> repeatable report.
+The agent now turns `browser evidence + catalog result` into a bounded, repeatable report.
 
 ## Give the report a contract
 
@@ -77,7 +76,7 @@ await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(tar
 dotnet run --project workshop-app
 ```
 
-Use:
+When the app asks for a URL, paste:
 
 ```text
 {{TARGET_APP_URL}}
@@ -107,8 +106,8 @@ This focused review uses browser-observable evidence and is not a full WCAG conf
 
 </details>
 
-> **You are ready to continue when:** each finding contains specific browser evidence, a catalog
-> criterion, a remediation, and the report ends with its limits.
+> **You're ready for the final run when:** each finding contains specific browser evidence, a
+> catalog criterion, and a remediation, and the report ends with its limits.
 
 ## Check your understanding
 
@@ -117,17 +116,17 @@ In the report, which content is direct evidence and which content is model inter
 <details>
 <summary>Check your answer</summary>
 
-The element or page structure returned by Playwright is evidence. Choosing the relevant criterion
-and phrasing a remediation are interpretations grounded by that evidence and the catalog result.
+The element or page structure returned by Playwright is evidence. Choosing the criterion and
+writing the remediation are interpretations based on that evidence and the catalog result.
 
 </details>
 
 <details>
 <summary>Complete Step 6 checkpoint</summary>
 
-The full, compiling reference is
-[`checkpoints/06-structured-report`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/06-structured-report).
-The completed application is also in
+For comparison, use the
+[`checkpoints/06-structured-report`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/06-structured-report)
+project. The completed application is also in
 [`samples/accessibility-report`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/samples/accessibility-report).
 
 ```csharp
