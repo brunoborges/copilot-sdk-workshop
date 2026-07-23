@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A self-guided .NET workshop for building an accessibility reviewer with the GitHub Copilot SDK.">
     <title>Copilot SDK Workshop</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
     <link rel="stylesheet" href="../step.css">
@@ -14,133 +16,559 @@
     <script src="../theme-toggle.js"></script>
 </head>
 <body>
+    <a class="skip-link" href="#lessonContent">Skip to lesson</a>
+
     <header class="header">
         <div class="header-content">
-            <button class="nav-btn menu-btn" id="menuBtn" onclick="toggleFlyout()" aria-expanded="false" aria-controls="flyoutPanel" aria-label="Open sections">☰</button>
-            <a href="../index.html" class="header-brand">
-                <span class="header-icon">🤖</span>
+            <button
+                class="nav-btn menu-btn"
+                id="menuButton"
+                type="button"
+                aria-expanded="false"
+                aria-controls="navigationPanel"
+                aria-label="Open sections">☰</button>
+
+            <a href="../index.html" class="header-brand" aria-label="Copilot SDK Workshop home">
+                <span class="header-icon" aria-hidden="true">🤖</span>
                 <span class="header-title">Copilot SDK Workshop</span>
+                <span class="visually-hidden" id="headerLessonTitle">Loading lesson</span>
             </a>
-            <div class="header-nav">
+
+            <nav class="header-nav" aria-label="Lesson actions">
                 <a href="../index.html" class="nav-btn">🏠 Hub</a>
-                <button class="theme-toggle" onclick="toggleTheme()">☀️ Light</button>
-                <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">← Prev</button>
-                <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Next →</button>
-            </div>
+                <button class="theme-toggle" type="button" onclick="toggleTheme()">☀️ Light</button>
+                <a class="nav-btn" id="previousHeaderLink" href="#" hidden>← Prev</a>
+                <a class="nav-btn" id="nextHeaderLink" href="#" hidden>Next →</a>
+            </nav>
         </div>
     </header>
 
-    <div class="flyout-overlay" id="flyoutOverlay" onclick="toggleFlyout()"></div>
+    <div class="lesson-progress">
+        <div class="progress-copy">
+            <span id="stepPosition">Loading</span>
+            <span id="stepEstimate"></span>
+        </div>
+        <div
+            class="progress-track"
+            id="progressTrack"
+            role="progressbar"
+            aria-label="Core workshop progress"
+            aria-valuemin="0"
+            aria-valuemax="7"
+            aria-valuenow="0">
+            <span id="progressFill"></span>
+        </div>
+    </div>
+
+    <div class="flyout-overlay" id="navigationOverlay"></div>
     <div class="layout">
-        <aside class="flyout-panel" id="flyoutPanel">
+        <aside
+            class="flyout-panel"
+            id="navigationPanel"
+            aria-labelledby="navigationTitle"
+            tabindex="-1">
             <div class="flyout-header">
-                <span class="flyout-title">🤖 Workshop Steps</span>
-                <button class="flyout-close" onclick="toggleFlyout()" aria-label="Close sections">✕</button>
+                <span class="flyout-title" id="navigationTitle">🤖 Workshop Steps</span>
+                <button
+                    class="flyout-close"
+                    id="closeNavigationButton"
+                    type="button"
+                    aria-label="Close sections">✕</button>
             </div>
-            <nav class="flyout-nav" id="flyoutNav"></nav>
+            <nav class="flyout-nav" id="workshopNavigation" aria-label="Workshop steps"></nav>
         </aside>
-        <main class="main main-full">
-            <div class="content">
-                <div id="markdownContent"><div class="loading">Loading content</div></div>
-                <div class="nav-footer" id="navFooter"></div>
+
+        <main class="main lesson-main">
+            <div class="lesson-shell">
+                <div class="lesson-content" id="lessonContent">
+                    <p class="visually-hidden" id="lessonStatus" role="status" aria-live="polite">Loading lesson.</p>
+                    <div id="markdownContent" aria-busy="true">
+                        <p class="loading-message">Loading lesson...</p>
+                    </div>
+                    <nav class="nav-footer" id="lessonFooter" aria-label="Lesson pagination"></nav>
+                </div>
             </div>
         </main>
     </div>
 
     <script>
         const steps = [
-            { id: '00-overview', file: 'workshop/00-overview.md', title: 'Overview', number: '00' },
-            { id: '01-setup', file: 'workshop/01-setup.md', title: 'Setup', number: '01' },
-            { id: '02-client', file: 'workshop/02-client.md', title: 'Client & Model Selection', number: '02' },
-            { id: '03-streaming', file: 'workshop/03-streaming.md', title: 'Session & Streaming', number: '03' },
-            { id: '04-local-tools', file: 'workshop/04-local-tools.md', title: 'Local Tool Calling', number: '04' },
-            { id: '05-interactive', file: 'workshop/05-interactive.md', title: 'Interactive Assistant', number: '05' },
-            { id: '06-browser-setup', file: 'workshop/06-browser-setup.md', title: 'Browser Setup', number: '06' },
-            { id: '07-mcp-session', file: 'workshop/07-mcp-session.md', title: 'MCP Session', number: '07' },
-            { id: '08-url-input', file: 'workshop/08-url-input.md', title: 'URL Input', number: '08' },
-            { id: '09-tool-activity', file: 'workshop/09-tool-activity.md', title: 'Tool Activity', number: '09' },
-            { id: '10-report-prompt', file: 'workshop/10-report-prompt.md', title: 'Report Prompt', number: '10' },
-            { id: '11-generate-tests', file: 'workshop/11-generate-tests.md', title: 'Generate Tests', number: '11' },
-            { id: '12-run-review', file: 'workshop/12-run-review.md', title: 'Run & Review', number: '12' }
+            {
+                id: '00-preflight',
+                file: 'workshop/00-preflight.md',
+                title: 'Prepare your machine',
+                navTitle: 'Preflight',
+                kind: 'preflight',
+                time: 'Untimed'
+            },
+            {
+                id: '01-first-session',
+                file: 'workshop/01-first-session.md',
+                title: 'Create your first Copilot session',
+                navTitle: 'First session',
+                kind: 'core',
+                number: 1,
+                time: '10 min'
+            },
+            {
+                id: '02-streaming',
+                file: 'workshop/02-streaming.md',
+                title: 'Stream a response',
+                navTitle: 'Streaming',
+                kind: 'core',
+                number: 2,
+                time: '10 min'
+            },
+            {
+                id: '03-local-tool',
+                file: 'workshop/03-local-tool.md',
+                title: 'Add application-owned knowledge',
+                navTitle: 'Local tool',
+                kind: 'core',
+                number: 3,
+                time: '15 min'
+            },
+            {
+                id: '04-mcp-safety',
+                file: 'workshop/04-mcp-safety.md',
+                title: 'Connect an external tool safely',
+                navTitle: 'MCP and permissions',
+                kind: 'core',
+                number: 4,
+                time: '20 min'
+            },
+            {
+                id: '05-combine-tools',
+                file: 'workshop/05-combine-tools.md',
+                title: 'Combine local and MCP tools',
+                navTitle: 'Combine tools',
+                kind: 'core',
+                number: 5,
+                time: '15 min'
+            },
+            {
+                id: '06-structured-report',
+                file: 'workshop/06-structured-report.md',
+                title: 'Produce a structured report',
+                navTitle: 'Structured report',
+                kind: 'core',
+                number: 6,
+                time: '10 min'
+            },
+            {
+                id: '07-run-explain',
+                file: 'workshop/07-run-explain.md',
+                title: 'Run and explain the application',
+                navTitle: 'Run and explain',
+                kind: 'core',
+                number: 7,
+                time: '10 min'
+            },
+            {
+                id: '08-model-selection',
+                file: 'workshop/08-model-selection.md',
+                title: 'Select a model',
+                navTitle: 'Model selection',
+                kind: 'optional',
+                time: '10 min'
+            }
         ];
 
-        let currentIndex = 0;
+        const legacyStepMap = {
+            '00-overview': '00-preflight',
+            '01-setup': '00-preflight',
+            '02-client': '01-first-session',
+            '03-streaming': '02-streaming',
+            '04-local-tools': '03-local-tool',
+            '05-interactive': '03-local-tool',
+            '06-browser-setup': '00-preflight',
+            '07-mcp-session': '04-mcp-safety',
+            '08-url-input': '05-combine-tools',
+            '09-tool-activity': '05-combine-tools',
+            '10-report-prompt': '06-structured-report',
+            '11-generate-tests': '07-run-explain',
+            '12-run-review': '07-run-explain'
+        };
 
-        function getStepId() {
-            const requested = new URLSearchParams(window.location.search).get('step');
-            return steps.some(step => step.id === requested) ? requested : steps[0].id;
+        const menuButton = document.getElementById('menuButton');
+        const navigationPanel = document.getElementById('navigationPanel');
+        const navigationOverlay = document.getElementById('navigationOverlay');
+        const closeNavigationButton = document.getElementById('closeNavigationButton');
+        const compactNavigation = window.matchMedia('(max-width: 900px)');
+        let currentIndex = 0;
+        let focusBeforeNavigation;
+
+        function getPathSegments() {
+            return window.location.pathname.split('/').filter(Boolean);
+        }
+
+        function isGitHubPages() {
+            return window.location.hostname.toLowerCase().endsWith('.github.io');
         }
 
         function getSiteRootUrl() {
-            const hostname = window.location.hostname.toLowerCase();
-            const segments = window.location.pathname.split('/').filter(Boolean);
-            if (hostname.endsWith('.github.io') && segments.length > 0) {
+            const segments = getPathSegments();
+            if (isGitHubPages() && segments.length > 0) {
                 return new URL(`/${segments[0]}/`, window.location.origin);
             }
+            if (segments[0] === 'docs') {
+                return new URL('/docs/', window.location.origin);
+            }
             return new URL('/', window.location.origin);
+        }
+
+        function getMarkdownUrl(file) {
+            const segments = getPathSegments();
+            if (!isGitHubPages() && segments[0] === 'docs') {
+                return new URL(`../../${file}`, window.location.href);
+            }
+            return new URL(file, getSiteRootUrl());
+        }
+
+        function getRequestedStepId() {
+            const requested = new URLSearchParams(window.location.search).get('step');
+            const mapped = legacyStepMap[requested] ?? requested;
+            return steps.some(step => step.id === mapped) ? mapped : steps[0].id;
         }
 
         function stepUrl(step) {
             return `?step=${step.id}`;
         }
 
-        function toggleFlyout() {
-            const panel = document.getElementById('flyoutPanel');
-            const overlay = document.getElementById('flyoutOverlay');
-            const button = document.getElementById('menuBtn');
-            const open = panel.classList.toggle('open');
-            overlay.classList.toggle('open', open);
-            button.setAttribute('aria-expanded', String(open));
+        function setNavigationOpen(open) {
+            const shouldOpen = compactNavigation.matches && open;
+            navigationPanel.classList.toggle('open', shouldOpen);
+            navigationOverlay.classList.toggle('open', shouldOpen);
+            menuButton.setAttribute('aria-expanded', String(shouldOpen));
+            menuButton.setAttribute('aria-label', `${shouldOpen ? 'Close' : 'Open'} sections`);
+            document.body.classList.toggle('navigation-open', shouldOpen);
+            const hideNavigation = compactNavigation.matches && !shouldOpen;
+            navigationPanel.toggleAttribute('inert', hideNavigation);
+            if (hideNavigation) {
+                navigationPanel.setAttribute('aria-hidden', 'true');
+            } else {
+                navigationPanel.removeAttribute('aria-hidden');
+            }
+            if (shouldOpen) {
+                navigationPanel.setAttribute('role', 'dialog');
+                navigationPanel.setAttribute('aria-modal', 'true');
+            } else {
+                navigationPanel.removeAttribute('role');
+                navigationPanel.removeAttribute('aria-modal');
+            }
+
+            if (shouldOpen) {
+                focusBeforeNavigation = document.activeElement;
+                closeNavigationButton.focus();
+            } else if (focusBeforeNavigation instanceof HTMLElement) {
+                focusBeforeNavigation.focus();
+                focusBeforeNavigation = undefined;
+            }
+        }
+
+        function trapNavigationFocus(event) {
+            if (!compactNavigation.matches
+                || !navigationPanel.classList.contains('open')
+                || event.key !== 'Tab') {
+                return;
+            }
+
+            const focusable = [...navigationPanel.querySelectorAll(
+                'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )].filter(element => !element.hidden);
+
+            if (focusable.length === 0) {
+                return;
+            }
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
         }
 
         function buildNavigation() {
-            document.getElementById('flyoutNav').innerHTML = steps.map((step, index) => `
-                <a href="${stepUrl(step)}" class="flyout-link ${index === currentIndex ? 'active' : ''}">
-                    <span class="flyout-number">${step.number}</span><span>${step.title}</span>
-                </a>`).join('');
+            const groups = [
+                { label: 'Before you begin', steps: steps.filter(step => step.kind === 'preflight') },
+                { label: 'Core workshop', steps: steps.filter(step => step.kind === 'core') },
+                { label: 'Optional extension', steps: steps.filter(step => step.kind === 'optional') }
+            ];
 
-            const previous = steps[currentIndex - 1];
-            const next = steps[currentIndex + 1];
-            document.getElementById('prevBtn').disabled = !previous;
-            document.getElementById('nextBtn').disabled = !next;
-            document.getElementById('navFooter').innerHTML = `
-                <a href="${previous ? stepUrl(previous) : '#'}" class="nav-footer-btn ${previous ? '' : 'disabled'}">← ${previous?.title ?? 'Previous'}</a>
-                <a href="${next ? stepUrl(next) : '#'}" class="nav-footer-btn ${next ? '' : 'disabled'}">${next?.title ?? 'Next'} →</a>`;
+            document.getElementById('workshopNavigation').innerHTML = groups.map(group => `
+                <section class="navigation-group">
+                    <h3>${group.label}</h3>
+                    ${group.steps.map(step => {
+                        const index = steps.findIndex(candidate => candidate.id === step.id);
+                        const active = index === currentIndex;
+                        const marker = step.kind === 'core' ? step.number : step.kind === 'optional' ? '+' : 'P';
+                        return `
+                            <a
+                                href="${stepUrl(step)}"
+                                class="flyout-link ${active ? 'active' : ''}"
+                                ${active ? 'aria-current="step"' : ''}>
+                                <span class="flyout-number">${marker}</span>
+                                <span>
+                                    <strong>${step.navTitle}</strong>
+                                    <small>${step.time}</small>
+                                </span>
+                            </a>`;
+                    }).join('')}
+                </section>
+            `).join('');
         }
 
-        function navigate(offset) {
-            const target = steps[currentIndex + offset];
-            if (target) {
-                window.location.href = stepUrl(target);
+        function updatePagination() {
+            const previous = steps[currentIndex - 1];
+            const next = steps[currentIndex + 1];
+            const previousHeaderLink = document.getElementById('previousHeaderLink');
+            const nextHeaderLink = document.getElementById('nextHeaderLink');
+
+            previousHeaderLink.hidden = !previous;
+            nextHeaderLink.hidden = !next;
+            if (previous) {
+                previousHeaderLink.href = stepUrl(previous);
+                previousHeaderLink.textContent = '← Prev';
+                previousHeaderLink.setAttribute('aria-label', `Previous: ${previous.title}`);
             }
+            if (next) {
+                nextHeaderLink.href = stepUrl(next);
+                nextHeaderLink.textContent = 'Next →';
+                nextHeaderLink.setAttribute('aria-label', `Next: ${next.title}`);
+            }
+
+            const footer = document.getElementById('lessonFooter');
+            footer.innerHTML = `
+                ${previous
+                    ? `<a href="${stepUrl(previous)}" class="nav-footer-btn">← ${previous.navTitle}</a>`
+                    : '<span class="nav-footer-btn disabled" aria-disabled="true">← Previous</span>'}
+                ${next
+                    ? `<a href="${stepUrl(next)}" class="nav-footer-btn">${next.navTitle} →</a>`
+                    : '<span class="nav-footer-btn disabled" aria-disabled="true">Next →</span>'}`;
+        }
+
+        function updateProgress(step) {
+            const position = document.getElementById('stepPosition');
+            const estimate = document.getElementById('stepEstimate');
+            const track = document.getElementById('progressTrack');
+            const fill = document.getElementById('progressFill');
+            let progressValue = 0;
+
+            if (step.kind === 'core') {
+                position.textContent = `Step ${step.number} of 7`;
+                progressValue = step.number;
+            } else if (step.kind === 'optional') {
+                position.textContent = 'Optional extension';
+                progressValue = 7;
+            } else {
+                position.textContent = 'Preflight';
+            }
+
+            estimate.textContent = step.time;
+            track.setAttribute('aria-valuenow', String(progressValue));
+            fill.style.width = `${(progressValue / 7) * 100}%`;
         }
 
         function processMarkdown(markdown) {
-            return markdown.replace(/\]\((\d{2}-[a-z0-9-]+)\.md\)/g, (match, stepId) => {
-                const target = steps.find(step => step.id === stepId);
-                return target ? `](${stepUrl(target)})` : match;
+            const targetUrl = new URL('target-app/', getSiteRootUrl()).href;
+            return markdown
+                .replaceAll('{{TARGET_APP_URL}}', targetUrl)
+                .replace(/\]\((\d{2}-[a-z0-9-]+)\.md\)/g, (match, stepId) => {
+                    const target = steps.find(step => step.id === stepId);
+                    return target ? `](${stepUrl(target)})` : match;
+                });
+        }
+
+        async function copyCode(button, codeBlock) {
+            const text = codeBlock.textContent.replace(/\n$/, '');
+            try {
+                if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.setAttribute('readonly', '');
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = '0';
+                    document.body.append(textArea);
+                    textArea.select();
+                    const copied = document.execCommand('copy');
+                    textArea.remove();
+                    if (!copied) {
+                        throw new Error('The browser did not copy the code.');
+                    }
+                }
+
+                button.textContent = 'Copied';
+                button.classList.add('copied');
+            } catch (error) {
+                button.textContent = 'Copy failed';
+                button.classList.add('copy-error');
+                console.error('Unable to copy code:', error);
+            }
+
+            window.setTimeout(() => {
+                button.textContent = 'Copy';
+                button.classList.remove('copied', 'copy-error');
+            }, 1800);
+        }
+
+        function addCopyButtons() {
+            document.querySelectorAll('#markdownContent pre').forEach(pre => {
+                const codeBlock = pre.querySelector('code');
+                if (!codeBlock || pre.querySelector('.copy-code-button')) {
+                    return;
+                }
+
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'copy-code-button';
+                button.textContent = 'Copy';
+                button.setAttribute('aria-label', 'Copy code block');
+                button.addEventListener('click', () => copyCode(button, codeBlock));
+                pre.append(button);
             });
         }
 
+        function initializeTabs() {
+            document.querySelectorAll('[data-tabs]').forEach((group, groupIndex) => {
+                const tabs = [...group.querySelectorAll('[role="tab"]')];
+                const panels = [...group.querySelectorAll('[role="tabpanel"]')];
+
+                function activateTab(tabToActivate, moveFocus) {
+                    tabs.forEach(tab => {
+                        const active = tab === tabToActivate;
+                        tab.setAttribute('aria-selected', String(active));
+                        tab.tabIndex = active ? 0 : -1;
+                        const panel = panels.find(candidate =>
+                            candidate.dataset.panel === tab.dataset.tab);
+                        if (panel) {
+                            panel.hidden = !active;
+                        }
+                    });
+                    if (moveFocus) {
+                        tabToActivate.focus();
+                    }
+                }
+
+                tabs.forEach((tab, tabIndex) => {
+                    const panel = panels.find(candidate =>
+                        candidate.dataset.panel === tab.dataset.tab);
+                    const tabId = `tab-${groupIndex}-${tabIndex}`;
+                    const panelId = `panel-${groupIndex}-${tabIndex}`;
+                    tab.id = tabId;
+                    tab.setAttribute('aria-controls', panelId);
+                    tab.tabIndex = tab.getAttribute('aria-selected') === 'true' ? 0 : -1;
+                    if (panel) {
+                        panel.id = panelId;
+                        panel.setAttribute('aria-labelledby', tabId);
+                    }
+
+                    tab.addEventListener('click', () => activateTab(tab, false));
+                    tab.addEventListener('keydown', event => {
+                        let targetIndex;
+                        if (event.key === 'ArrowRight') {
+                            targetIndex = (tabIndex + 1) % tabs.length;
+                        } else if (event.key === 'ArrowLeft') {
+                            targetIndex = (tabIndex - 1 + tabs.length) % tabs.length;
+                        } else if (event.key === 'Home') {
+                            targetIndex = 0;
+                        } else if (event.key === 'End') {
+                            targetIndex = tabs.length - 1;
+                        }
+
+                        if (targetIndex !== undefined) {
+                            event.preventDefault();
+                            activateTab(tabs[targetIndex], true);
+                        }
+                    });
+                });
+            });
+        }
+
+        function prepareRenderedLesson() {
+            document.querySelectorAll('#markdownContent pre code').forEach(codeBlock => {
+                hljs.highlightElement(codeBlock);
+            });
+            addCopyButtons();
+            initializeTabs();
+            document.querySelectorAll('#markdownContent a[href^="http"]').forEach(link => {
+                link.target = '_blank';
+                link.rel = 'noopener';
+            });
+        }
+
+        function showLoadError(error) {
+            const container = document.getElementById('markdownContent');
+            const status = document.getElementById('lessonStatus');
+            const message = document.createElement('div');
+            message.className = 'load-error';
+            const heading = document.createElement('h1');
+            heading.textContent = 'Unable to load this lesson';
+            const details = document.createElement('p');
+            details.textContent = error.message;
+            const guidance = document.createElement('p');
+            guidance.textContent = window.location.protocol === 'file:'
+                ? 'Serve the repository with a local HTTP server; browsers block lesson fetches from file URLs.'
+                : 'Refresh the page. If the problem continues, verify that the workshop Markdown was deployed.';
+            message.append(heading, details, guidance);
+            container.replaceChildren(message);
+            container.setAttribute('aria-busy', 'false');
+            status.textContent = 'Unable to load this lesson.';
+        }
+
         async function loadStep() {
-            const stepId = getStepId();
+            const stepId = getRequestedStepId();
             currentIndex = steps.findIndex(step => step.id === stepId);
             const step = steps[currentIndex];
+            const container = document.getElementById('markdownContent');
+            const status = document.getElementById('lessonStatus');
+
+            document.title = `${step.title} | Copilot SDK Workshop`;
+            document.getElementById('headerLessonTitle').textContent = step.title;
+            updateProgress(step);
             buildNavigation();
+            updatePagination();
+            container.setAttribute('aria-busy', 'true');
+            status.textContent = `Loading ${step.title}.`;
 
             try {
-                const response = await fetch(new URL(step.file, getSiteRootUrl()));
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const response = await fetch(getMarkdownUrl(step.file));
+                if (!response.ok) {
+                    throw new Error(`Lesson request failed with HTTP ${response.status}.`);
+                }
+
                 const markdown = processMarkdown(await response.text());
-                document.getElementById('markdownContent').innerHTML = `<article class="markdown">${marked.parse(markdown)}</article>`;
-                document.querySelectorAll('#markdownContent pre code').forEach((codeBlock) => {
-                    hljs.highlightElement(codeBlock);
-                });
+                container.innerHTML =
+                    `<article class="markdown">${marked.parse(markdown, { gfm: true })}</article>`;
+                prepareRenderedLesson();
+                container.setAttribute('aria-busy', 'false');
+                status.textContent = `Loaded ${step.title}.`;
             } catch (error) {
-                document.getElementById('markdownContent').innerHTML = `<div class="error-message"><h2>Unable to load this step</h2><p>${error.message}</p></div>`;
+                showLoadError(error);
             }
         }
 
+        menuButton.addEventListener(
+            'click',
+            () => setNavigationOpen(!navigationPanel.classList.contains('open')));
+        closeNavigationButton.addEventListener('click', () => setNavigationOpen(false));
+        navigationOverlay.addEventListener('click', () => setNavigationOpen(false));
+        compactNavigation.addEventListener('change', () => setNavigationOpen(false));
+        document.addEventListener('keydown', event => {
+            if (navigationPanel.classList.contains('open') && event.key === 'Escape') {
+                event.preventDefault();
+                setNavigationOpen(false);
+                return;
+            }
+            trapNavigationFocus(event);
+        });
+
+        setNavigationOpen(false);
         loadStep();
     </script>
 </body>

@@ -1,135 +1,86 @@
 # Copilot SDK Workshop
 
-A hands-on, continuous workshop for the GitHub Copilot SDK (.NET). Build one accessibility application from start to finish: begin with a local C# WCAG lookup tool, then add the Playwright MCP server to analyze a live webpage and generate tests.
+Build an AI-powered accessibility reviewer with .NET and the GitHub Copilot SDK.
 
-The workshop is published as a GitHub Pages site with one ordered walkthrough.
+In this self-guided workshop, you'll:
 
----
+1. Create a Copilot client and conversation session.
+2. Stream responses through session events.
+3. Expose application-owned Web Content Accessibility Guidelines (WCAG) data as a local C# tool.
+4. Connect Playwright MCP through a scoped permission boundary.
+5. Combine browser evidence and catalog guidance in a structured report.
+6. Explain the ownership, process, and trust boundaries in the completed application.
 
-## Live site
+Plan on about 90 minutes for the seven core steps. Machine setup happens separately in an untimed
+preflight.
 
-After you enable GitHub Pages, the site will be available at:
+## Start the workshop
 
-```text
-https://jamesmontemagno.github.io/copilot-sdk-workshop/
+Open the GitHub Pages URL produced by the repository's **Deploy to GitHub Pages** workflow, then
+select **Start workshop**. The site derives its Pages base URL at runtime, so there is no hardcoded
+organization or user Pages hostname.
+
+To preview the site from a clone:
+
+```bash
+git clone https://github.com/codemillmatt/copilot-sdk-workshop.git
+cd copilot-sdk-workshop
+python3 -m http.server 8000
 ```
 
-No step-viewer URL configuration is required before deployment. The workshop viewer derives the site root from the current URL, so walkthrough content resolves correctly for both a repository GitHub Pages site and a local preview served from the repository root.
-
-The Blazor target app used by the browser-tool steps is deployed automatically at:
-
-```text
-https://jamesmontemagno.github.io/copilot-sdk-workshop/target-app/
-```
-
----
+Open <http://localhost:8000/docs/>. Do not open `step.html` with a `file://` URL; browsers block
+the Markdown requests used by the lesson viewer.
 
 ## Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [Node.js 22+](https://nodejs.org/) (for the Playwright MCP server)
-- A supported browser for the Playwright MCP steps: [Microsoft Edge](https://www.microsoft.com/edge/download) (the default) or [Google Chrome](https://www.google.com/chrome/) installed locally
-- [Visual Studio Code](https://code.visualstudio.com/)
-- [GitHub Copilot](https://github.com/features/copilot) subscription or trial
-- [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli) installed; run `copilot login` before using a sample
+- [.NET 10 SDK](https://learn.microsoft.com/dotnet/core/install/)
+- [Node.js 22 or newer](https://nodejs.org/)
+- [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli)
+- GitHub Copilot subscription or trial
+- Microsoft Edge (the workshop default) or Google Chrome
 
-Install the CLI using your platform's package manager:
-
-```powershell
-# Windows
-winget install GitHub.Copilot
-```
-
-```bash
-# macOS and Linux with Homebrew
-brew install copilot-cli
-
-# Any platform with Node.js 22+
-npm install -g @github/copilot
-```
-
-The SDK can download its bundled runtime during the build. This workshop instead uses the locally installed CLI when available, avoiding that download. Windows installs made with WinGet and Homebrew installs on macOS are detected automatically. On macOS or Linux with a custom CLI location, set the CLI location before restoring, building, or running:
-
-```bash
-export COPILOT_CLI_BINARY_PATH="$(command -v copilot)"
-```
-
-In PowerShell, use:
-
-```powershell
-$env:COPILOT_CLI_BINARY_PATH = (Get-Command copilot).Source
-```
-
----
-
-## Quick start
-
-### Workshop starter
-
-The baseline project is available in [`start/HelloCopilotSDK`](start/HelloCopilotSDK). It contains the project setup, rule catalog, and workshop scenarios.
-
-### Complete workshop
-
-```bash
-copilot login
-open docs/workshop/step.html
-```
-
-The workshop copies the starter to `workshop-app`, builds local tool calling, then adds Playwright MCP to that same project.
-
----
-
-## Local preview of the workshop site
-
-Because the step viewers fetch markdown from the repository, the easiest way to preview locally is to serve the repository root and open `docs/index.html`:
-
-```bash
-# Using Python
-python -m http.server 8000
-
-# Using Node.js
-npx serve .
-```
-
-Then open `http://localhost:8000/docs/index.html`.
-
----
+Preflight walks through installation checks, authentication, OS-specific commands, expected
+output, and troubleshooting.
 
 ## Repository layout
 
-```
+```text
 copilot-sdk-workshop/
-├── docs/                         # GitHub Pages static site
-│   ├── index.html                # Workshop hub
-│   ├── workshop/                 # Unified workshop viewer
-│   └── target-app/               # Deployed Blazor target app
-├── workshop/                     # Unified walkthrough steps
-├── samples/
-│   ├── hello-copilot-sdk/        # Local-tool checkpoint
-│   └── accessibility-report/     # Completed MCP checkpoint
-├── src/BlazorApp/                # Source for the target app
-├── .github/workflows/deploy.yml  # GitHub Pages deployment
-└── README.md
+|-- docs/                         GitHub Pages site and controlled target page
+|-- workshop/                     Preflight, seven core lessons, optional extension
+|-- start/HelloCopilotSDK/        Learner starter with WCAG data and permission helper
+|-- checkpoints/                  Compiling state after each build step
+|-- samples/
+|   |-- hello-copilot-sdk/        Completed local-tool example
+|   `-- accessibility-report/     Completed local + MCP reporter
+|-- src/BlazorApp/                Source counterpart of the deployed target
+|-- scripts/                      Deterministic content and build validation
+`-- .github/workflows/            Validation and Pages deployment
 ```
 
----
+## Validate a change
+
+```bash
+bash scripts/validate-workshop.sh
+```
+
+The command checks lesson structure, internal links, site behavior hooks, and checkpoint coverage.
+It also builds the starter, every checkpoint, both samples, and the Blazor target.
 
 ## Deployment
 
-Push to the `main` branch. The [GitHub Actions workflow](.github/workflows/deploy.yml) will deploy the `docs/` and `workshop/` folders to GitHub Pages.
+After validation passes, push to `main`. The
+[Pages workflow](.github/workflows/deploy.yml) validates the workshop, builds the projects, and
+publishes `docs/` plus the Markdown lessons in `workshop/`.
 
-Make sure GitHub Pages is enabled in the repository settings and set to deploy from GitHub Actions.
+Enable GitHub Pages in repository settings and choose **GitHub Actions** as the source. The
+deployment job reports the canonical workshop URL in its environment.
 
----
-
-## Resources
+## References
 
 - [GitHub Copilot SDK for .NET](https://github.com/github/copilot-sdk/tree/main/dotnet)
-- [Awesome Copilot cookbook](https://github.com/github/awesome-copilot/tree/main/cookbook/copilot-sdk/dotnet)
-- [Playwright MCP server](https://www.npmjs.com/package/@playwright/mcp)
-- [Site format inspired by Mona Mayhem](https://github.com/copilot-dev-days/mona-mayhem)
-
----
+- [Playwright MCP](https://github.com/microsoft/playwright-mcp)
+- [Model Context Protocol](https://modelcontextprotocol.io/)
 
 ## License
 

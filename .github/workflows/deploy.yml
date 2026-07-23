@@ -23,6 +23,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Validate content and build checkpoints
+        run: bash scripts/validate-workshop.sh
+
       - name: Prepare deployment
         run: |
           mkdir -p ./_site

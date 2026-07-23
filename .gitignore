@@ -25,3 +25,6 @@ Thumbs.db
 
 # Temporary inspection projects
 temp-inspect/
+
+# Playwright MCP run artifacts
+.playwright-mcp/
