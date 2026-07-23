@@ -2,32 +2,31 @@
 
 > **Time:** 15 minutes
 
-## Outcome
+## What you'll orchestrate
 
-After this step, a learner-supplied URL will drive one agent turn that gathers browser evidence
-with Playwright and retrieves remediation guidance from the local WCAG catalog.
+You'll use one URL to drive an agent turn that gathers browser evidence with Playwright and gets
+remediation guidance from the local WCAG catalog.
 
-## What this means
+## Let the agent choose the right tool
 
-**Agent orchestration** is the model choosing and sequencing available capabilities to accomplish
-a goal. Your session exposes two very different tools through one interface:
+**Agent orchestration** is the model choosing and sequencing capabilities to complete a goal. Your
+session exposes two different tools through one interface:
 
 - Playwright discovers facts about the live page.
 - The C# catalog explains a matching criterion and remediation.
 
-Both tools emit the same `ToolExecutionStartEvent` and `ToolExecutionCompleteEvent`. That common
-event model lets your application observe orchestration without knowing how each tool is
-implemented.
+Both tools report through `ToolExecutionStartEvent` and `ToolExecutionCompleteEvent`. Your
+application can observe the work without knowing how either tool is implemented.
 
-## Why it matters
+## Keep evidence and guidance in their lanes
 
-One tool should not pretend to do another tool's job. Browser evidence must come from the browser;
-authoritative application guidance must come from the application. Combining them produces a more
-grounded answer than asking the model to infer both.
+Each tool has one job. Playwright supplies browser evidence, while the local catalog supplies
+the application's source-of-truth guidance. The answer is grounded in those sources instead of
+asking the model to infer both.
 
-> **Where it fits:** `URL -> Playwright evidence -> WCAG catalog lookup -> grounded response`.
+The flow is now `URL -> Playwright evidence -> WCAG catalog lookup -> grounded response`.
 
-## Make the change
+## Put both tools to work
 
 ### 1. Read and validate a URL
 
@@ -57,7 +56,7 @@ if (!Uri.TryCreate(urlInput, UriKind.Absolute, out var targetUri) ||
 }
 ```
 
-The handler from Step 4 receives this validated `targetUri`, so its URL boundary still applies.
+The Step 4 handler receives this validated `targetUri`, so the URL boundary still applies.
 
 ### 2. Give the agent a three-tool goal
 
@@ -77,8 +76,8 @@ await ResponseStreamer.SendAndPrintAsync(
     """);
 ```
 
-The prompt assigns evidence gathering and guidance to their correct sources. It does not prescribe
-the exact order of every catalog lookup; the agent can orchestrate those calls.
+The prompt assigns evidence and guidance to their correct sources. It leaves the order of the
+catalog lookups to the agent.
 
 ## Run it
 
@@ -92,7 +91,7 @@ Paste this URL when prompted:
 {{TARGET_APP_URL}}
 ```
 
-You should see both capability families:
+You should see activity from both kinds of tool:
 
 ```text
 [tool:start] playwright-browser_navigate
@@ -118,8 +117,8 @@ must match the catalog.
 
 </details>
 
-> **You are ready to continue when:** one run names both a Playwright tool and
-> `accessibility_rule_lookup`, then connects observed evidence to catalog guidance.
+> **You're ready to shape the report when:** one run names a Playwright tool and
+> `accessibility_rule_lookup`, then connects browser evidence to catalog guidance.
 
 ## Check your understanding
 
@@ -129,15 +128,15 @@ associated WCAG criterion?
 <details>
 <summary>Check your answer</summary>
 
-Playwright discovers the input from the live page. The local catalog returns the application's
-authoritative criterion and remediation.
+Playwright finds the input on the live page. The local catalog returns the application's
+source-of-truth criterion and remediation.
 
 </details>
 
 <details>
 <summary>Complete Step 5 checkpoint</summary>
 
-The full, compiling reference is
+A complete Step 5 project is available at
 [`checkpoints/05-combine-tools`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/05-combine-tools).
 
 ```csharp

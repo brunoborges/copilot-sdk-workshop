@@ -2,22 +2,23 @@
 
 Build an AI-powered accessibility reviewer with .NET and the GitHub Copilot SDK.
 
-The self-guided workshop teaches a learner to:
+In this self-guided workshop, you'll:
 
 1. Create a Copilot client and conversation session.
 2. Stream responses through session events.
-3. Expose application-owned WCAG data as a local C# tool.
+3. Expose application-owned Web Content Accessibility Guidelines (WCAG) data as a local C# tool.
 4. Connect Playwright MCP through a scoped permission boundary.
 5. Combine browser evidence and catalog guidance in a structured report.
 6. Explain the ownership, process, and trust boundaries in the completed application.
 
-The seven core steps take about 90 minutes. Machine setup is a separate, untimed preflight.
+Plan on about 90 minutes for the seven core steps. Machine setup happens separately in an untimed
+preflight.
 
 ## Start the workshop
 
-Use the GitHub Pages URL produced by the repository's **Deploy to GitHub Pages** workflow, then
-select **Start workshop**. The site derives its own Pages base URL, so it does not depend on a
-hardcoded organization or user Pages hostname.
+Open the GitHub Pages URL produced by the repository's **Deploy to GitHub Pages** workflow, then
+select **Start workshop**. The site derives its Pages base URL at runtime, so there is no hardcoded
+organization or user Pages hostname.
 
 To preview the site from a clone:
 
@@ -38,8 +39,8 @@ the Markdown requests used by the lesson viewer.
 - GitHub Copilot subscription or trial
 - Microsoft Edge (the workshop default) or Google Chrome
 
-The lesson viewer's preflight provides installation verification, authentication, OS-specific
-commands, expected output, and troubleshooting.
+Preflight walks through installation checks, authentication, OS-specific commands, expected
+output, and troubleshooting.
 
 ## Repository layout
 
@@ -63,12 +64,12 @@ copilot-sdk-workshop/
 bash scripts/validate-workshop.sh
 ```
 
-The command checks lesson structure, internal links, site behavior hooks, checkpoint coverage, and
-builds the starter, every checkpoint, both samples, and the Blazor target.
+The command checks lesson structure, internal links, site behavior hooks, and checkpoint coverage.
+It also builds the starter, every checkpoint, both samples, and the Blazor target.
 
 ## Deployment
 
-Push to `main` after validation passes. The
+After validation passes, push to `main`. The
 [Pages workflow](.github/workflows/deploy.yml) validates the workshop, builds the projects, and
 publishes `docs/` plus the Markdown lessons in `workshop/`.
 

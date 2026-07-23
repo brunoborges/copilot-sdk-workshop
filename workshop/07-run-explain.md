@@ -2,15 +2,15 @@
 
 > **Time:** 10 minutes
 
-## Outcome
+## What you'll be ready to explain
 
-After this step, you will have run the complete application and be able to explain its state,
-tool boundaries, permission boundary, and report limitations.
+You'll run the complete application and explain its state, tool boundaries, permission boundary,
+and report limitations.
 
-## What this means
+## See the whole agent system
 
-The finished application is an agent host, not just a model call. The session coordinates a model,
-an application-owned function, and an external browser process:
+The finished application is an agent host. Its session coordinates a model, an application-owned
+function, and a browser running in another process:
 
 ```text
 Console application
@@ -28,18 +28,18 @@ Console application
                        `-- Browser target
 ```
 
-## Why it matters
+## Take the design beyond this workshop
 
-If you can explain these boundaries, you can transfer the design to another application instead of
-only reproducing workshop code. A database lookup, deployment service, or issue tracker may use
-different tools, but the ownership and trust questions stay the same.
+Understanding these boundaries lets you reuse the design in another application instead of only
+reproducing the workshop code. A database lookup, deployment service, or issue tracker may use
+different tools, but the same ownership and trust questions apply.
 
-> **Where it fits:** This is the complete flow:
-> `URL -> Playwright inspection -> C# WCAG lookup -> structured accessibility report`.
+The complete flow is
+`URL -> Playwright inspection -> C# WCAG lookup -> structured accessibility report`.
 
-## Make the change
+## Take a victory lap
 
-No code changes are required. Keep the Step 6 checkpoint so this run tests the exact application
+There is no code to change. Keep the Step 6 checkpoint in place so this run tests the application
 you built.
 
 ## Run it
@@ -48,13 +48,13 @@ you built.
 dotnet run --project workshop-app
 ```
 
-Analyze:
+Use the workshop target:
 
 ```text
 {{TARGET_APP_URL}}
 ```
 
-Confirm the run demonstrates all five observable stages:
+Watch for all five stages:
 
 1. The client connects and creates one session.
 2. Playwright navigates to the exact target and creates an accessibility snapshot.
@@ -62,9 +62,9 @@ Confirm the run demonstrates all five observable stages:
 4. The local catalog is called for browser-supported findings.
 5. The response follows the report contract and states its limits.
 
-The controlled target intentionally exposes browser-observable issues such as a missing text
-alternative, no `main` landmark, an illogical heading sequence, and a textbox without an accessible
-name. Compare the report with the
+The controlled target intentionally includes browser-observable issues: a missing text alternative,
+no `main` landmark, an illogical heading sequence, and a textbox without an accessible name.
+Compare the report with the
 [published target HTML](https://github.com/codemillmatt/copilot-sdk-workshop/blob/main/docs/target-app/index.html);
 do not accept a finding that is absent from both the snapshot and source.
 
@@ -107,8 +107,8 @@ do not accept a finding that is absent from both the snapshot and source.
 
 ## Keep exploring
 
-Choose [Optional: Select a model](08-model-selection.md) if your application needs explicit control
-over model choice. Otherwise, you are done with the core workshop.
+Try [Optional: Select a model](08-model-selection.md) if your application needs explicit control
+over model choice. Otherwise, the core workshop is complete.
 
 Complete references:
 

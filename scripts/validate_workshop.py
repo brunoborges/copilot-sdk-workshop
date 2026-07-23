@@ -33,11 +33,69 @@ CHECKPOINTS = [
     "05-combine-tools",
     "06-structured-report",
 ]
-REQUIRED_SECTIONS = [
-    "## Outcome",
-    "## What this means",
-    "## Why it matters",
-    "## Make the change",
+LESSON_HEADINGS = {
+    "00-preflight.md": ["## What you'll have ready"],
+    "01-first-session.md": [
+        "## What you'll build",
+        "## Meet the GitHub Copilot SDK and runtime",
+        "## Why clients and sessions stay separate",
+        "## Fire up your first Copilot session",
+    ],
+    "02-streaming.md": [
+        "## What you'll see",
+        "## How streaming changes the experience",
+        "## Why progressive output feels better",
+        "## Let the response roll in",
+    ],
+    "03-local-tool.md": [
+        "## What you'll add",
+        "## Give Copilot a tool your app owns",
+        "## Bring your own source of truth",
+        "## Wire up the WCAG lookup",
+    ],
+    "04-mcp-safety.md": [
+        "## What you'll connect",
+        "## Meet MCP and its trust boundary",
+        "## Reuse browser automation without giving it free rein",
+        "## Put Playwright behind guardrails",
+    ],
+    "05-combine-tools.md": [
+        "## What you'll orchestrate",
+        "## Let the agent choose the right tool",
+        "## Keep evidence and guidance in their lanes",
+        "## Put both tools to work",
+    ],
+    "06-structured-report.md": [
+        "## What you'll produce",
+        "## Separate evidence from interpretation",
+        "## Be useful without overstating the result",
+        "## Give the report a contract",
+    ],
+    "07-run-explain.md": [
+        "## What you'll be ready to explain",
+        "## See the whole agent system",
+        "## Take the design beyond this workshop",
+        "## Take a victory lap",
+    ],
+    "08-model-selection.md": [
+        "## What you'll customize",
+        "## How model selection works",
+        "## Swap models without changing the architecture",
+        "## Add a model picker",
+    ],
+}
+LESSON_READINESS = {
+    "00-preflight.md": "**Start Step 1 when:**",
+    "01-first-session.md": "**You're ready for streaming when:**",
+    "02-streaming.md": "**You're ready to add tools when:**",
+    "03-local-tool.md": "**You're ready for Playwright when:**",
+    "04-mcp-safety.md": "**You're ready to combine tools when:**",
+    "05-combine-tools.md": "**You're ready to shape the report when:**",
+    "06-structured-report.md": "**You're ready for the final run when:**",
+    "07-run-explain.md": "**You have completed the core workshop when:**",
+    "08-model-selection.md": "**The extension is complete when:**",
+}
+CORE_REQUIRED_SECTIONS = [
     "## Run it",
     "## Check your understanding",
 ]
@@ -114,6 +172,23 @@ for lesson_name in LESSONS:
     require(lesson_path.exists(), f"Missing lesson {lesson_name}")
     if lesson_path.exists():
         validate_markdown_links(lesson_path)
+        lesson_text = lesson_path.read_text(encoding="utf-8")
+        for heading in LESSON_HEADINGS[lesson_name]:
+            require(heading in lesson_text, f"{lesson_name} is missing tailored heading: {heading}")
+        require(
+            LESSON_READINESS[lesson_name] in lesson_text,
+            f"{lesson_name} is missing its readiness statement",
+        )
+        for generic_heading in [
+            "## Outcome",
+            "## What this means",
+            "## Why it matters",
+            "## Make the change",
+        ]:
+            require(
+                generic_heading not in lesson_text,
+                f"{lesson_name} still uses generic heading: {generic_heading}",
+            )
 
 for supporting_markdown in [ROOT / "README.md", ROOT / "start" / "README.md", ROOT / "checkpoints" / "README.md"]:
     validate_markdown_links(supporting_markdown)
@@ -124,18 +199,25 @@ require(
     "Starter README links to raw lesson Markdown instead of the interactive viewer",
 )
 
+wcag_definition = "Web Content Accessibility Guidelines (WCAG)"
+for entry_point in [
+    ROOT / "README.md",
+    ROOT / "start" / "README.md",
+    WORKSHOP / "03-local-tool.md",
+    DOCS / "index.html",
+]:
+    require(
+        wcag_definition in entry_point.read_text(encoding="utf-8"),
+        f"{entry_point.relative_to(ROOT)} uses WCAG without defining the acronym",
+    )
+
 for lesson_name in CORE_LESSONS:
     lesson_path = WORKSHOP / lesson_name
     if not lesson_path.exists():
         continue
     lesson_text = lesson_path.read_text(encoding="utf-8")
-    for section in REQUIRED_SECTIONS:
+    for section in CORE_REQUIRED_SECTIONS:
         require(section in lesson_text, f"{lesson_name} is missing required section: {section}")
-    require(
-        "You are ready to continue when:" in lesson_text
-        or "You have completed the core workshop when:" in lesson_text,
-        f"{lesson_name} is missing a readiness statement",
-    )
 
 for checkpoint in CHECKPOINTS:
     project = ROOT / "checkpoints" / checkpoint / "HelloCopilotSDK.csproj"
@@ -192,26 +274,55 @@ step_shell = (DOCS / "workshop" / "step.html").read_text(encoding="utf-8")
 for lesson_name in LESSONS:
     require(lesson_name in step_shell, f"Lesson viewer does not register {lesson_name}")
 for behavior_hook in [
+    'class="header"',
+    'class="flyout-panel"',
+    'class="flyout-link',
+    "🤖 Workshop Steps",
+    "🏠 Hub",
     "copy-code-button",
     "aria-current=\"step\"",
     "event.key === 'Escape'",
     "trapNavigationFocus",
+    "toggleAttribute('inert'",
     "initializeTabs",
     "document.title =",
     'id="lessonStatus"',
+    'id="progressTrack"',
     "aria-busy",
-    "stateLabel",
 ]:
     require(behavior_hook in step_shell, f"Lesson viewer is missing behavior hook: {behavior_hook}")
 require(
     'id="markdownContent" aria-live=' not in step_shell,
     "The full rendered lesson must not be an aria-live region",
 )
+require(
+    'id="architectureFlow"' not in step_shell,
+    "Lesson viewer duplicates the step navigation with an architecture strip",
+)
 
 homepage = (DOCS / "index.html").read_text(encoding="utf-8")
 require(homepage.count('class="primary-action"') == 1, "Homepage must have exactly one primary action")
 require("GitHub Copilot SDK" in homepage, "Homepage does not define the SDK")
 require("Playwright inspection" in homepage, "Homepage does not show the application flow")
+for homepage_hook in [
+    'class="hero-layout"',
+    'class="terminal-preview"',
+    "🤖",
+    "🎯 Target App",
+]:
+    require(homepage_hook in homepage, f"Homepage is missing hybrid UX hook: {homepage_hook}")
+
+for stylesheet_name in ["styles.css", "step.css"]:
+    stylesheet = (DOCS / stylesheet_name).read_text(encoding="utf-8")
+    for theme_token in [
+        "--neon-cyan: #00f5ff",
+        "--neon-magenta: #ff00ff",
+        "--neon-purple: #b366ff",
+    ]:
+        require(
+            theme_token in stylesheet,
+            f"{stylesheet_name} is missing upstream theme token: {theme_token}",
+        )
 
 for html_file in [DOCS / "index.html", DOCS / "workshop" / "step.html", DOCS / "target-app" / "index.html"]:
     validate_html_assets(html_file)

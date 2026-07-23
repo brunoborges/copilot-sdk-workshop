@@ -18,28 +18,29 @@
 <body>
     <a class="skip-link" href="#lessonContent">Skip to lesson</a>
 
-    <header class="lesson-header">
-        <button
-            class="icon-button menu-button"
-            id="menuButton"
-            type="button"
-            aria-expanded="false"
-            aria-controls="navigationPanel"
-            aria-label="Open workshop navigation">Menu</button>
+    <header class="header">
+        <div class="header-content">
+            <button
+                class="nav-btn menu-btn"
+                id="menuButton"
+                type="button"
+                aria-expanded="false"
+                aria-controls="navigationPanel"
+                aria-label="Open sections">☰</button>
 
-        <a href="../index.html" class="lesson-brand" aria-label="Copilot SDK Workshop home">
-            <span class="brand-mark" aria-hidden="true">C</span>
-            <span class="brand-copy">
-                <strong>Copilot SDK Workshop</strong>
-                <span id="headerLessonTitle">Loading lesson</span>
-            </span>
-        </a>
+            <a href="../index.html" class="header-brand" aria-label="Copilot SDK Workshop home">
+                <span class="header-icon" aria-hidden="true">🤖</span>
+                <span class="header-title">Copilot SDK Workshop</span>
+                <span class="visually-hidden" id="headerLessonTitle">Loading lesson</span>
+            </a>
 
-        <nav class="header-actions" aria-label="Lesson actions">
-            <button class="theme-toggle" type="button" onclick="toggleTheme()">Light theme</button>
-            <a class="header-step-link" id="previousHeaderLink" href="#" hidden>Previous</a>
-            <a class="header-step-link primary" id="nextHeaderLink" href="#" hidden>Next</a>
-        </nav>
+            <nav class="header-nav" aria-label="Lesson actions">
+                <a href="../index.html" class="nav-btn">🏠 Hub</a>
+                <button class="theme-toggle" type="button" onclick="toggleTheme()">☀️ Light</button>
+                <a class="nav-btn" id="previousHeaderLink" href="#" hidden>← Prev</a>
+                <a class="nav-btn" id="nextHeaderLink" href="#" hidden>Next →</a>
+            </nav>
+        </div>
     </header>
 
     <div class="lesson-progress">
@@ -59,41 +60,36 @@
         </div>
     </div>
 
-    <div class="navigation-overlay" id="navigationOverlay" hidden></div>
-    <aside
-        class="navigation-panel"
-        id="navigationPanel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="navigationTitle"
-        hidden>
-        <div class="navigation-heading">
-            <div>
-                <p class="eyebrow">Workshop path</p>
-                <h2 id="navigationTitle">Build the reviewer</h2>
+    <div class="flyout-overlay" id="navigationOverlay"></div>
+    <div class="layout">
+        <aside
+            class="flyout-panel"
+            id="navigationPanel"
+            aria-labelledby="navigationTitle"
+            tabindex="-1">
+            <div class="flyout-header">
+                <span class="flyout-title" id="navigationTitle">🤖 Workshop Steps</span>
+                <button
+                    class="flyout-close"
+                    id="closeNavigationButton"
+                    type="button"
+                    aria-label="Close sections">✕</button>
             </div>
-            <button class="icon-button" id="closeNavigationButton" type="button" aria-label="Close workshop navigation">Close</button>
-        </div>
-        <nav id="workshopNavigation" aria-label="Workshop steps"></nav>
-    </aside>
+            <nav class="flyout-nav" id="workshopNavigation" aria-label="Workshop steps"></nav>
+        </aside>
 
-    <main class="lesson-shell">
-        <section class="architecture" aria-labelledby="architectureTitle">
-            <div class="architecture-heading">
-                <p class="eyebrow">Cumulative architecture</p>
-                <h2 id="architectureTitle">What the application contains now</h2>
+        <main class="main lesson-main">
+            <div class="lesson-shell">
+                <div class="lesson-content" id="lessonContent">
+                    <p class="visually-hidden" id="lessonStatus" role="status" aria-live="polite">Loading lesson.</p>
+                    <div id="markdownContent" aria-busy="true">
+                        <p class="loading-message">Loading lesson...</p>
+                    </div>
+                    <nav class="nav-footer" id="lessonFooter" aria-label="Lesson pagination"></nav>
+                </div>
             </div>
-            <ol class="architecture-flow" id="architectureFlow"></ol>
-        </section>
-
-        <div class="lesson-content" id="lessonContent">
-            <p class="visually-hidden" id="lessonStatus" role="status" aria-live="polite">Loading lesson.</p>
-            <div id="markdownContent" aria-busy="true">
-                <p class="loading-message">Loading lesson...</p>
-            </div>
-            <nav class="lesson-footer" id="lessonFooter" aria-label="Lesson pagination"></nav>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <script>
         const steps = [
@@ -194,21 +190,11 @@
             '12-run-review': '07-run-explain'
         };
 
-        const architectureNodes = [
-            { stage: 1, label: 'Client + session' },
-            { stage: 2, label: 'Streaming events' },
-            { stage: 3, label: 'Local WCAG tool' },
-            { stage: 4, label: 'Scoped Playwright + snapshot reader' },
-            { stage: 5, label: 'Tool orchestration' },
-            { stage: 6, label: 'Structured report' },
-            { stage: 7, label: 'Explain the architecture' },
-            { stage: 8, label: 'Model choice', optional: true }
-        ];
-
         const menuButton = document.getElementById('menuButton');
         const navigationPanel = document.getElementById('navigationPanel');
         const navigationOverlay = document.getElementById('navigationOverlay');
         const closeNavigationButton = document.getElementById('closeNavigationButton');
+        const compactNavigation = window.matchMedia('(max-width: 900px)');
         let currentIndex = 0;
         let focusBeforeNavigation;
 
@@ -250,22 +236,40 @@
         }
 
         function setNavigationOpen(open) {
-            navigationPanel.hidden = !open;
-            navigationOverlay.hidden = !open;
-            menuButton.setAttribute('aria-expanded', String(open));
-            menuButton.setAttribute('aria-label', `${open ? 'Close' : 'Open'} workshop navigation`);
-            document.body.classList.toggle('navigation-open', open);
+            const shouldOpen = compactNavigation.matches && open;
+            navigationPanel.classList.toggle('open', shouldOpen);
+            navigationOverlay.classList.toggle('open', shouldOpen);
+            menuButton.setAttribute('aria-expanded', String(shouldOpen));
+            menuButton.setAttribute('aria-label', `${shouldOpen ? 'Close' : 'Open'} sections`);
+            document.body.classList.toggle('navigation-open', shouldOpen);
+            const hideNavigation = compactNavigation.matches && !shouldOpen;
+            navigationPanel.toggleAttribute('inert', hideNavigation);
+            if (hideNavigation) {
+                navigationPanel.setAttribute('aria-hidden', 'true');
+            } else {
+                navigationPanel.removeAttribute('aria-hidden');
+            }
+            if (shouldOpen) {
+                navigationPanel.setAttribute('role', 'dialog');
+                navigationPanel.setAttribute('aria-modal', 'true');
+            } else {
+                navigationPanel.removeAttribute('role');
+                navigationPanel.removeAttribute('aria-modal');
+            }
 
-            if (open) {
+            if (shouldOpen) {
                 focusBeforeNavigation = document.activeElement;
                 closeNavigationButton.focus();
             } else if (focusBeforeNavigation instanceof HTMLElement) {
                 focusBeforeNavigation.focus();
+                focusBeforeNavigation = undefined;
             }
         }
 
         function trapNavigationFocus(event) {
-            if (navigationPanel.hidden || event.key !== 'Tab') {
+            if (!compactNavigation.matches
+                || !navigationPanel.classList.contains('open')
+                || event.key !== 'Tab') {
                 return;
             }
 
@@ -305,9 +309,9 @@
                         return `
                             <a
                                 href="${stepUrl(step)}"
-                                class="navigation-link ${active ? 'active' : ''}"
+                                class="flyout-link ${active ? 'active' : ''}"
                                 ${active ? 'aria-current="step"' : ''}>
-                                <span class="navigation-marker">${marker}</span>
+                                <span class="flyout-number">${marker}</span>
                                 <span>
                                     <strong>${step.navTitle}</strong>
                                     <small>${step.time}</small>
@@ -328,31 +332,23 @@
             nextHeaderLink.hidden = !next;
             if (previous) {
                 previousHeaderLink.href = stepUrl(previous);
-                previousHeaderLink.textContent = 'Previous';
+                previousHeaderLink.textContent = '← Prev';
                 previousHeaderLink.setAttribute('aria-label', `Previous: ${previous.title}`);
             }
             if (next) {
                 nextHeaderLink.href = stepUrl(next);
-                nextHeaderLink.textContent = 'Next';
+                nextHeaderLink.textContent = 'Next →';
                 nextHeaderLink.setAttribute('aria-label', `Next: ${next.title}`);
             }
 
             const footer = document.getElementById('lessonFooter');
-            footer.replaceChildren();
-            if (previous) {
-                const previousLink = document.createElement('a');
-                previousLink.href = stepUrl(previous);
-                previousLink.className = 'footer-link previous';
-                previousLink.innerHTML = `<small>Previous</small><strong>${previous.title}</strong>`;
-                footer.append(previousLink);
-            }
-            if (next) {
-                const nextLink = document.createElement('a');
-                nextLink.href = stepUrl(next);
-                nextLink.className = 'footer-link next';
-                nextLink.innerHTML = `<small>Next</small><strong>${next.title}</strong>`;
-                footer.append(nextLink);
-            }
+            footer.innerHTML = `
+                ${previous
+                    ? `<a href="${stepUrl(previous)}" class="nav-footer-btn">← ${previous.navTitle}</a>`
+                    : '<span class="nav-footer-btn disabled" aria-disabled="true">← Previous</span>'}
+                ${next
+                    ? `<a href="${stepUrl(next)}" class="nav-footer-btn">${next.navTitle} →</a>`
+                    : '<span class="nav-footer-btn disabled" aria-disabled="true">Next →</span>'}`;
         }
 
         function updateProgress(step) {
@@ -375,33 +371,6 @@
             estimate.textContent = step.time;
             track.setAttribute('aria-valuenow', String(progressValue));
             fill.style.width = `${(progressValue / 7) * 100}%`;
-        }
-
-        function updateArchitecture(step) {
-            const activeStage = step.kind === 'preflight'
-                ? 0
-                : step.kind === 'optional'
-                    ? 8
-                    : step.number;
-
-            document.getElementById('architectureFlow').innerHTML = architectureNodes.map(node => {
-                const state = node.stage < activeStage
-                    ? 'complete'
-                    : node.stage === activeStage
-                        ? 'active'
-                        : 'upcoming';
-                const stateLabel = state === 'complete'
-                    ? 'Completed'
-                    : state === 'active'
-                        ? 'Current'
-                        : 'Upcoming';
-                return `
-                    <li class="${state} ${node.optional ? 'optional' : ''}">
-                        <span class="visually-hidden">${stateLabel}: </span>
-                        <span aria-hidden="true">${node.stage < 8 ? node.stage : '+'}</span>
-                        <strong>${node.label}</strong>
-                    </li>`;
-            }).join('');
         }
 
         function processMarkdown(markdown) {
@@ -562,7 +531,6 @@
             document.title = `${step.title} | Copilot SDK Workshop`;
             document.getElementById('headerLessonTitle').textContent = step.title;
             updateProgress(step);
-            updateArchitecture(step);
             buildNavigation();
             updatePagination();
             container.setAttribute('aria-busy', 'true');
@@ -585,11 +553,14 @@
             }
         }
 
-        menuButton.addEventListener('click', () => setNavigationOpen(navigationPanel.hidden));
+        menuButton.addEventListener(
+            'click',
+            () => setNavigationOpen(!navigationPanel.classList.contains('open')));
         closeNavigationButton.addEventListener('click', () => setNavigationOpen(false));
         navigationOverlay.addEventListener('click', () => setNavigationOpen(false));
+        compactNavigation.addEventListener('change', () => setNavigationOpen(false));
         document.addEventListener('keydown', event => {
-            if (!navigationPanel.hidden && event.key === 'Escape') {
+            if (navigationPanel.classList.contains('open') && event.key === 'Escape') {
                 event.preventDefault();
                 setNavigationOpen(false);
                 return;
@@ -597,6 +568,7 @@
             trapNavigationFocus(event);
         });
 
+        setNavigationOpen(false);
         loadStep();
     </script>
 </body>

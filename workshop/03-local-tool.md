@@ -2,33 +2,29 @@
 
 > **Time:** 15 minutes
 
-## Outcome
+## What you'll add
 
-After this step, Copilot can call a typed C# function to retrieve an exact WCAG criterion and
-remediation from the catalog shipped with your application.
+You'll give Copilot a typed C# function that retrieves an exact criterion and remediation from the
+application-owned Web Content Accessibility Guidelines (WCAG) catalog.
 
-## What this means
+## Give Copilot a tool your app owns
 
-**Tool calling** lets the model request a capability while it is answering. A **local tool** is a
-C# function that runs inside your application process. The model can decide when to request it,
-but your code owns its data, validation, execution, and result.
+**Tool calling** lets the model request a capability while it works on an answer. A **local tool**
+is a C# function that runs inside your application process. The model decides when to request it,
+but your code still owns the data, validation, execution, and result.
 
-The starter already contains the domain data in `AccessibilityRuleCatalog.Rules`. You will add a
-lookup over that array, then expose the lookup with `CopilotTool.DefineTool`.
+The starter already has the domain data in `AccessibilityRuleCatalog.Rules`. You'll add a lookup
+over that array, then expose it with `CopilotTool.DefineTool`.
 
-## Why it matters
+## Bring your own source of truth
 
-The model's general knowledge is not a substitute for authoritative application data. A local
-tool gives the agent:
+The model's general knowledge is not a substitute for data your application owns. A local tool
+returns a small, exact result from deterministic C# code you can test, rather than putting the full
+catalog in every prompt.
 
-- exact data maintained by your application;
-- deterministic, testable C# behavior;
-- a small result instead of the full catalog in every prompt.
+The session can now call `accessibility_rule_lookup` inside the console application's process.
 
-> **Where it fits:** The session can now call `accessibility_rule_lookup`, which runs in the same
-> process as the console application.
-
-## Make the change
+## Wire up the WCAG lookup
 
 ### 1. Add the catalog lookup tool
 
@@ -70,8 +66,8 @@ public static AccessibilityRule Lookup(string query)
 }
 ```
 
-`SkipPermission = true` is intentional: this tool is a read-only lookup over data the application
-owns. In the next step, the external MCP process will use a permission boundary instead.
+`SkipPermission = true` is deliberate because the tool only reads data owned by the application.
+The external MCP process in the next step will use a permission boundary instead.
 
 ### 2. Show tool activity
 
@@ -110,7 +106,7 @@ await ResponseStreamer.SendAndPrintAsync(
 dotnet run --project workshop-app
 ```
 
-Look for the tool name and the precise mapping to 4.1.2:
+Look for the tool name and its mapping to 4.1.2:
 
 ```text
 [tool:start] accessibility_rule_lookup
@@ -132,8 +128,8 @@ The prose can vary; the criterion and catalog recommendation should not.
 
 </details>
 
-> **You are ready to continue when:** the terminal names `accessibility_rule_lookup` and the answer
-> uses criterion 4.1.2 from the catalog.
+> **You're ready for Playwright when:** the terminal names `accessibility_rule_lookup` and the
+> answer uses criterion 4.1.2 from the catalog.
 
 ## Check your understanding
 
@@ -143,16 +139,17 @@ server?
 <details>
 <summary>Check your answer</summary>
 
-Usually a local tool. The application owns both the data and deterministic calculation, so an
-in-process function is simpler to test and does not cross an external process boundary.
+Usually a local tool. The application owns the line items and the deterministic calculation, so an
+in-process function is easier to test and does not cross a process boundary.
 
 </details>
 
 <details>
 <summary>Complete Step 3 checkpoint</summary>
 
-The full, compiling reference is
-[`checkpoints/03-local-tool`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/03-local-tool).
+You can compare your version with the
+[`checkpoints/03-local-tool`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/03-local-tool)
+project.
 
 ```csharp
 using GitHub.Copilot;

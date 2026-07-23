@@ -2,29 +2,29 @@
 
 > **Time:** 10 minutes
 
-## Outcome
+## What you'll see
 
-After this step, response text will appear incrementally while the session is working, and the
-application will know exactly when processing finishes.
+Response text will arrive while the session is still working, and the application will know when
+the turn has finished.
 
-## What this means
+## How streaming changes the experience
 
-**Streaming** does not change the answer. It changes when your application receives it.
-Instead of waiting for one completed message, the session emits events throughout the turn:
+**Streaming** does not change the answer. It changes when your application receives it. Instead of
+waiting for one completed message, the session emits events throughout the turn:
 
 - `AssistantMessageDeltaEvent` contains each new piece of response text.
 - `AssistantMessageEvent` contains the completed message.
 - `SessionIdleEvent` means the turn and any tool work have finished.
 - `SessionErrorEvent` reports a failed turn.
 
-## Why it matters
+## Why progressive output feels better
 
-Progressive output feels faster to a person using the application. The event stream will also
-become the single place where you observe local and MCP tool activity later.
+Seeing text arrive makes the application feel more responsive. Later, the same event stream will
+show activity from local and MCP tools.
 
-> **Where it fits:** The session now emits `response deltas -> final message -> idle`.
+The session flow is now `response deltas -> final message -> idle`.
 
-## Make the change
+## Let the response roll in
 
 ### 1. Add the streaming helper
 
@@ -69,8 +69,8 @@ public static class ResponseStreamer
 }
 ```
 
-The final-message case is a fallback for runtimes that complete without sending deltas. Errors
-complete the task with an exception rather than looking like success.
+The final-message case handles a runtime that completes without sending deltas. An error completes
+the task with an exception instead of looking like a successful turn.
 
 ### 2. Use the helper
 
@@ -95,7 +95,7 @@ await ResponseStreamer.SendAndPrintAsync(
 dotnet run --project workshop-app
 ```
 
-The bullets should appear progressively before the process exits:
+The bullets should start appearing before the process exits:
 
 ```text
 Connected to the Copilot runtime: ...
@@ -117,7 +117,7 @@ Copilot:
 
 </details>
 
-> **You are ready to continue when:** response text appears before the full answer is complete.
+> **You're ready to add tools when:** response text appears before the full answer is complete.
 
 ## Check your understanding
 
@@ -126,15 +126,15 @@ When would `SendAndWaitAsync` be a better choice than event streaming?
 <details>
 <summary>Check your answer</summary>
 
-Use `SendAndWaitAsync` for background work or simple request/response code where progressive output
-and intermediate events do not improve the experience.
+Use `SendAndWaitAsync` for background work or simple request/response code that does not need
+progressive output or intermediate events.
 
 </details>
 
 <details>
 <summary>Complete Step 2 checkpoint</summary>
 
-The full, compiling reference is
+The completed Step 2 project is in
 [`checkpoints/02-streaming`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/02-streaming).
 
 ```csharp

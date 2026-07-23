@@ -1,14 +1,14 @@
 # Workshop checkpoints
 
-Each directory is the complete, compiling state of `workshop-app` after the matching core step.
-The first three projects link unchanged starter helpers so the checkpoint shows only the code introduced
-so far; later checkpoints contain every source file directly.
+Each directory captures the complete, compiling state of `workshop-app` after the matching core
+step. The first three projects link unchanged starter helpers, which keeps the focus on code added
+so far. Later checkpoints contain every source file directly.
 
-Build all checkpoints from the repository root:
+From the repository root, build every checkpoint with:
 
 ```bash
 for project in checkpoints/*/*.csproj; do dotnet build "$project"; done
 ```
 
-The final application is also available in
+You can also find the finished application in
 [`samples/accessibility-report`](../samples/accessibility-report).
