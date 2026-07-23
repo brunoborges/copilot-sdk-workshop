@@ -2,12 +2,12 @@
 
 > **Time:** 15 minutes
 
-## Outcome
+## What you'll add
 
-After this step, Copilot can call a typed C# function to retrieve an exact WCAG criterion and
-remediation from the catalog shipped with your application.
+After this step, Copilot can call a typed C# function to retrieve an exact criterion and remediation
+from the application-owned Web Content Accessibility Guidelines (WCAG) catalog.
 
-## What this means
+## Give Copilot a tool your app owns
 
 **Tool calling** lets the model request a capability while it is answering. A **local tool** is a
 C# function that runs inside your application process. The model can decide when to request it,
@@ -16,7 +16,7 @@ but your code owns its data, validation, execution, and result.
 The starter already contains the domain data in `AccessibilityRuleCatalog.Rules`. You will add a
 lookup over that array, then expose the lookup with `CopilotTool.DefineTool`.
 
-## Why it matters
+## Bring your own source of truth
 
 The model's general knowledge is not a substitute for authoritative application data. A local
 tool gives the agent:
@@ -28,7 +28,7 @@ tool gives the agent:
 > **Where it fits:** The session can now call `accessibility_rule_lookup`, which runs in the same
 > process as the console application.
 
-## Make the change
+## Wire up the WCAG lookup
 
 ### 1. Add the catalog lookup tool
 

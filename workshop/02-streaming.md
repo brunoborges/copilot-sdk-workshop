@@ -2,12 +2,12 @@
 
 > **Time:** 10 minutes
 
-## Outcome
+## What you'll see
 
 After this step, response text will appear incrementally while the session is working, and the
 application will know exactly when processing finishes.
 
-## What this means
+## How streaming changes the experience
 
 **Streaming** does not change the answer. It changes when your application receives it.
 Instead of waiting for one completed message, the session emits events throughout the turn:
@@ -17,14 +17,14 @@ Instead of waiting for one completed message, the session emits events throughou
 - `SessionIdleEvent` means the turn and any tool work have finished.
 - `SessionErrorEvent` reports a failed turn.
 
-## Why it matters
+## Why progressive output feels better
 
 Progressive output feels faster to a person using the application. The event stream will also
 become the single place where you observe local and MCP tool activity later.
 
 > **Where it fits:** The session now emits `response deltas -> final message -> idle`.
 
-## Make the change
+## Let the response roll in
 
 ### 1. Add the streaming helper
 

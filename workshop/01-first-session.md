@@ -2,12 +2,12 @@
 
 > **Time:** 10 minutes
 
-## Outcome
+## What you'll build
 
 After this step, the console application will connect to the Copilot runtime, create one
 conversation, send a prompt, and print a complete response.
 
-## What this means
+## Meet the GitHub Copilot SDK and runtime
 
 The **GitHub Copilot SDK** is the .NET API your application uses to run Copilot as an agent.
 The **Copilot runtime** performs the agent work: it receives prompts, calls models, and manages
@@ -17,14 +17,14 @@ A `CopilotSession` is one continuing agent conversation. It holds the messages a
 that form that conversation's context. Reuse one client for the application, and create a session
 for each independent conversation.
 
-## Why it matters
+## Why clients and sessions stay separate
 
 This separation lets your application own connection lifetime independently from conversation
 state. It also gives you the smallest useful success before adding streaming or tools.
 
 > **Where it fits:** Your console app now contains `CopilotClient -> CopilotSession -> model response`.
 
-## Make the change
+## Fire up your first Copilot session
 
 Open `workshop-app/Program.cs` and **replace the entire file**:
 

@@ -1,9 +1,7 @@
 (function initializeTheme() {
     const savedTheme = localStorage.getItem('theme');
-    const preferredTheme = window.matchMedia('(prefers-color-scheme: light)').matches
-        ? 'light'
-        : 'dark';
-    document.documentElement.dataset.theme = savedTheme ?? preferredTheme;
+    document.documentElement.dataset.theme =
+        savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : 'dark';
 })();
 
 function toggleTheme() {
@@ -16,7 +14,7 @@ function toggleTheme() {
 function updateToggleIcon() {
     const isLight = document.documentElement.dataset.theme === 'light';
     document.querySelectorAll('.theme-toggle').forEach(button => {
-        button.textContent = isLight ? 'Dark theme' : 'Light theme';
+        button.textContent = isLight ? '🌙 Dark' : '☀️ Light';
         button.setAttribute('aria-label', `Switch to ${isLight ? 'dark' : 'light'} theme`);
     });
 }

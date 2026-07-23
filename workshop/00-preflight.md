@@ -3,7 +3,7 @@
 > **Untimed preparation**  
 > Complete this page before starting the 90-minute workshop.
 
-## Outcome
+## What you'll have ready
 
 You will have the repository, authenticated Copilot CLI, .NET project, Node.js runtime, and
 Playwright MCP package ready before the first lesson.

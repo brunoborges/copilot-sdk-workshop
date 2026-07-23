@@ -6,7 +6,7 @@ The self-guided workshop teaches a learner to:
 
 1. Create a Copilot client and conversation session.
 2. Stream responses through session events.
-3. Expose application-owned WCAG data as a local C# tool.
+3. Expose application-owned Web Content Accessibility Guidelines (WCAG) data as a local C# tool.
 4. Connect Playwright MCP through a scoped permission boundary.
 5. Combine browser evidence and catalog guidance in a structured report.
 6. Explain the ownership, process, and trust boundaries in the completed application.

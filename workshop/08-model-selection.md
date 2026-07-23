@@ -3,17 +3,17 @@
 > **Time:** 10 minutes  
 > **Prerequisite:** Complete the seven core steps first.
 
-## Outcome
+## What you'll customize
 
 After this extension, the application will list models available to the signed-in user and use the
 selected model for the report session.
 
-## What this means
+## How model selection works
 
 The Copilot runtime can expose more than one model. `ListModelsAsync` returns the models available
 for the current account, while `SessionConfig.Model` selects one for a new session.
 
-## Why it matters
+## Swap models without changing the architecture
 
 Model choice can affect latency, capability, and billing. It does not change your local tools, MCP
 configuration, or permission policy, so it is easier to understand after the core architecture.
@@ -21,7 +21,7 @@ configuration, or permission policy, so it is easier to understand after the cor
 > **Where it fits:** Model selection configures `CopilotSession`; it does not replace the client or
 > either tool boundary.
 
-## Make the change
+## Add a model picker
 
 Create `workshop-app/Helpers/ModelSelector.cs`:
 

@@ -2,12 +2,12 @@
 
 > **Time:** 15 minutes
 
-## Outcome
+## What you'll orchestrate
 
 After this step, a learner-supplied URL will drive one agent turn that gathers browser evidence
 with Playwright and retrieves remediation guidance from the local WCAG catalog.
 
-## What this means
+## Let the agent choose the right tool
 
 **Agent orchestration** is the model choosing and sequencing available capabilities to accomplish
 a goal. Your session exposes two very different tools through one interface:
@@ -19,7 +19,7 @@ Both tools emit the same `ToolExecutionStartEvent` and `ToolExecutionCompleteEve
 event model lets your application observe orchestration without knowing how each tool is
 implemented.
 
-## Why it matters
+## Keep evidence and guidance in their lanes
 
 One tool should not pretend to do another tool's job. Browser evidence must come from the browser;
 authoritative application guidance must come from the application. Combining them produces a more
@@ -27,7 +27,7 @@ grounded answer than asking the model to infer both.
 
 > **Where it fits:** `URL -> Playwright evidence -> WCAG catalog lookup -> grounded response`.
 
-## Make the change
+## Put both tools to work
 
 ### 1. Read and validate a URL
 

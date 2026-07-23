@@ -2,12 +2,12 @@
 
 > **Time:** 10 minutes
 
-## Outcome
+## What you'll produce
 
 After this step, the application will produce a concise report that separates page evidence,
 criterion mapping, remediation, and the limits of the review.
 
-## What this means
+## Separate evidence from interpretation
 
 An agent response contains both **evidence** and **interpretation**. Evidence is what Playwright
 actually observed, such as an input with no accessible name. Interpretation is the criterion
@@ -16,7 +16,7 @@ mapping and remediation built from that evidence and the catalog result.
 Output constraints tell the agent what to include, what to omit, and how to represent uncertainty.
 They improve consistency without turning a prompt into a claim that the review is exhaustive.
 
-## Why it matters
+## Be useful without overstating the result
 
 Accessibility conformance cannot be established by one automated snapshot. The report should make
 useful, high-confidence findings without invented statistics, decorative severity labels, or a
@@ -25,7 +25,7 @@ broad claim that the page passes or fails WCAG.
 > **Where it fits:** The agent now transforms `browser evidence + catalog result` into a bounded,
 > repeatable report.
 
-## Make the change
+## Give the report a contract
 
 ### 1. Add the report contract
 

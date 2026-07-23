@@ -2,12 +2,12 @@
 
 > **Time:** 10 minutes
 
-## Outcome
+## What you'll be ready to explain
 
 After this step, you will have run the complete application and be able to explain its state,
 tool boundaries, permission boundary, and report limitations.
 
-## What this means
+## See the whole agent system
 
 The finished application is an agent host, not just a model call. The session coordinates a model,
 an application-owned function, and an external browser process:
@@ -28,7 +28,7 @@ Console application
                        `-- Browser target
 ```
 
-## Why it matters
+## Take the design beyond this workshop
 
 If you can explain these boundaries, you can transfer the design to another application instead of
 only reproducing workshop code. A database lookup, deployment service, or issue tracker may use
@@ -37,7 +37,7 @@ different tools, but the ownership and trust questions stay the same.
 > **Where it fits:** This is the complete flow:
 > `URL -> Playwright inspection -> C# WCAG lookup -> structured accessibility report`.
 
-## Make the change
+## Take a victory lap
 
 No code changes are required. Keep the Step 6 checkpoint so this run tests the exact application
 you built.

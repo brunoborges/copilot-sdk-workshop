@@ -2,12 +2,12 @@
 
 > **Time:** 20 minutes
 
-## Outcome
+## What you'll connect
 
 After this step, the session will start Playwright through MCP, navigate only to the workshop
 target you provide, inspect its accessibility tree, and report the page title.
 
-## What this means
+## Meet MCP and its trust boundary
 
 The **Model Context Protocol (MCP)** is a standard way to connect an agent to reusable capabilities
 implemented outside your application. Here, the SDK starts the Playwright MCP server as a separate
@@ -16,7 +16,7 @@ implemented outside your application. Here, the SDK starts the Playwright MCP se
 That process boundary is also a **trust boundary**. A permission handler decides whether a
 requested external action may run.
 
-## Why it matters
+## Reuse browser automation without giving it free rein
 
 MCP avoids rebuilding mature browser automation as a C# callback. It also makes ownership explicit:
 
@@ -30,7 +30,7 @@ MCP avoids rebuilding mature browser automation as a C# callback. It also makes 
 > **Where it fits:** the WCAG lookup and narrow snapshot reader stay in-process, while
 > `CopilotSession -> Playwright MCP -> browser` crosses a process boundary.
 
-## Make the change
+## Put Playwright behind guardrails
 
 ### 1. Accept one controlled target
 
