@@ -23,7 +23,7 @@ organization or user Pages hostname.
 To preview the site from a clone:
 
 ```bash
-git clone https://github.com/codemillmatt/copilot-sdk-workshop.git
+git clone https://github.com/jamesmontemagno/copilot-sdk-workshop.git
 cd copilot-sdk-workshop
 python3 -m http.server 8000
 ```
