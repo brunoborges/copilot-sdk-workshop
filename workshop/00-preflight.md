@@ -32,7 +32,7 @@ GitHub Copilot CLI ...
 ## 1. Clone the repository
 
 ```bash
-git clone https://github.com/codemillmatt/copilot-sdk-workshop.git
+git clone https://github.com/jamesmontemagno/copilot-sdk-workshop.git
 cd copilot-sdk-workshop
 code .
 ```
