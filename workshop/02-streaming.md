@@ -74,12 +74,13 @@ the task with an exception instead of looking like a successful turn.
 
 ### 2. Use the helper
 
-In `Program.cs`, add `using HelloCopilotSDK.Helpers;`, then replace the session and response code
-with:
+In `Program.cs`, keep `var selectedModel = await ModelSelector.SelectAsync(client);` from Step 1,
+then replace the session and response code with:
 
 ```csharp
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
+    Model = selectedModel,
     Streaming = true
 });
 
@@ -135,7 +136,7 @@ progressive output or intermediate events.
 <summary>Complete Step 2 checkpoint</summary>
 
 The completed Step 2 project is in
-[`checkpoints/02-streaming`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/02-streaming).
+[`checkpoints/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/02-streaming).
 
 ```csharp
 using GitHub.Copilot;
@@ -149,8 +150,11 @@ await client.StartAsync();
 var ping = await client.PingAsync("workshop");
 Console.WriteLine($"Connected to the Copilot runtime: {ping.Message}\n");
 
+var selectedModel = await ModelSelector.SelectAsync(client);
+
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
+    Model = selectedModel,
     Streaming = true
 });
 

@@ -1,89 +1,31 @@
-# Optional: Select a model
+# Optional: Compare models
 
 > **Time:** 10 minutes  
 > **Prerequisite:** Complete the seven core steps first.
 
-## What you'll customize
+## What you'll compare
 
-You'll list the models available to the signed-in user and use the selected model for the report
-session.
+Step 1 introduced `ModelSelector`, which lists the models available to your signed-in account and
+stores the selected model ID in `selectedModel`. Every completed session configuration in the
+workshop uses that value through `Model = selectedModel`.
 
-## How model selection works
+## Try a different model
 
-The Copilot runtime may expose more than one model. `ListModelsAsync` returns the models available
-for the current account. `SessionConfig.Model` selects one when you create a session.
-
-## Swap models without changing the architecture
-
-Changing the model can affect latency, capability, and billing. It does not change the local tools,
-MCP configuration, or permission policy, which is why this topic comes after the core architecture.
-
-Model selection configures `CopilotSession`. It does not replace the client or either tool boundary.
-
-## Add a model picker
-
-Create `workshop-app/Helpers/ModelSelector.cs`:
-
-```csharp
-using GitHub.Copilot;
-
-namespace HelloCopilotSDK.Helpers;
-
-public static class ModelSelector
-{
-    public static async Task<string?> SelectAsync(CopilotClient client)
-    {
-        var models = (await client.ListModelsAsync())?.ToList();
-        if (models is null || models.Count is 0)
-        {
-            Console.WriteLine("No model list was returned; using the account default.");
-            return null;
-        }
-
-        Console.WriteLine("Available models:");
-        for (var index = 0; index < models.Count; index++)
-        {
-            Console.WriteLine($"{index + 1}. {models[index].Name}");
-        }
-
-        Console.Write($"Choose 1-{models.Count} [1]: ");
-        var valid = int.TryParse(Console.ReadLine(), out var choice) &&
-                    choice >= 1 &&
-                    choice <= models.Count;
-        var selected = models[(valid ? choice : 1) - 1];
-
-        Console.WriteLine($"Using {selected.Name}\n");
-        return selected.Id;
-    }
-}
-```
-
-After `PingAsync` in `Program.cs`, insert:
-
-```csharp
-var selectedModel = await ModelSelector.SelectAsync(client);
-```
-
-Then add `Model = selectedModel` to `SessionConfig`:
-
-```csharp
-await using var session = await client.CreateSessionAsync(new SessionConfig
-{
-    Model = selectedModel,
-    Streaming = true,
-    // Keep the existing permission, local-tool, and MCP configuration.
-});
-```
-
-Do not remove the rest of the Step 6 session configuration.
-
-## Run it
+Run the completed application again:
 
 ```bash
 dotnet run --project workshop-app
 ```
 
-Choose a model, enter the workshop target URL, and confirm the same scoped tools still run.
+Choose a different number when the picker lists available models, then enter the workshop target
+URL. The application architecture, local tools, MCP configuration, and permission policy remain
+the same; only the model assigned to the next session changes.
+
+## What selection changes
+
+Model choice can affect latency, capability, and billing. It does not grant new tools or change the
+browser permission boundary. Keep tool allowlists and permission handling identical while you
+compare the response.
 
 <details>
 <summary>Troubleshooting this extension</summary>
@@ -92,22 +34,23 @@ Choose a model, enter the workshop target URL, and confirm the same scoped tools
 |---|---|
 | No models are listed | The helper falls back to the account default; verify authentication if this is unexpected. |
 | A number is outside the range | The helper safely uses the first model. |
-| Tools disappear | Add only `Model = selectedModel`; retain `Tools`, `McpServers`, and `OnPermissionRequest`. |
+| Tools disappear | Keep `Model = selectedModel` alongside the existing `Tools`, `McpServers`, and `OnPermissionRequest` settings. |
 
 </details>
 
-> **The extension is complete when:** the selected model is named and the report still uses both
-> scoped tool types.
+> **The extension is complete when:** you can name the selected model and explain why the same
+> scoped tools and permissions still apply.
 
 ## Check your understanding
 
-Why was model selection moved out of Step 1?
+What does choosing a model change, and what does it leave unchanged?
 
 <details>
 <summary>Check your answer</summary>
 
-Model selection is configuration rather than a core agent concept. Leaving it until the end gets
-you to a useful Copilot response sooner and keeps the first lesson focused on clients and sessions.
+It selects the model used by a `CopilotSession`, which can affect the response and latency. It does
+not change the client connection, application-owned tools, MCP server configuration, or permission
+boundary.
 
 </details>
 

@@ -57,6 +57,7 @@ var workingDirectory = Directory.GetCurrentDirectory();
 
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
+    Model = selectedModel,
     Streaming = true,
     OnPermissionRequest = WorkshopPermissionHandler.CreateForTarget(targetUri),
     Tools =
@@ -215,7 +216,7 @@ protect the process boundary.
 <summary>Complete Step 4 checkpoint</summary>
 
 The Step 4 checkpoint contains the complete project:
-[`checkpoints/04-mcp-safety`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/04-mcp-safety).
+[`checkpoints/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/04-mcp-safety).
 
 ```csharp
 using GitHub.Copilot;
@@ -237,10 +238,13 @@ await client.StartAsync();
 var ping = await client.PingAsync("workshop");
 Console.WriteLine($"Connected to the Copilot runtime: {ping.Message}\n");
 
+var selectedModel = await ModelSelector.SelectAsync(client);
+
 var workingDirectory = Directory.GetCurrentDirectory();
 
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
+    Model = selectedModel,
     Streaming = true,
     OnPermissionRequest = WorkshopPermissionHandler.CreateForTarget(targetUri),
     Tools =

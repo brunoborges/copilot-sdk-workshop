@@ -78,10 +78,9 @@ LESSON_HEADINGS = {
         "## Take a victory lap",
     ],
     "08-model-selection.md": [
-        "## What you'll customize",
-        "## How model selection works",
-        "## Swap models without changing the architecture",
-        "## Add a model picker",
+        "## What you'll compare",
+        "## Try a different model",
+        "## What selection changes",
     ],
 }
 LESSON_READINESS = {
@@ -146,6 +145,8 @@ def validate_markdown_links(markdown_file: Path) -> None:
         local_github_prefixes = [
             "https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/",
             "https://github.com/codemillmatt/copilot-sdk-workshop/blob/main/",
+            "https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/",
+            "https://github.com/jamesmontemagno/copilot-sdk-workshop/blob/main/",
         ]
         matching_prefix = next(
             (prefix for prefix in local_github_prefixes if target_value.startswith(prefix)),
@@ -224,6 +225,31 @@ for checkpoint in CHECKPOINTS:
     program = ROOT / "checkpoints" / checkpoint / "Program.cs"
     require(project.exists(), f"Missing compiling project for checkpoint {checkpoint}")
     require(program.exists(), f"Missing complete Program.cs for checkpoint {checkpoint}")
+
+model_aware_projects = [
+    *(ROOT / "checkpoints" / checkpoint for checkpoint in CHECKPOINTS),
+    ROOT / "samples" / "hello-copilot-sdk",
+    ROOT / "samples" / "accessibility-report",
+]
+for project_directory in model_aware_projects:
+    program_text = (project_directory / "Program.cs").read_text(encoding="utf-8")
+    helper = project_directory / "Helpers" / "ModelSelector.cs"
+    require(helper.exists(), f"{project_directory.relative_to(ROOT)} is missing ModelSelector.cs")
+    require(
+        "var selectedModel = await ModelSelector.SelectAsync(client);" in program_text,
+        f"{project_directory.relative_to(ROOT)} does not select an account-available model",
+    )
+    require(
+        program_text.count("Model = selectedModel") == 1,
+        f"{project_directory.relative_to(ROOT)} must set the selected model exactly once",
+    )
+
+first_session_lesson = (WORKSHOP / "01-first-session.md").read_text(encoding="utf-8")
+require(
+    first_session_lesson.index("CreateSessionAsync(new SessionConfig())") <
+    first_session_lesson.index("Model = selectedModel"),
+    "Step 1 must run the account-default session before introducing model selection",
+)
 
 mcp_projects = [
     ROOT / "samples" / "accessibility-report",

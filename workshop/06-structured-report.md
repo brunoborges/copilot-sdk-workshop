@@ -125,9 +125,9 @@ writing the remediation are interpretations based on that evidence and the catal
 <summary>Complete Step 6 checkpoint</summary>
 
 For comparison, use the
-[`checkpoints/06-structured-report`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/06-structured-report)
+[`checkpoints/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/06-structured-report)
 project. The completed application is also in
-[`samples/accessibility-report`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/samples/accessibility-report).
+[`samples/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/accessibility-report).
 
 ```csharp
 using GitHub.Copilot;
@@ -162,10 +162,13 @@ await client.StartAsync();
 var ping = await client.PingAsync("workshop");
 Console.WriteLine($"\nConnected to the Copilot runtime: {ping.Message}\n");
 
+var selectedModel = await ModelSelector.SelectAsync(client);
+
 var workingDirectory = Directory.GetCurrentDirectory();
 
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
+    Model = selectedModel,
     Streaming = true,
     OnPermissionRequest = WorkshopPermissionHandler.CreateForTarget(targetUri),
     Tools =

@@ -137,7 +137,7 @@ source-of-truth criterion and remediation.
 <summary>Complete Step 5 checkpoint</summary>
 
 A complete Step 5 project is available at
-[`checkpoints/05-combine-tools`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/05-combine-tools).
+[`checkpoints/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/05-combine-tools).
 
 ```csharp
 using GitHub.Copilot;
@@ -172,10 +172,13 @@ await client.StartAsync();
 var ping = await client.PingAsync("workshop");
 Console.WriteLine($"\nConnected to the Copilot runtime: {ping.Message}\n");
 
+var selectedModel = await ModelSelector.SelectAsync(client);
+
 var workingDirectory = Directory.GetCurrentDirectory();
 
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
+    Model = selectedModel,
     Streaming = true,
     OnPermissionRequest = WorkshopPermissionHandler.CreateForTarget(targetUri),
     Tools =

@@ -89,6 +89,7 @@ Replace the session configuration and send call in `Program.cs`:
 ```csharp
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
+    Model = selectedModel,
     Streaming = true,
     Tools = [AccessibilityRuleCatalog.CreateLookupTool()],
     AvailableTools = ["accessibility_rule_lookup"]
@@ -148,7 +149,7 @@ in-process function is easier to test and does not cross a process boundary.
 <summary>Complete Step 3 checkpoint</summary>
 
 You can compare your version with the
-[`checkpoints/03-local-tool`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/03-local-tool)
+[`checkpoints/03-local-tool`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/03-local-tool)
 project.
 
 ```csharp
@@ -163,8 +164,11 @@ await client.StartAsync();
 var ping = await client.PingAsync("workshop");
 Console.WriteLine($"Connected to the Copilot runtime: {ping.Message}\n");
 
+var selectedModel = await ModelSelector.SelectAsync(client);
+
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
+    Model = selectedModel,
     Streaming = true,
     Tools = [AccessibilityRuleCatalog.CreateLookupTool()],
     AvailableTools = ["accessibility_rule_lookup"]

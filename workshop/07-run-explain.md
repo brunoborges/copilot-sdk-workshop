@@ -107,12 +107,12 @@ do not accept a finding that is absent from both the snapshot and source.
 
 ## Keep exploring
 
-Try [Optional: Select a model](08-model-selection.md) if your application needs explicit control
-over model choice. Otherwise, the core workshop is complete.
+Try [Optional: Compare models](08-model-selection.md) to observe how model choice affects the
+completed application. Otherwise, the core workshop is complete.
 
 Complete references:
 
-- [Step 6 checkpoint](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/06-structured-report)
-- [Finished accessibility reporter](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/samples/accessibility-report)
+- [Step 6 checkpoint](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/06-structured-report)
+- [Finished accessibility reporter](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/accessibility-report)
 - [GitHub Copilot SDK for .NET](https://github.com/github/copilot-sdk/tree/main/dotnet)
 - [Playwright MCP](https://github.com/microsoft/playwright-mcp)
