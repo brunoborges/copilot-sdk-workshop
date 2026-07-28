@@ -28,3 +28,10 @@ temp-inspect/
 
 # Playwright MCP run artifacts
 .playwright-mcp/
+
+# Cross-language validation outputs
+node_modules/
+target/
+__pycache__/
+*.pyc
+copilot-sdk-workshop-go.exe

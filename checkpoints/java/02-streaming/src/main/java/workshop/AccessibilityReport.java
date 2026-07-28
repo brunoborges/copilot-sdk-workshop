@@ -1,0 +1,21 @@
+package workshop;
+
+import com.github.copilot.CopilotClient;
+import com.github.copilot.rpc.MessageOptions;
+import com.github.copilot.rpc.SessionConfig;
+
+public final class AccessibilityReport {
+    private AccessibilityReport() {
+    }
+
+    public static void main(String[] args) throws Exception {
+        try (var client = new CopilotClient()) {
+            client.start().get();
+            var session = client.createSession(new SessionConfig().setStreaming(true)).get();
+            var response = session.sendAndWait(new MessageOptions()
+                    .setPrompt("Explain accessible names in three short bullet points."))
+                    .get();
+            System.out.println(response);
+        }
+    }
+}

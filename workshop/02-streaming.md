@@ -30,6 +30,7 @@ The session flow is now `response deltas -> final message -> idle`.
 
 Create `workshop-app/Helpers/ResponseStreamer.cs`:
 
+:::language dotnet
 ```csharp
 using GitHub.Copilot;
 
@@ -68,7 +69,7 @@ public static class ResponseStreamer
     }
 }
 ```
-
+:::
 The final-message case handles a runtime that completes without sending deltas. An error completes
 the task with an exception instead of looking like a successful turn.
 
@@ -77,6 +78,7 @@ the task with an exception instead of looking like a successful turn.
 In `Program.cs`, add `using HelloCopilotSDK.Helpers;`, then replace the session and response code
 with:
 
+:::language dotnet
 ```csharp
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
@@ -88,13 +90,14 @@ await ResponseStreamer.SendAndPrintAsync(
     session,
     "Explain accessible names in three short bullet points.");
 ```
-
+:::
 ## Run it
 
+:::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-
+:::
 The bullets should start appearing before the process exits:
 
 ```text
@@ -106,6 +109,7 @@ Copilot:
 - Connects visible labels to form controls.
 ```
 
+:::language dotnet
 <details>
 <summary>Troubleshooting this run</summary>
 
@@ -116,6 +120,7 @@ Copilot:
 | Text is printed twice | Keep the `when !receivedDelta` guard on `AssistantMessageEvent`. |
 
 </details>
+:::
 
 > **You're ready to add tools when:** response text appears before the full answer is complete.
 
@@ -131,11 +136,12 @@ progressive output or intermediate events.
 
 </details>
 
+:::language dotnet
 <details>
 <summary>Complete Step 2 checkpoint</summary>
 
 The completed Step 2 project is in
-[`checkpoints/02-streaming`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/02-streaming).
+[`checkpoints/dotnet/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/dotnet/02-streaming).
 
 ```csharp
 using GitHub.Copilot;
@@ -159,7 +165,25 @@ await ResponseStreamer.SendAndPrintAsync(
     session,
     "Explain accessible names in three short bullet points.");
 ```
-
 </details>
+:::
 
 Continue to [Step 3: Add application-owned knowledge](03-local-tool.md).
+
+:::language nodejs
+Use `session.on("assistant.message_delta", ...)` and `session.on("session.idle", ...)` to stream
+output; the shared `streamResponse` helper is in `src/workshop.ts`.
+:::
+:::language python
+Use `AssistantMessageDeltaData` and `SessionIdleData` event payloads with `asyncio.Event`; the
+matching helper is in `workshop.py`.
+:::
+:::language go
+Subscribe with `session.On(func(event copilot.SessionEvent) { ... })`, print `AssistantMessageDeltaData`, and complete on `SessionIdleData`; run `go run .`. Deltas arrive before the final answer; if output is doubled, print either deltas or the completed message. See [`checkpoints/go/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/02-streaming).
+:::
+:::language rust
+Use `session.subscribe()` and handle assistant delta and idle events in the async event loop; run `cargo run`. Progressive text proves streaming is active; ensure the subscription stays alive until idle. See [`checkpoints/rust/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/02-streaming).
+:::
+:::language java
+Register `session.on(...)` handlers for assistant message events and wait for the idle completion; run `mvn exec:java`. Output should appear progressively. If it prints only once, confirm `setStreaming(true)` is in `SessionConfig`. See [`checkpoints/java/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/02-streaming).
+:::

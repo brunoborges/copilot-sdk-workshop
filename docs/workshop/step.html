@@ -14,6 +14,9 @@
     <link rel="stylesheet" href="../step.css">
     <link rel="stylesheet" href="../light-theme.css">
     <script src="../theme-toggle.js"></script>
+    <script src="../language-registry.js"></script>
+    <script src="../language-navigation.js"></script>
+    <script src="../markdown-language-preprocessor.js"></script>
 </head>
 <body>
     <a class="skip-link" href="#lessonContent">Skip to lesson</a>
@@ -28,14 +31,25 @@
                 aria-controls="navigationPanel"
                 aria-label="Open sections">☰</button>
 
-            <a href="../index.html" class="header-brand" aria-label="Copilot SDK Workshop home">
+            <a href="../index.html" class="header-brand" id="homeLink" aria-label="Copilot SDK Workshop home">
                 <span class="header-icon" aria-hidden="true">🤖</span>
                 <span class="header-title">Copilot SDK Workshop</span>
                 <span class="visually-hidden" id="headerLessonTitle">Loading lesson</span>
             </a>
 
             <nav class="header-nav" aria-label="Lesson actions">
-                <a href="../index.html" class="nav-btn">🏠 Hub</a>
+                <label class="language-select-label" for="languageSelector">Language</label>
+                <select class="language-select" id="languageSelector" aria-label="Workshop language">
+                    <option value="">Choose language</option>
+                    <option value="dotnet">.NET</option>
+                    <option value="nodejs">Node.js</option>
+                    <option value="python">Python</option>
+                    <option value="go">Go</option>
+                    <option value="rust">Rust</option>
+                    <option value="java">Java</option>
+                </select>
+                <a href="../index.html" class="nav-btn" id="hubLink">🏠 Hub</a>
+                <a class="nav-btn" id="headerDocsLink" target="_blank" rel="noopener" hidden>📚 Docs ↗</a>
                 <button class="theme-toggle" type="button" onclick="toggleTheme()">☀️ Light</button>
                 <a class="nav-btn" id="previousHeaderLink" href="#" hidden>← Prev</a>
                 <a class="nav-btn" id="nextHeaderLink" href="#" hidden>Next →</a>
@@ -195,6 +209,8 @@
         const navigationOverlay = document.getElementById('navigationOverlay');
         const closeNavigationButton = document.getElementById('closeNavigationButton');
         const compactNavigation = window.matchMedia('(max-width: 900px)');
+        const languageSelector = document.getElementById('languageSelector');
+        const storageKey = 'copilot-sdk-workshop.language';
         let currentIndex = 0;
         let focusBeforeNavigation;
 
@@ -231,8 +247,51 @@
             return steps.some(step => step.id === mapped) ? mapped : steps[0].id;
         }
 
+        function getStoredLanguageId() {
+            try {
+                return window.localStorage.getItem(storageKey);
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function storeLanguageId(languageId) {
+            try {
+                window.localStorage.setItem(storageKey, languageId);
+            } catch (error) {
+                // The workshop remains usable when local storage is unavailable.
+            }
+        }
+
+        function getSelectedLanguage() {
+            return WorkshopLanguageNavigation.resolveLanguage(
+                window.location.search,
+                getStoredLanguageId(),
+                WorkshopLanguages.getLanguage
+            );
+        }
+
+        function homeUrl(language) {
+            return WorkshopLanguageNavigation.homeUrl(language?.id);
+        }
+
+        function updateLanguageControls(language) {
+            languageSelector.value = language?.id ?? '';
+            const docsLink = document.getElementById('headerDocsLink');
+            docsLink.hidden = language === null;
+            if (language) {
+                docsLink.href = language.docsUrl;
+                docsLink.textContent = `📚 ${language.displayName} docs ↗`;
+            } else {
+                docsLink.removeAttribute('href');
+            }
+            document.getElementById('homeLink').href = homeUrl(language);
+            document.getElementById('hubLink').href = homeUrl(language);
+        }
+
         function stepUrl(step) {
-            return `?step=${step.id}`;
+            const language = getSelectedLanguage();
+            return WorkshopLanguageNavigation.lessonUrl(step.id, language?.id);
         }
 
         function setNavigationOpen(open) {
@@ -375,7 +434,11 @@
 
         function processMarkdown(markdown) {
             const targetUrl = new URL('target-app/', getSiteRootUrl()).href;
-            return markdown
+            return WorkshopMarkdown.preprocessLanguageDirectives(
+                markdown,
+                getSelectedLanguage()?.id,
+                WorkshopLanguages.getLanguage
+            )
                 .replaceAll('{{TARGET_APP_URL}}', targetUrl)
                 .replace(/\]\((\d{2}-[a-z0-9-]+)\.md\)/g, (match, stepId) => {
                     const target = steps.find(step => step.id === stepId);
@@ -522,13 +585,33 @@
         }
 
         async function loadStep() {
+            const language = getSelectedLanguage();
             const stepId = getRequestedStepId();
             currentIndex = steps.findIndex(step => step.id === stepId);
             const step = steps[currentIndex];
             const container = document.getElementById('markdownContent');
             const status = document.getElementById('lessonStatus');
 
-            document.title = `${step.title} | Copilot SDK Workshop`;
+            updateLanguageControls(language);
+            if (!language) {
+                document.title = 'Choose a language | Copilot SDK Workshop';
+                document.getElementById('headerLessonTitle').textContent = 'Choose a language';
+                buildNavigation();
+                updatePagination();
+                const message = document.createElement('section');
+                message.className = 'load-error language-choice';
+                const heading = document.createElement('h1');
+                heading.textContent = 'Choose a workshop language';
+                const details = document.createElement('p');
+                details.textContent = 'Select one of the six supported languages above before loading a lesson.';
+                message.append(heading, details);
+                container.replaceChildren(message);
+                container.setAttribute('aria-busy', 'false');
+                status.textContent = 'Choose a workshop language to continue.';
+                return;
+            }
+
+            document.title = `${step.title} | ${language.displayName} | Copilot SDK Workshop`;
             document.getElementById('headerLessonTitle').textContent = step.title;
             updateProgress(step);
             buildNavigation();
@@ -559,6 +642,18 @@
         closeNavigationButton.addEventListener('click', () => setNavigationOpen(false));
         navigationOverlay.addEventListener('click', () => setNavigationOpen(false));
         compactNavigation.addEventListener('change', () => setNavigationOpen(false));
+        languageSelector.addEventListener('change', () => {
+            const language = WorkshopLanguages.getLanguage(languageSelector.value);
+            if (!language) {
+                return;
+            }
+            storeLanguageId(language.id);
+            const url = new URL(window.location.href);
+            url.searchParams.set('lang', language.id);
+            window.history.replaceState({}, '', url);
+            loadStep();
+        });
+        window.addEventListener('popstate', loadStep);
         document.addEventListener('keydown', event => {
             if (navigationPanel.classList.contains('open') && event.key === 'Escape') {
                 event.preventDefault();

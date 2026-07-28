@@ -9,6 +9,7 @@ and report limitations.
 
 ## See the whole agent system
 
+:::language dotnet
 The finished application is an agent host. Its session coordinates a model, an application-owned
 function, and a browser running in another process:
 
@@ -27,6 +28,14 @@ Console application
                        |
                        `-- Browser target
 ```
+:::
+
+:::language nodejs
+The completed report is in [`samples/nodejs/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/nodejs/accessibility-report).
+:::
+:::language python
+The completed report is in [`samples/python/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/python/accessibility-report).
+:::
 
 ## Take the design beyond this workshop
 
@@ -34,8 +43,10 @@ Understanding these boundaries lets you reuse the design in another application 
 reproducing the workshop code. A database lookup, deployment service, or issue tracker may use
 different tools, but the same ownership and trust questions apply.
 
+:::language dotnet
 The complete flow is
 `URL -> Playwright inspection -> C# WCAG lookup -> structured accessibility report`.
+:::
 
 ## Take a victory lap
 
@@ -44,10 +55,11 @@ you built.
 
 ## Run it
 
+:::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-
+:::
 Use the workshop target:
 
 ```text
@@ -65,7 +77,7 @@ Watch for all five stages:
 The controlled target intentionally includes browser-observable issues: a missing text alternative,
 no `main` landmark, an illogical heading sequence, and a textbox without an accessible name.
 Compare the report with the
-[published target HTML](https://github.com/codemillmatt/copilot-sdk-workshop/blob/main/docs/target-app/index.html);
+[published target HTML](https://github.com/jamesmontemagno/copilot-sdk-workshop/blob/main/docs/target-app/index.html);
 do not accept a finding that is absent from both the snapshot and source.
 
 <details>
@@ -110,9 +122,20 @@ do not accept a finding that is absent from both the snapshot and source.
 Try [Optional: Select a model](08-model-selection.md) if your application needs explicit control
 over model choice. Otherwise, the core workshop is complete.
 
+:::language dotnet
 Complete references:
 
-- [Step 6 checkpoint](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/06-structured-report)
-- [Finished accessibility reporter](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/samples/accessibility-report)
+- [Step 6 checkpoint](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/dotnet/06-structured-report)
+- [Finished accessibility reporter](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/dotnet/accessibility-report)
 - [GitHub Copilot SDK for .NET](https://github.com/github/copilot-sdk/tree/main/dotnet)
 - [Playwright MCP](https://github.com/microsoft/playwright-mcp)
+:::
+:::language go
+Run the completed reporter with `go -C samples/go/accessibility-report run . "{{TARGET_APP_URL}}"`. Explain that `Client` owns the Copilot CLI lifecycle, the `Session` owns one conversation, and the permission handler gates external navigation. The expected report is evidence-bound; if the CLI is missing, install it rather than granting broader permissions. Review [`samples/go/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/go/accessibility-report) and [`checkpoints/go/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/06-structured-report).
+:::
+:::language rust
+Run `cargo run --manifest-path samples/rust/accessibility-report/Cargo.toml -- "{{TARGET_APP_URL}}"`. Explain that `Client` manages the runtime, `Session` dispatches events, typed tools are app-owned, and the permission handler trusts only exact navigation. If it cannot start, install and authenticate the Copilot CLI. Review [`samples/rust/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/rust/accessibility-report) and [`checkpoints/rust/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/06-structured-report).
+:::
+:::language java
+Run `mvn -f samples/java/accessibility-report/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"`. Explain that Maven compiles the Java 17 application, `CopilotClient` manages the runtime, tools remain scoped, and the permission callback accepts only the canonical URL. If the runtime is unavailable, install the Copilot CLI; do not replace Maven with JBang or Gradle. Review [`samples/java/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/java/accessibility-report) and [`checkpoints/java/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/06-structured-report).
+:::

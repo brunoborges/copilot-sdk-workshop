@@ -4,25 +4,31 @@
 
 ## What you'll add
 
+:::language dotnet
 You'll give Copilot a typed C# function that retrieves an exact criterion and remediation from the
 application-owned Web Content Accessibility Guidelines (WCAG) catalog.
+:::
 
 ## Give Copilot a tool your app owns
 
+:::language dotnet
 **Tool calling** lets the model request a capability while it works on an answer. A **local tool**
 is a C# function that runs inside your application process. The model decides when to request it,
 but your code still owns the data, validation, execution, and result.
 
 The starter already has the domain data in `AccessibilityRuleCatalog.Rules`. You'll add a lookup
 over that array, then expose it with `CopilotTool.DefineTool`.
+:::
 
 ## Bring your own source of truth
 
+:::language dotnet
 The model's general knowledge is not a substitute for data your application owns. A local tool
 returns a small, exact result from deterministic C# code you can test, rather than putting the full
 catalog in every prompt.
 
 The session can now call `accessibility_rule_lookup` inside the console application's process.
+:::
 
 ## Wire up the WCAG lookup
 
@@ -30,14 +36,16 @@ The session can now call `accessibility_rule_lookup` inside the console applicat
 
 At the top of `workshop-app/Helpers/AccessibilityRuleCatalog.cs`, insert:
 
+:::language dotnet
 ```csharp
 using System.ComponentModel;
 using GitHub.Copilot;
 using Microsoft.Extensions.AI;
 ```
-
+:::
 Inside `AccessibilityRuleCatalog`, after the existing `Rules` array, insert:
 
+:::language dotnet
 ```csharp
 public static AIFunction CreateLookupTool() => CopilotTool.DefineTool(
     ([Description("The accessibility issue or WCAG criterion to look up.")] string query) =>
@@ -65,7 +73,7 @@ public static AccessibilityRule Lookup(string query)
                []);
 }
 ```
-
+:::
 `SkipPermission = true` is deliberate because the tool only reads data owned by the application.
 The external MCP process in the next step will use a permission boundary instead.
 
@@ -73,6 +81,7 @@ The external MCP process in the next step will use a permission boundary instead
 
 In `ResponseStreamer.cs`, insert these cases before `SessionIdleEvent`:
 
+:::language dotnet
 ```csharp
 case ToolExecutionStartEvent tool:
     Console.WriteLine($"\n[tool:start] {tool.Data.ToolName}");
@@ -81,11 +90,12 @@ case ToolExecutionCompleteEvent tool:
     Console.WriteLine($"[tool:done] success={tool.Data.Success}");
     break;
 ```
-
+:::
 ### 3. Register and request the tool
 
 Replace the session configuration and send call in `Program.cs`:
 
+:::language dotnet
 ```csharp
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
@@ -99,13 +109,14 @@ await ResponseStreamer.SendAndPrintAsync(
     session,
     "Use accessibility_rule_lookup to explain how to fix an input with no accessible name.");
 ```
-
+:::
 ## Run it
 
+:::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-
+:::
 Look for the tool name and its mapping to 4.1.2:
 
 ```text
@@ -117,6 +128,7 @@ WCAG 4.1.2 Name, Role, Value ...
 
 The prose can vary; the criterion and catalog recommendation should not.
 
+:::language dotnet
 <details>
 <summary>Troubleshooting this run</summary>
 
@@ -127,6 +139,7 @@ The prose can vary; the criterion and catalog recommendation should not.
 | The result says no exact match | Confirm the prompt contains `accessible name`, a keyword in the starter data. |
 
 </details>
+:::
 
 > **You're ready for Playwright when:** the terminal names `accessibility_rule_lookup` and the
 > answer uses criterion 4.1.2 from the catalog.
@@ -144,11 +157,12 @@ in-process function is easier to test and does not cross a process boundary.
 
 </details>
 
+:::language dotnet
 <details>
 <summary>Complete Step 3 checkpoint</summary>
 
 You can compare your version with the
-[`checkpoints/03-local-tool`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/03-local-tool)
+[`checkpoints/dotnet/03-local-tool`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/dotnet/03-local-tool)
 project.
 
 ```csharp
@@ -175,7 +189,25 @@ await ResponseStreamer.SendAndPrintAsync(
     session,
     "Use accessibility_rule_lookup to explain how to fix an input with no accessible name.");
 ```
-
 </details>
+:::
 
 Continue to [Step 4: Connect an external tool safely](04-mcp-safety.md).
+
+:::language nodejs
+Define `accessibility_rule_lookup` with `defineTool`, a Zod schema, and `skipPermission: true`
+because the catalog is application-owned, read-only data.
+:::
+:::language python
+Define `accessibility_rule_lookup` with `@define_tool`, a Pydantic parameter model, and
+`skip_permission=True` because the catalog is application-owned, read-only data.
+:::
+:::language go
+Define `accessibility_rule_lookup` with `copilot.DefineTool` and set `SkipPermission = true` only because the WCAG catalog is read-only application data; run `go run .`. The model receives a catalog result, not arbitrary file access. If it asks for unrelated access, keep that tool out of `AvailableTools`. See [`checkpoints/go/03-local-tool`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/03-local-tool).
+:::
+:::language rust
+Create a typed `Tool` with a `ToolHandler`, JSON schema, and `with_skip_permission(true)` for the read-only catalog; run `cargo run`. The response includes criterion guidance. Do not skip permission for side-effecting tools. See [`checkpoints/rust/03-local-tool`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/03-local-tool).
+:::
+:::language java
+Use `ToolDefinition.from("accessibility_rule_lookup", ..., Param.of(...), handler).skipPermission(true)` and add it to `SessionConfig`; run `mvn exec:java`. The expected tool result is WCAG guidance. Keep skip permission limited to this read-only lookup. See [`checkpoints/java/03-local-tool`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/03-local-tool).
+:::

@@ -269,6 +269,69 @@ h1 {
     transform: translateY(-2px);
 }
 
+.primary-action.disabled,
+.primary-action[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
+}
+
+.language-picker {
+    max-width: 720px;
+    margin: 1.55rem 0;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--surface-soft);
+}
+
+.language-picker h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+}
+
+.language-picker p {
+    margin-bottom: 0.7rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.language-picker label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.language-picker select {
+    width: min(100%, 20rem);
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 0.45rem;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+}
+
+.language-picker .language-detail {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0.8rem 0 0;
+}
+
+.language-detail code:empty,
+.language-detail span:empty {
+    display: none;
+}
+
+.language-detail code {
+    width: fit-content;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    color: var(--neon-cyan);
+    font-family: var(--font-mono);
+}
+
 .hero-action p {
     max-width: 340px;
     margin: 0;

@@ -1,14 +1,19 @@
 # Workshop checkpoints
 
-Each directory captures the complete, compiling state of `workshop-app` after the matching core
-step. The first three projects link unchanged starter helpers, which keeps the focus on code added
-so far. Later checkpoints contain every source file directly.
+Each language track contains the compiling state after core Steps 1 through 6. The completed
+applications are in `samples/<language>/hello-copilot-sdk` and
+`samples/<language>/accessibility-report`.
 
-From the repository root, build every checkpoint with:
+Run the repository-wide deterministic validation from the root:
 
 ```bash
-for project in checkpoints/*/*.csproj; do dotnet build "$project"; done
+bash scripts/validate-workshop.sh
 ```
 
-You can also find the finished application in
-[`samples/accessibility-report`](../samples/accessibility-report).
+It validates all six language registries, lessons, local assets, security boundaries, starters,
+six checkpoints per language, and both samples per language. For a single checkpoint, use its
+native command: `dotnet build`, `npm ci && npm run build`, `python -m py_compile *.py`,
+`go test -mod=readonly ./...`, `cargo test --locked`, or `mvn test`.
+
+The static validation intentionally does not authenticate the Copilot CLI, launch a browser, or
+send a Copilot request. Runtime setup is covered by the language-specific interactive preflight.

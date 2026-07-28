@@ -30,6 +30,7 @@ The agent now turns `browser evidence + catalog result` into a bounded, repeatab
 
 Create `workshop-app/Helpers/Prompts.cs`:
 
+:::language dotnet
 ```csharp
 namespace HelloCopilotSDK.Helpers;
 
@@ -60,22 +61,24 @@ public static class Prompts
         """;
 }
 ```
-
+:::
 ### 2. Use the contract
 
 Replace the final send call in `Program.cs`:
 
+:::language dotnet
 ```csharp
 Console.WriteLine($"\nAnalyzing: {targetUri.AbsoluteUri}\n");
 await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(targetUri));
 ```
-
+:::
 ## Run it
 
+:::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-
+:::
 When the app asks for a URL, paste:
 
 ```text
@@ -121,13 +124,14 @@ writing the remediation are interpretations based on that evidence and the catal
 
 </details>
 
+:::language dotnet
 <details>
 <summary>Complete Step 6 checkpoint</summary>
 
 For comparison, use the
-[`checkpoints/06-structured-report`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/06-structured-report)
+[`checkpoints/dotnet/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/dotnet/06-structured-report)
 project. The completed application is also in
-[`samples/accessibility-report`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/samples/accessibility-report).
+[`samples/dotnet/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/dotnet/accessibility-report).
 
 ```csharp
 using GitHub.Copilot;
@@ -194,7 +198,25 @@ await using var session = await client.CreateSessionAsync(new SessionConfig
 Console.WriteLine($"Analyzing: {targetUri.AbsoluteUri}\n");
 await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(targetUri));
 ```
-
 </details>
+:::
 
 Continue to [Step 7: Run and explain the application](07-run-explain.md).
+
+:::language nodejs
+Use `reportPrompt(target)` from `src/workshop.ts`; it requires three to five evidence-backed
+findings and the same review limits as the .NET version.
+:::
+:::language python
+Run `python main.py "{{TARGET_APP_URL}}"`. It calls `report_prompt(target)` from `workshop.py`,
+which requires three to five evidence-backed findings and the same review limits as the .NET version.
+:::
+:::language go
+Use `reportPrompt(target)` in `main.go` and run `go run . "{{TARGET_APP_URL}}"`. It requires three to five evidence-backed findings, catalog mapping, remediation, and the review-limit statement. If output claims compliance, preserve the explicit limits in the prompt. See [`checkpoints/go/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/06-structured-report).
+:::
+:::language rust
+Use `report_prompt(&target)` in `src/main.rs` and run `cargo run -- "{{TARGET_APP_URL}}"`. The expected report contains evidence, criterion, remediation, and no unsupported statistics. If a finding lacks snapshot evidence, exclude it. See [`checkpoints/rust/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/06-structured-report).
+:::
+:::language java
+Use `reportPrompt(target)` in `AccessibilityReport.java` and run `mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"`. The result has three to five bounded findings plus Review limits. If Maven cannot execute the main class, use the checkpoint POM's configured exec plugin. See [`checkpoints/java/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/06-structured-report).
+:::

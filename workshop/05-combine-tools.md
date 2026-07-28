@@ -33,6 +33,7 @@ The flow is now `URL -> Playwright evidence -> WCAG catalog lookup -> grounded r
 Remove the command-line argument validation from Step 4. After the banner and before creating the
 client, insert:
 
+:::language dotnet
 ```csharp
 Console.Write("Enter URL to analyze: ");
 var urlInput = Console.ReadLine()?.Trim();
@@ -55,13 +56,14 @@ if (!Uri.TryCreate(urlInput, UriKind.Absolute, out var targetUri) ||
     return;
 }
 ```
-
+:::
 The Step 4 handler receives this validated `targetUri`, so the URL boundary still applies.
 
 ### 2. Give the agent a three-tool goal
 
 Replace the final prompt:
 
+:::language dotnet
 ```csharp
 Console.WriteLine($"\nAnalyzing: {targetUri.AbsoluteUri}\n");
 await ResponseStreamer.SendAndPrintAsync(
@@ -75,16 +77,17 @@ await ResponseStreamer.SendAndPrintAsync(
     - the catalog's recommended remediation.
     """);
 ```
-
+:::
 The prompt assigns evidence and guidance to their correct sources. It leaves the order of the
 catalog lookups to the agent.
 
 ## Run it
 
+:::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-
+:::
 Paste this URL when prompted:
 
 ```text
@@ -133,11 +136,12 @@ source-of-truth criterion and remediation.
 
 </details>
 
+:::language dotnet
 <details>
 <summary>Complete Step 5 checkpoint</summary>
 
 A complete Step 5 project is available at
-[`checkpoints/05-combine-tools`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/05-combine-tools).
+[`checkpoints/dotnet/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/dotnet/05-combine-tools).
 
 ```csharp
 using GitHub.Copilot;
@@ -213,7 +217,25 @@ await ResponseStreamer.SendAndPrintAsync(
     - the catalog's recommended remediation.
     """);
 ```
-
 </details>
+:::
 
 Continue to [Step 6: Produce a structured report](06-structured-report.md).
+
+:::language nodejs
+Run `npm start -- "{{TARGET_APP_URL}}"`; the checkpoint is
+[`checkpoints/nodejs/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/05-combine-tools).
+:::
+:::language python
+Run `python main.py "{{TARGET_APP_URL}}"`; the checkpoint is
+[`checkpoints/python/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/05-combine-tools).
+:::
+:::language go
+Run `go run . "{{TARGET_APP_URL}}"`. The session can choose the exact-navigation MCP tool, the no-argument snapshot reader, and the WCAG lookup in sequence. If the model attempts another browser tool, it is outside the allowlist. See [`checkpoints/go/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/05-combine-tools).
+:::
+:::language rust
+Run `cargo run -- "{{TARGET_APP_URL}}"`. Events and tools stay in separate lanes: Playwright supplies evidence and the typed catalog supplies guidance. If no evidence is available, navigate before reading. See [`checkpoints/rust/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/05-combine-tools).
+:::
+:::language java
+Run `mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"`. `SessionConfig` contains the same three canonical tool names. If a permission is denied, verify the requested URL exactly matches the original canonical URL. See [`checkpoints/java/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/05-combine-tools).
+:::
