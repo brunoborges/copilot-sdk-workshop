@@ -5,7 +5,8 @@ await client.start();
 try {
   const session = await client.createSession({});
   try {
-    await session.sendAndWait({ prompt: "Reply with one sentence confirming this Copilot session is ready." });
+    const response = await session.sendAndWait({ prompt: "Reply with one sentence confirming this Copilot session is ready." });
+    console.log(response?.data && "content" in response.data ? response.data.content : response);
   } finally {
     await session.disconnect();
   }

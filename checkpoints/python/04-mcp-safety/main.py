@@ -3,7 +3,7 @@ import sys
 from urllib.parse import urlsplit
 
 from copilot import CopilotClient
-from copilot.session_events import AssistantMessageDeltaData, SessionIdleData
+from copilot.session_events import AssistantMessageDeltaData, SessionErrorData, SessionIdleData
 
 from workshop import accessibility_rule_lookup, create_snapshot_reader, permission_for_target
 
@@ -23,17 +23,24 @@ async def main() -> None:
             mcp_servers={"playwright": {"command": "npx", "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"], "working_directory": ".", "tools": ["browser_navigate"]}},
         ) as session:
             done = asyncio.Event()
+            error: RuntimeError | None = None
 
             def on_event(event) -> None:
+                nonlocal error
                 match event.data:
                     case AssistantMessageDeltaData(delta_content=delta) if delta:
                         print(delta, end="", flush=True)
+                    case SessionErrorData(message=message):
+                        error = RuntimeError(message)
+                        done.set()
                     case SessionIdleData():
                         done.set()
 
             session.on(on_event)
             await session.send(f"Use browser_navigate to open {target}, then read_latest_accessibility_snapshot and report the page title.")
             await done.wait()
+            if error is not None:
+                raise error
 
 
 if __name__ == "__main__":

@@ -168,6 +168,22 @@ State that this is a focused review of browser-observable evidence, not a full W
 Do not invent evidence, report unsupported statistics, or claim the page is WCAG compliant.`, target)
 }
 
+func printResponse(session *copilot.Session, prompt string) error {
+	response, err := session.SendAndWait(context.Background(), copilot.MessageOptions{Prompt: prompt})
+	if err != nil {
+		return err
+	}
+	if response == nil {
+		return nil
+	}
+	if message, ok := response.Data.(*copilot.AssistantMessageData); ok {
+		fmt.Println(message.Content)
+		return nil
+	}
+	fmt.Printf("%v\n", response.Data)
+	return nil
+}
+
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Fprintln(os.Stderr, "Usage: go run . <http-or-https-url>")
@@ -215,7 +231,7 @@ func main() {
 		panic(err)
 	}
 	defer session.Disconnect()
-	if _, err := session.Send(context.Background(), copilot.MessageOptions{Prompt: reportPrompt(target)}); err != nil {
+	if err := printResponse(session, reportPrompt(target)); err != nil {
 		panic(err)
 	}
 }

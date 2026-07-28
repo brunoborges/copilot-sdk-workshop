@@ -1,7 +1,7 @@
 import asyncio
 
 from copilot import CopilotClient
-from copilot.session_events import AssistantMessageDeltaData, SessionIdleData
+from copilot.session_events import AssistantMessageDeltaData, SessionErrorData, SessionIdleData
 
 from workshop import accessibility_rule_lookup
 
@@ -14,17 +14,24 @@ async def main() -> None:
             available_tools=["accessibility_rule_lookup"],
         ) as session:
             done = asyncio.Event()
+            error: RuntimeError | None = None
 
             def on_event(event) -> None:
+                nonlocal error
                 match event.data:
                     case AssistantMessageDeltaData(delta_content=delta) if delta:
                         print(delta, end="", flush=True)
+                    case SessionErrorData(message=message):
+                        error = RuntimeError(message)
+                        done.set()
                     case SessionIdleData():
                         done.set()
 
             session.on(on_event)
             await session.send("Use accessibility_rule_lookup to explain WCAG 4.1.2.")
             await done.wait()
+            if error is not None:
+                raise error
 
 
 if __name__ == "__main__":

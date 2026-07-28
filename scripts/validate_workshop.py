@@ -128,7 +128,6 @@ LANGUAGE_APIS = {
         "session": ("CreateSessionAsync",),
         "send": ("SendAndWaitAsync", "ResponseStreamer.SendAndPrintAsync"),
         "stream": ("Streaming = true",),
-        "stream_output": ("ResponseStreamer.SendAndPrintAsync",),
         "tool": ("CreateLookupTool",),
     },
     "nodejs": {
@@ -136,7 +135,6 @@ LANGUAGE_APIS = {
         "session": ("createSession",),
         "send": ("sendAndWait", "streamResponse"),
         "stream": ("streaming: true",),
-        "stream_output": ("streamResponse(",),
         "tool": ("accessibilityRuleLookup", "tools: ["),
     },
     "python": {
@@ -144,7 +142,6 @@ LANGUAGE_APIS = {
         "session": ("create_session",),
         "send": ("session.send",),
         "stream": ("streaming=True",),
-        "stream_output": ("session.on(", "await done.wait()"),
         "tool": ("accessibility_rule_lookup", "tools=["),
     },
     "go": {
@@ -152,15 +149,13 @@ LANGUAGE_APIS = {
         "session": ("CreateSession",),
         "send": ("SendAndWait",),
         "stream": ("Streaming: copilot.Bool(true)",),
-        "stream_output": ("session.On(", "AssistantMessageDeltaData"),
         "tool": ('DefineTool("accessibility_rule_lookup"',),
     },
     "rust": {
         "client": ("Client::start",),
         "session": ("create_session",),
-        "send": ("send_and_wait", "session.send("),
+        "send": ("send_and_wait", "$session.send("),
         "stream": ("config.streaming = Some(true)",),
-        "stream_output": ("session.subscribe", "send_and_wait"),
         "tool": ('Tool::new("accessibility_rule_lookup")',),
     },
     "java": {
@@ -168,10 +163,78 @@ LANGUAGE_APIS = {
         "session": ("createSession",),
         "send": ("sendAndWait",),
         "stream": ("setStreaming(true)",),
-        "stream_output": ("sendAndWait",),
         "tool": ('ToolDefinition.from(', '"accessibility_rule_lookup"'),
     },
 }
+
+
+def contains_all(text: str, markers: tuple[str, ...]) -> bool:
+    folded = text.casefold()
+    return all(marker.casefold() in folded for marker in markers)
+
+
+def runtime_source(directory: Path, language: str, text: str) -> str:
+    """Include the directly imported Node response helper for runtime-flow validation."""
+    if language == "nodejs" and re.search(r'from\s+["\']\./workshop\.js["\']', text):
+        return text + "\n" + read(directory / "src" / "workshop.ts")
+    return text
+
+
+def validate_runtime_flow(language: str, stage: str, text: str, label: Path) -> None:
+    """Require a visible response and a completion/error path, not just a send call."""
+    streaming = stage != "01-first-session"
+
+    if language == "dotnet":
+        markers = (
+            ("SendAndWaitAsync", 'Console.WriteLine($"\\nCopilot: {response.Data.Content}")', "await")
+            if not streaming
+            else ("await ResponseStreamer.SendAndPrintAsync",)
+        )
+        require(contains_all(text, markers),
+                f"{label} does not print a completed Copilot response")
+    elif language == "nodejs":
+        markers = (
+            ("const response = await session.sendAndWait", "console.log(response")
+            if not streaming
+            else ("await streamResponse(", "session.on(", "process.stdout.write", "session.error", "session.idle")
+        )
+        require(contains_all(text, markers),
+                f"{label} does not print and complete the Copilot response")
+    elif language == "python":
+        markers = (
+            ("AssistantMessageData", "print(content)", "SessionErrorData", "SessionIdleData",
+             "await done.wait()", "if error is not None", "done.set()")
+            if not streaming
+            else ("AssistantMessageDeltaData", "print(delta", "SessionErrorData", "SessionIdleData",
+                  "await done.wait()", "if error is not None", "done.set()")
+        )
+        require(contains_all(text, markers),
+                f"{label} does not store and propagate session errors after printing output")
+    elif language == "go":
+        if streaming:
+            event_output = contains_all(text, ("session.On(", "AssistantMessageDeltaData", "fmt.Print"))
+            blocking_output = contains_all(text, ("AssistantMessageData", "fmt.Println(message.Content)"))
+            require(event_output or blocking_output,
+                    f"{label} does not print streamed or final assistant output")
+        else:
+            require(contains_all(text, ("AssistantMessageData", "fmt.Println(message.Content)")),
+                    f"{label} does not print the final assistant response")
+        require(contains_all(text, ("SendAndWait",)) and
+                ("return err" in text or "if err != nil" in text),
+                f"{label} does not wait for or propagate the send result")
+    elif language == "rust":
+        markers = (
+            ("send_and_wait", 'message.data.get("content")', "println!")
+            if not streaming
+            else ("$session.send(", "session.subscribe", "assistant.message_delta", "assistant.message",
+                  "session.error", "session.idle", "tokio::select!", "print!")
+        )
+        require(contains_all(text, markers),
+                f"{label} does not subscribe, print, and await completion or errors")
+    elif language == "java":
+        require(contains_all(text, ("sendAndWait", "System.out.println(response)", ".get()")),
+                f"{label} does not print a completed assistant response")
+
 
 LATER_CAPABILITIES = {
     "stream": ("streaming", "Streaming", "setStreaming"),
@@ -215,9 +278,7 @@ def validate_executable_stage(language: str, stage: str, directory: Path) -> str
         require(contains_any(text, markers),
                 f"{label} executable entrypoint does not wire {capability} for {stage}")
 
-    if stage in {"02-streaming", "03-local-tool", "04-mcp-safety", "05-combine-tools", "06-structured-report"}:
-        require(contains_any(text, apis["stream_output"]),
-                f"{label} enables streaming without consuming the streamed response")
+    validate_runtime_flow(language, stage, runtime_source(directory, language, text), label)
     if stage == "04-mcp-safety":
         require("evidence-backed" not in text and "Review limits" not in text,
                 f"{label} combines report behavior before Step 5 or Step 6")
@@ -416,6 +477,25 @@ def validate_checkpoint_progression() -> None:
         require(
             len(executable_hashes) == len(CHECKPOINTS),
             f"{language} checkpoints have identical executable behavior; each checkpoint must demonstrate its named stage",
+        )
+
+    for language, stage, directory in (
+        ("nodejs", "01-first-session", ROOT / "samples" / "nodejs" / "hello-copilot-sdk"),
+        ("go", "06-structured-report", ROOT / "samples" / "go" / "accessibility-report"),
+        ("rust", "06-structured-report", ROOT / "samples" / "rust" / "accessibility-report"),
+        ("java", "06-structured-report", ROOT / "samples" / "java" / "accessibility-report"),
+    ):
+        text = executable_source(directory, language)
+        validate_runtime_flow(language, stage, runtime_source(directory, language, text), directory.relative_to(ROOT))
+    for directory in (
+        ROOT / "samples" / "python" / "hello-copilot-sdk",
+        ROOT / "samples" / "python" / "accessibility-report",
+    ):
+        validate_runtime_flow(
+            "python",
+            "06-structured-report",
+            read(directory / "report.py"),
+            directory.relative_to(ROOT),
         )
 
     node_report_package = read(ROOT / "samples" / "nodejs" / "accessibility-report" / "package.json")
