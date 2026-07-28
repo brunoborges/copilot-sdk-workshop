@@ -24,14 +24,12 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public final class AccessibilityReport {
-    private static final String CHECKPOINT_STAGE = "05-combine-tools";
     private static final long MAX_SNAPSHOT_BYTES = 1_000_000;
 
     private AccessibilityReport() {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Checkpoint: " + CHECKPOINT_STAGE);
         if (args.length != 1) {
             System.err.println("Usage: mvn exec:java -Dexec.args=<http-or-https-url>");
             return;
@@ -74,7 +72,7 @@ public final class AccessibilityReport {
         try (var client = new CopilotClient()) {
             client.start().get();
             var session = client.createSession(config).get();
-            session.sendAndWait(new MessageOptions().setPrompt(reportPrompt(target))).get();
+            session.sendAndWait(new MessageOptions().setPrompt(combinedToolsPrompt(target))).get();
         }
     }
 
@@ -132,24 +130,13 @@ public final class AccessibilityReport {
                 {"criterion":"No exact match","title":"Criterion not found","when_it_applies":"The issue is not represented in the workshop catalog.","recommendation":"Verify the evidence and consult the complete WCAG reference."}""";
     }
 
-    private static String reportPrompt(URI target) {
+    private static String combinedToolsPrompt(URI target) {
         return """
-                Prepare an evidence-based accessibility review of %s.
+                Open %s with browser_navigate.
                 1. Use browser_navigate to open that exact URL.
                 2. Call read_latest_accessibility_snapshot to inspect its accessibility tree.
-                3. Identify three to five high-confidence issues supported by the snapshot.
-                4. Call accessibility_rule_lookup for each issue before recommending a fix.
-
-                Return only this structure:
-                # Accessibility review
-                ## Finding 1: <short name>
-                - Evidence: <specific element or page structure observed in the browser>
-                - WCAG criterion: <criterion and title returned by the catalog>
-                - Recommended remediation: <specific implementation change>
-                Repeat the finding section as needed.
-                ## Review limits
-                State that this is a focused review of browser-observable evidence, not a full WCAG conformance audit.
-                Do not invent evidence, report unsupported statistics, or claim the page is WCAG compliant.""".formatted(target);
+                3. Identify one browser-observable issue.
+                4. Call accessibility_rule_lookup before recommending one evidence-backed fix.""".formatted(target);
     }
 
     private record Rule(String criterion, String title, String whenItApplies, String recommendation, List<String> keywords) {

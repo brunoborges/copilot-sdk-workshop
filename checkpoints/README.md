@@ -13,7 +13,7 @@ bash scripts/validate-workshop.sh
 It validates all six language registries, lessons, local assets, security boundaries, starters,
 six checkpoints per language, and both samples per language. For a single checkpoint, use its
 native command: `dotnet build`, `npm ci && npm run build`, `python -m py_compile *.py`,
-`go test ./...`, `cargo test --locked`, or `mvn test`.
+`go test -mod=readonly ./...`, `cargo test --locked`, or `mvn test`.
 
 The static validation intentionally does not authenticate the Copilot CLI, launch a browser, or
 send a Copilot request. Runtime setup is covered by the language-specific interactive preflight.

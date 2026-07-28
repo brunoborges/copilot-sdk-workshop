@@ -64,14 +64,6 @@ ENTRYPOINTS = {
     "rust": "src/main.rs",
     "java": "src/main/java/workshop/AccessibilityReport.java",
 }
-STAGE_MARKERS = {
-    "01-first-session": ("create", "session"),
-    "02-streaming": ("stream",),
-    "03-local-tool": ("accessibility_rule_lookup",),
-    "04-mcp-safety": ("browser_navigate", "playwright"),
-    "05-combine-tools": ("read_latest_accessibility_snapshot", "accessibility_rule_lookup"),
-    "06-structured-report": ("report", "accessibility"),
-}
 errors: list[str] = []
 
 
@@ -110,6 +102,154 @@ def project_source(directory: Path) -> str:
         read(path) for path in directory.rglob("*")
         if path.is_file() and path.suffix in source_suffixes
     )
+
+
+def executable_source(directory: Path, language: str) -> str:
+    """Read the launched entrypoint and any directly launched report module, not dormant helpers."""
+    entrypoint = directory / ENTRYPOINTS[language]
+    text = read(entrypoint)
+    if language == "nodejs" and re.search(r'import\s+["\']\./report\.js["\']', text):
+        text += "\n" + read(directory / "src" / "report.ts") + "\n" + read(directory / "src" / "workshop.ts")
+    if language == "python" and re.search(r"from\s+report\s+import\s+main", text):
+        text += "\n" + read(directory / "report.py") + "\n" + read(directory / "workshop.py")
+    if language == "dotnet" and "Prompts.CreateReportPrompt" in text:
+        text += "\n" + read(directory / "Helpers" / "Prompts.cs")
+    return text
+
+
+def contains_any(text: str, markers: tuple[str, ...]) -> bool:
+    folded = text.casefold()
+    return any(marker.casefold() in folded for marker in markers)
+
+
+LANGUAGE_APIS = {
+    "dotnet": {
+        "client": ("new CopilotClient",),
+        "session": ("CreateSessionAsync",),
+        "send": ("SendAndWaitAsync", "ResponseStreamer.SendAndPrintAsync"),
+        "stream": ("Streaming = true",),
+        "stream_output": ("ResponseStreamer.SendAndPrintAsync",),
+        "tool": ("CreateLookupTool",),
+    },
+    "nodejs": {
+        "client": ("new CopilotClient",),
+        "session": ("createSession",),
+        "send": ("sendAndWait", "streamResponse"),
+        "stream": ("streaming: true",),
+        "stream_output": ("streamResponse(",),
+        "tool": ("accessibilityRuleLookup", "tools: ["),
+    },
+    "python": {
+        "client": ("CopilotClient",),
+        "session": ("create_session",),
+        "send": ("session.send",),
+        "stream": ("streaming=True",),
+        "stream_output": ("session.on(", "await done.wait()"),
+        "tool": ("accessibility_rule_lookup", "tools=["),
+    },
+    "go": {
+        "client": ("copilot.NewClient",),
+        "session": ("CreateSession",),
+        "send": ("SendAndWait",),
+        "stream": ("Streaming: copilot.Bool(true)",),
+        "stream_output": ("session.On(", "AssistantMessageDeltaData"),
+        "tool": ('DefineTool("accessibility_rule_lookup"',),
+    },
+    "rust": {
+        "client": ("Client::start",),
+        "session": ("create_session",),
+        "send": ("send_and_wait", "session.send("),
+        "stream": ("config.streaming = Some(true)",),
+        "stream_output": ("session.subscribe", "send_and_wait"),
+        "tool": ('Tool::new("accessibility_rule_lookup")',),
+    },
+    "java": {
+        "client": ("new CopilotClient",),
+        "session": ("createSession",),
+        "send": ("sendAndWait",),
+        "stream": ("setStreaming(true)",),
+        "stream_output": ("sendAndWait",),
+        "tool": ('ToolDefinition.from(', '"accessibility_rule_lookup"'),
+    },
+}
+
+LATER_CAPABILITIES = {
+    "stream": ("streaming", "Streaming", "setStreaming"),
+    "local": ("accessibility_rule_lookup",),
+    "mcp": ("mcpServers", "mcp_servers", "MCPServers", "McpStdioServerConfig", "McpServerConfig"),
+    "browser": ("browser_navigate", "playwright-browser_navigate"),
+    "snapshot": ("read_latest_accessibility_snapshot",),
+    "permission": ("permissionForTarget", "permission_for_target", "OnPermissionRequest", "with_permission_handler", "setOnPermissionRequest"),
+    "report": ("Review limits", "review limits", "reportPrompt", "report_prompt"),
+}
+
+
+def validate_executable_stage(language: str, stage: str, directory: Path) -> str:
+    text = executable_source(directory, language)
+    apis = LANGUAGE_APIS[language]
+    label = directory.relative_to(ROOT)
+    require("CHECKPOINT_STAGE" not in text and "checkpointStage" not in text,
+            f"{label} relies on a cosmetic checkpoint label instead of executable behavior")
+
+    if stage == "starter":
+        for capability in ("client", "session", "stream", "local", "mcp", "browser", "snapshot", "permission", "report"):
+            markers = apis.get(capability, ()) + LATER_CAPABILITIES.get(capability, ())
+            require(not contains_any(text, markers),
+                    f"{label} starter wires {capability} instead of remaining a scaffold")
+        return text
+
+    for capability in ("client", "session", "send"):
+        require(contains_any(text, apis[capability]),
+                f"{label} executable entrypoint does not create, use, and send through a Copilot session")
+
+    required_capabilities = {
+        "01-first-session": (),
+        "02-streaming": ("stream",),
+        "03-local-tool": ("stream", "local"),
+        "04-mcp-safety": ("stream", "local", "mcp", "browser", "snapshot", "permission"),
+        "05-combine-tools": ("stream", "local", "mcp", "browser", "snapshot", "permission"),
+        "06-structured-report": ("stream", "local", "mcp", "browser", "snapshot", "permission", "report"),
+    }[stage]
+    for capability in required_capabilities:
+        markers = apis.get(capability, ()) + LATER_CAPABILITIES.get(capability, ())
+        require(contains_any(text, markers),
+                f"{label} executable entrypoint does not wire {capability} for {stage}")
+
+    if stage in {"02-streaming", "03-local-tool", "04-mcp-safety", "05-combine-tools", "06-structured-report"}:
+        require(contains_any(text, apis["stream_output"]),
+                f"{label} enables streaming without consuming the streamed response")
+    if stage == "04-mcp-safety":
+        require("evidence-backed" not in text and "Review limits" not in text,
+                f"{label} combines report behavior before Step 5 or Step 6")
+    if stage == "05-combine-tools":
+        combined_marker = {
+            "dotnet": "For each issue, call accessibility_rule_lookup",
+            "nodejs": "evidence-backed",
+            "python": "evidence-backed",
+            "go": "evidence-backed",
+            "rust": "evidence-backed",
+            "java": "evidence-backed",
+        }[language]
+        require(combined_marker in text and "Review limits" not in text,
+                f"{label} does not combine browser evidence with local guidance before Step 6")
+    if stage == "06-structured-report":
+        require("Review limits" in text,
+                f"{label} executable entrypoint does not request the structured report limits")
+
+    forbidden_capabilities = {
+        "01-first-session": ("stream", "local", "mcp", "browser", "snapshot", "permission", "report"),
+        "02-streaming": ("local", "mcp", "browser", "snapshot", "permission", "report"),
+        "03-local-tool": ("mcp", "browser", "snapshot", "permission", "report"),
+    }.get(stage, ())
+    for capability in forbidden_capabilities:
+        markers = apis.get(capability, ()) + LATER_CAPABILITIES.get(capability, ())
+        require(not contains_any(text, markers),
+                f"{label} executable entrypoint wires later-stage {capability} capability")
+
+    if language == "nodejs" and stage in {"04-mcp-safety", "05-combine-tools"}:
+        require('["http:", "https:"].includes(target.protocol)' in text,
+                f"{label} accepts a non-HTTP(S) URL")
+    return text
 
 
 def validate_html_assets(html_file: Path) -> None:
@@ -181,15 +321,38 @@ def validate_layout() -> None:
         for directory in [ROOT / "start" / language, ROOT / "samples" / language / "hello-copilot-sdk", ROOT / "samples" / language / "accessibility-report"]:
             require(directory.is_dir(), f"Missing {language} project directory {directory.relative_to(ROOT)}")
             require(has_manifest(directory, language), f"Missing {language} manifest in {directory.relative_to(ROOT)}")
+            require((directory / ENTRYPOINTS[language]).exists(),
+                    f"Missing {language} executable entrypoint in {directory.relative_to(ROOT)}")
         for checkpoint in CHECKPOINTS:
             directory = ROOT / "checkpoints" / language / checkpoint
             require(directory.is_dir(), f"Missing {language} checkpoint {checkpoint}")
             require(has_manifest(directory, language), f"Missing {language} manifest in {directory.relative_to(ROOT)}")
             require((directory / SOURCE_FILES[language]).exists(), f"Missing {language} source in {directory.relative_to(ROOT)}")
+            require((directory / ENTRYPOINTS[language]).exists(),
+                    f"Missing {language} executable entrypoint in {directory.relative_to(ROOT)}")
     for language in ("nodejs", "go", "rust"):
         for directory in [ROOT / "start" / language, *(ROOT / "samples" / language / sample for sample in ("hello-copilot-sdk", "accessibility-report")), *(ROOT / "checkpoints" / language / checkpoint for checkpoint in CHECKPOINTS)]:
             lock = {"nodejs": "package-lock.json", "go": "go.sum", "rust": "Cargo.lock"}[language]
             require((directory / lock).exists(), f"Missing deterministic {language} lock file in {directory.relative_to(ROOT)}")
+
+
+def validate_python_dependencies() -> None:
+    directories = [
+        ROOT / "start" / "python",
+        *(ROOT / "samples" / "python" / sample for sample in ("hello-copilot-sdk", "accessibility-report")),
+        *(ROOT / "checkpoints" / "python" / checkpoint for checkpoint in CHECKPOINTS),
+    ]
+    for directory in directories:
+        requirements = [
+            line.strip() for line in read(directory / "requirements.txt").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
+        require(requirements, f"{directory.relative_to(ROOT)} has no pinned Python dependencies")
+        for requirement in requirements:
+            require("==" in requirement and not requirement.startswith(("-", "git+", "http:")),
+                    f"{directory.relative_to(ROOT)} has an unpinned Python dependency: {requirement}")
+        require(any(requirement.startswith("github-copilot-sdk==") for requirement in requirements),
+                f"{directory.relative_to(ROOT)} does not pin github-copilot-sdk")
 
 
 def validate_security_invariants() -> None:
@@ -221,36 +384,38 @@ def validate_security_invariants() -> None:
 
 def validate_checkpoint_progression() -> None:
     for language in LANGUAGES:
-        entrypoint_hashes: set[str] = set()
+        executable_hashes: set[str] = set()
+        starter = ROOT / "start" / language
+        require((starter / ENTRYPOINTS[language]).exists(),
+                f"Missing {language} starter executable {ENTRYPOINTS[language]}")
+        validate_executable_stage(language, "starter", starter)
         for checkpoint in CHECKPOINTS:
             directory = ROOT / "checkpoints" / language / checkpoint
-            entrypoint = directory / ENTRYPOINTS[language]
-            text = read(entrypoint)
-            entrypoint_hashes.add(text)
-            for marker in STAGE_MARKERS[checkpoint]:
-                require(
-                    marker.casefold() in project_source(directory).casefold(),
-                    f"{directory.relative_to(ROOT)} does not demonstrate {checkpoint}: missing {marker}",
-                )
+            text = validate_executable_stage(language, checkpoint, directory)
+            executable_hashes.add(text)
             if language == "nodejs":
                 package = read(directory / "package.json")
                 require('"start": "tsx src/index.ts"' in package, f"{directory.relative_to(ROOT)} start script bypasses its checkpoint entrypoint")
                 require("Continue with Step 1" not in text, f"{directory.relative_to(ROOT)} has a placeholder entrypoint")
             if language == "python":
-                report = read(directory / "report.py")
-                require("case SessionErrorData(message=message): raise" not in report,
-                        f"{directory.relative_to(ROOT)} raises from an event callback instead of completing the wait")
-                require("error: RuntimeError | None = None" in report and "done.set()" in report,
-                        f"{directory.relative_to(ROOT)} does not propagate session errors to the awaited flow")
-                require('if __name__ == "__main__":' in report,
-                        f"{directory.relative_to(ROOT)} runs interactive code when imported")
+                if checkpoint == "06-structured-report":
+                    report = read(directory / "report.py")
+                    require("case SessionErrorData(message=message): raise" not in report,
+                            f"{directory.relative_to(ROOT)} raises from an event callback instead of completing the wait")
+                    require("error: RuntimeError | None = None" in report and "done.set()" in report,
+                            f"{directory.relative_to(ROOT)} does not propagate session errors to the awaited flow")
+                    require('if __name__ == "__main__":' in report,
+                            f"{directory.relative_to(ROOT)} runs interactive code when imported")
+                else:
+                    require(not (directory / "report.py").exists(),
+                            f"{directory.relative_to(ROOT)} includes a misleading completed reporter before Step 6")
             if language == "java":
                 pom = read(directory / "pom.xml")
                 require("<mainClass>workshop.AccessibilityReport</mainClass>" in pom,
                         f"{directory.relative_to(ROOT)} does not configure mvn exec:java")
         require(
-            len(entrypoint_hashes) == len(CHECKPOINTS),
-            f"{language} checkpoints have identical entrypoints; each checkpoint must demonstrate its named stage",
+            len(executable_hashes) == len(CHECKPOINTS),
+            f"{language} checkpoints have identical executable behavior; each checkpoint must demonstrate its named stage",
         )
 
     node_report_package = read(ROOT / "samples" / "nodejs" / "accessibility-report" / "package.json")
@@ -263,9 +428,10 @@ def validate_checkpoint_progression() -> None:
         require("const baseline = await existingSnapshots" in source,
                 f"{directory.relative_to(ROOT)} does not await the construction-time snapshot baseline")
     for directory in [ROOT / "start" / "python", *(ROOT / "checkpoints" / "python" / checkpoint for checkpoint in CHECKPOINTS), *(ROOT / "samples" / "python" / sample for sample in ("hello-copilot-sdk", "accessibility-report"))]:
-        report = read(directory / "report.py")
-        require('if __name__ == "__main__":' in report,
-                f"{directory.relative_to(ROOT)} report entrypoint cannot be imported safely")
+        report_path = directory / "report.py"
+        if report_path.exists():
+            require('if __name__ == "__main__":' in read(report_path),
+                    f"{directory.relative_to(ROOT)} report entrypoint cannot be imported safely")
     for directory in [ROOT / "start" / "java", *(ROOT / "checkpoints" / "java" / checkpoint for checkpoint in CHECKPOINTS), *(ROOT / "samples" / "java" / sample for sample in ("hello-copilot-sdk", "accessibility-report"))]:
         require("<mainClass>workshop.AccessibilityReport</mainClass>" in read(directory / "pom.xml"),
                 f"{directory.relative_to(ROOT)} does not configure the Maven executable entrypoint")
@@ -301,6 +467,19 @@ def validate_documentation() -> None:
     all_markdown = "\n".join(read(path) for path in [ROOT / "README.md", ROOT / "start" / "README.md", ROOT / "checkpoints" / "README.md", *WORKSHOP.glob("*.md")])
     require("go run ./samples/" not in all_markdown and "go run samples/" not in all_markdown,
             "Documentation runs Go modules from the repository root instead of their module directory")
+    starters = read(ROOT / "start" / "README.md")
+    require("cd workshop-app && go build -mod=readonly ./..." in starters,
+            "Starter documentation must build Go modules with the lock enforced")
+    checkpoints = read(ROOT / "checkpoints" / "README.md")
+    require("go test -mod=readonly ./..." in checkpoints,
+            "Checkpoint documentation must test Go modules with the lock enforced")
+    require("python -m pip install -r requirements.txt" in starters,
+            "Starter documentation must install the pinned Python requirements")
+    require("python report.py" not in all_markdown,
+            "Documentation must invoke Python checkpoint main.py rather than an unwired report.py")
+    for lesson in ("01-first-session.md", "05-combine-tools.md", "06-structured-report.md"):
+        require("python main.py" in read(WORKSHOP / lesson),
+                f"{lesson} must run the Python checkpoint through main.py")
 
 
 def validate_workflows() -> None:
@@ -330,6 +509,7 @@ for lesson in LESSONS:
             if lesson.startswith("0") and lesson != "00-preflight.md":
                 require(section in read(lesson_path), f"{lesson} is missing required section: {section}")
 validate_layout()
+validate_python_dependencies()
 validate_security_invariants()
 validate_checkpoint_progression()
 validate_site_behavior()

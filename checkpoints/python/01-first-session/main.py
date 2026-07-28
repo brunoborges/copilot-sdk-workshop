@@ -1,5 +1,13 @@
-CHECKPOINT_STAGE = "01-first-session"
+import asyncio
+
+from copilot import CopilotClient
+
+
+async def main() -> None:
+    async with CopilotClient() as client:
+        async with await client.create_session() as session:
+            await session.send("In one sentence, explain why an accessible name matters for a form input.")
+
 
 if __name__ == "__main__":
-    print("The Copilot SDK workshop starter is ready.")
-    print("Continue with Step 1 to create your first Copilot session.")
+    asyncio.run(main())

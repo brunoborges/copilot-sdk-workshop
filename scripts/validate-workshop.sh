@@ -24,15 +24,15 @@ for project in start/python samples/python/* checkpoints/python/*; do
     echo "Installing and smoke-checking $project"
     (
         cd "$project"
-        python3 -m pip install --disable-pip-version-check --no-input -r requirements.txt
+        python3 -m pip install --disable-pip-version-check --no-input --requirement requirements.txt
         python3 -m py_compile *.py
-        python3 -c "import main, report, workshop; from copilot import CopilotClient"
+        python3 -c "import importlib, pathlib; [importlib.import_module(path.stem) for path in pathlib.Path('.').glob('*.py')]; from copilot import CopilotClient"
     )
 done
 
 for project in start/go samples/go/* checkpoints/go/*; do
     echo "Resolving and testing $project"
-    (cd "$project" && go mod download && go build -mod=readonly ./... && go test -mod=readonly ./...)
+    (cd "$project" && go mod download && go mod verify && go build -mod=readonly ./... && go test -mod=readonly ./...)
 done
 
 for project in start/rust samples/rust/* checkpoints/rust/*; do

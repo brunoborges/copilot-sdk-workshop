@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use github_copilot_sdk::handler::{PermissionHandler, PermissionResult};
 use github_copilot_sdk::tool::{JsonSchema, ToolHandler, schema_for};
 use github_copilot_sdk::types::{
-    McpServerConfig, McpStdioServerConfig, PermissionRequestData, RequestId, SessionConfig,
+    McpServerConfig, McpStdioServerConfig, MessageOptions, PermissionRequestData, RequestId, SessionConfig,
     SessionId, Tool, ToolInvocation,
 };
 use github_copilot_sdk::{Client, ClientOptions, Error, ToolResult};
@@ -15,7 +15,6 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-const CHECKPOINT_STAGE: &str = "05-combine-tools";
 const MAX_SNAPSHOT_BYTES: u64 = 1_000_000;
 
 #[derive(Serialize)]
@@ -240,30 +239,18 @@ fn same_url(left: &Url, right: &Url) -> bool {
         && left.fragment() == right.fragment()
 }
 
-fn report_prompt(target: &Url) -> String {
+fn combined_tools_prompt(target: &Url) -> String {
     format!(
-        r#"Prepare an evidence-based accessibility review of {target}.
+        r#"Open {target} with browser_navigate.
 1. Use browser_navigate to open that exact URL.
 2. Call read_latest_accessibility_snapshot to inspect its accessibility tree.
-3. Identify three to five high-confidence issues supported by the snapshot.
-4. Call accessibility_rule_lookup for each issue before recommending a fix.
-
-Return only this structure:
-# Accessibility review
-## Finding 1: <short name>
-- Evidence: <specific element or page structure observed in the browser>
-- WCAG criterion: <criterion and title returned by the catalog>
-- Recommended remediation: <specific implementation change>
-Repeat the finding section as needed.
-## Review limits
-State that this is a focused review of browser-observable evidence, not a full WCAG conformance audit.
-Do not invent evidence, report unsupported statistics, or claim the page is WCAG compliant."#
+3. Identify one browser-observable issue.
+4. Call accessibility_rule_lookup before recommending one evidence-backed fix."#
     )
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("Checkpoint: {CHECKPOINT_STAGE}");
     let argument = std::env::args()
         .nth(1)
         .ok_or("Usage: cargo run -- <http-or-https-url>")?;
@@ -321,7 +308,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let client = Client::start(ClientOptions::default()).await?;
     let session = client.create_session(config).await?;
-    session.send(report_prompt(&target)).await?;
+    session
+        .send_and_wait(MessageOptions::new(combined_tools_prompt(&target)))
+        .await?;
     session.disconnect().await?;
     client.stop().await?;
     Ok(())

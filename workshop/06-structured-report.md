@@ -208,8 +208,8 @@ Use `reportPrompt(target)` from `src/workshop.ts`; it requires three to five evi
 findings and the same review limits as the .NET version.
 :::
 :::language python
-Use `report_prompt(target)` from `workshop.py`; it requires three to five evidence-backed findings
-and the same review limits as the .NET version.
+Run `python main.py "{{TARGET_APP_URL}}"`. It calls `report_prompt(target)` from `workshop.py`,
+which requires three to five evidence-backed findings and the same review limits as the .NET version.
 :::
 :::language go
 Use `reportPrompt(target)` in `main.go` and run `go run . "{{TARGET_APP_URL}}"`. It requires three to five evidence-backed findings, catalog mapping, remediation, and the review-limit statement. If output claims compliance, preserve the explicit limits in the prompt. See [`checkpoints/go/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/06-structured-report).
