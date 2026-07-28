@@ -120,3 +120,10 @@ you to a useful Copilot response sooner and keeps the first lesson focused on cl
 </details>
 
 Return to [Step 7: Run and explain the application](07-run-explain.md).
+
+:::language nodejs
+Use `await client.listModels()` and pass the selected id as `model` to `createSession`.
+:::
+:::language python
+Use `await client.list_models()` and pass the selected id as `model` to `create_session`.
+:::

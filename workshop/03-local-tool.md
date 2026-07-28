@@ -193,3 +193,12 @@ await ResponseStreamer.SendAndPrintAsync(
 :::
 
 Continue to [Step 4: Connect an external tool safely](04-mcp-safety.md).
+
+:::language nodejs
+Define `accessibility_rule_lookup` with `defineTool`, a Zod schema, and `skipPermission: true`
+because the catalog is application-owned, read-only data.
+:::
+:::language python
+Define `accessibility_rule_lookup` with `@define_tool`, a Pydantic parameter model, and
+`skip_permission=True` because the catalog is application-owned, read-only data.
+:::

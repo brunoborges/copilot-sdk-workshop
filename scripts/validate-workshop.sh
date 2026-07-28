@@ -21,3 +21,13 @@ for project in "${projects[@]}"; do
     echo "Building $project"
     dotnet build "$project" --nologo --verbosity quiet
 done
+
+for project in start/nodejs samples/nodejs/* checkpoints/nodejs/*; do
+    echo "Type-checking $project"
+    (cd "$project" && npm ci --ignore-scripts && npm run build)
+done
+
+for project in start/python samples/python/* checkpoints/python/*; do
+    echo "Checking $project"
+    python3 -m py_compile "$project"/*.py
+done

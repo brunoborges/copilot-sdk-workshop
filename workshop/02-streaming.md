@@ -169,3 +169,12 @@ await ResponseStreamer.SendAndPrintAsync(
 :::
 
 Continue to [Step 3: Add application-owned knowledge](03-local-tool.md).
+
+:::language nodejs
+Use `session.on("assistant.message_delta", ...)` and `session.on("session.idle", ...)` to stream
+output; the shared `streamResponse` helper is in `src/workshop.ts`.
+:::
+:::language python
+Use `AssistantMessageDeltaData` and `SessionIdleData` event payloads with `asyncio.Event`; the
+matching helper is in `workshop.py`.
+:::

@@ -136,3 +136,14 @@ Console.WriteLine($"\nCopilot: {response.Data.Content}");
 :::
 
 Continue to [Step 2: Stream a response](02-streaming.md).
+
+:::language nodejs
+Replace `src/index.ts` with a `CopilotClient`, `await client.start()`, and
+`await session.sendAndWait({ prompt })`; run it with `npm start`. See
+[`checkpoints/nodejs/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/01-first-session).
+:::
+:::language python
+Replace `main.py` with an `async with CopilotClient()` session and `await session.send(prompt)`;
+run it with `python main.py`. See
+[`checkpoints/python/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/01-first-session).
+:::

@@ -130,3 +130,13 @@ Open the controlled target page once to make sure you can reach it:
 :::
 
 Continue to [Step 1: Create your first Copilot session](01-first-session.md).
+
+:::language nodejs
+Use Node.js 22.12+ and copy `start/nodejs` to `workshop-app`. Run `npm install` then
+`npm run build`. The official [Node.js SDK installation guide](https://github.com/github/copilot-sdk/tree/main/nodejs)
+uses `npm install @github/copilot-sdk`.
+:::
+:::language python
+Use Python 3.11+ and copy `start/python` to `workshop-app`. Create a virtual environment, then run
+`python -m pip install -r requirements.txt`. See the official [Python SDK installation guide](https://github.com/github/copilot-sdk/tree/main/python).
+:::

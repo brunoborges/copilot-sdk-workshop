@@ -202,3 +202,12 @@ await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(tar
 :::
 
 Continue to [Step 7: Run and explain the application](07-run-explain.md).
+
+:::language nodejs
+Use `reportPrompt(target)` from `src/workshop.ts`; it requires three to five evidence-backed
+findings and the same review limits as the .NET version.
+:::
+:::language python
+Use `report_prompt(target)` from `workshop.py`; it requires three to five evidence-backed findings
+and the same review limits as the .NET version.
+:::

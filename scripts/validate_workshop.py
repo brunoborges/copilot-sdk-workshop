@@ -13,6 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKSHOP = ROOT / "workshop"
 DOCS = ROOT / "docs"
 DOTNET = "dotnet"
+NODEJS = "nodejs"
+PYTHON = "python"
+LANGUAGES = [DOTNET, NODEJS, PYTHON]
 START_PROJECT = ROOT / "start" / DOTNET / "HelloCopilotSDK.csproj"
 CHECKPOINT_ROOT = ROOT / "checkpoints" / DOTNET
 SAMPLE_ROOT = ROOT / "samples" / DOTNET
@@ -173,7 +176,7 @@ def validate_markdown_links(markdown_file: Path) -> None:
 
 def validate_language_directives(markdown_file: Path) -> None:
     active_language: str | None = None
-    has_dotnet_block = False
+    language_blocks: set[str] = set()
     lines = markdown_file.read_text(encoding="utf-8").splitlines()
     language_specific = re.compile(
         r"\bdotnet\b|\bC#\b|start/dotnet|checkpoints/dotnet|samples/dotnet|"
@@ -190,10 +193,10 @@ def validate_language_directives(markdown_file: Path) -> None:
             )
             active_language = language_match.group(1)
             require(
-                active_language == DOTNET,
+                active_language in LANGUAGES,
                 f"{markdown_file.relative_to(ROOT)}:{line_number} uses unknown language {active_language}",
             )
-            has_dotnet_block = has_dotnet_block or active_language == DOTNET
+            language_blocks.add(active_language)
             continue
 
         if re.fullmatch(r":::\s*", line):
@@ -221,8 +224,8 @@ def validate_language_directives(markdown_file: Path) -> None:
         f"{markdown_file.relative_to(ROOT)} has an unclosed language directive",
     )
     require(
-        has_dotnet_block,
-        f"{markdown_file.relative_to(ROOT)} has no .NET language block",
+        set(LANGUAGES).issubset(language_blocks),
+        f"{markdown_file.relative_to(ROOT)} is missing one or more language blocks",
     )
 
 
@@ -284,6 +287,25 @@ for checkpoint in CHECKPOINTS:
     program = CHECKPOINT_ROOT / checkpoint / "Program.cs"
     require(project.exists(), f"Missing compiling project for checkpoint {checkpoint}")
     require(program.exists(), f"Missing complete Program.cs for checkpoint {checkpoint}")
+
+for language in [NODEJS, PYTHON]:
+    start_directory = ROOT / "start" / language
+    sample_directory = ROOT / "samples" / language
+    checkpoint_directory = ROOT / "checkpoints" / language
+    require(start_directory.exists(), f"Missing {language} starter")
+    require((sample_directory / "hello-copilot-sdk").exists(), f"Missing {language} hello sample")
+    require((sample_directory / "accessibility-report").exists(), f"Missing {language} report sample")
+    for checkpoint in CHECKPOINTS:
+        directory = checkpoint_directory / checkpoint
+        require(directory.exists(), f"Missing {language} checkpoint {checkpoint}")
+    report_file = "src/report.ts" if language == NODEJS else "report.py"
+    for directory in [sample_directory / "accessibility-report", *(checkpoint_directory / checkpoint for checkpoint in CHECKPOINTS[3:])]:
+        report = directory / report_file
+        require(report.exists(), f"Missing {language} report source in {directory.relative_to(ROOT)}")
+        if report.exists():
+            text = report.read_text(encoding="utf-8")
+            require("playwright-browser_navigate" in text, f"{report.relative_to(ROOT)} does not allow the canonical navigation tool")
+            require("browser_snapshot" not in text, f"{report.relative_to(ROOT)} exposes browser_snapshot")
 
 mcp_projects = [
     SAMPLE_ROOT / "accessibility-report",

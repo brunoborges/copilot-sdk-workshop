@@ -1,6 +1,6 @@
 # Copilot SDK Workshop
 
-Build an AI-powered accessibility reviewer with .NET and the GitHub Copilot SDK.
+Build an AI-powered accessibility reviewer with .NET, Node.js/TypeScript, or Python and the GitHub Copilot SDK.
 
 In this self-guided workshop, you'll:
 
@@ -53,6 +53,12 @@ copilot-sdk-workshop/
 |-- samples/dotnet/
 |   |-- hello-copilot-sdk/        Completed .NET local-tool example
 |   `-- accessibility-report/     Completed .NET local + MCP reporter
+|-- start/nodejs/                 Node.js/TypeScript learner starter
+|-- checkpoints/nodejs/           Node.js/TypeScript checkpoint projects
+|-- samples/nodejs/               Completed TypeScript examples
+|-- start/python/                 Python 3.11+ learner starter
+|-- checkpoints/python/           Python checkpoint projects
+|-- samples/python/               Completed Python examples
 |-- src/BlazorApp/                Source counterpart of the deployed target
 |-- scripts/                      Deterministic content and build validation
 `-- .github/workflows/            Validation and Pages deployment
@@ -79,6 +85,8 @@ deployment job reports the canonical workshop URL in its environment.
 ## References
 
 - [GitHub Copilot SDK for .NET](https://github.com/github/copilot-sdk/tree/main/dotnet)
+- [GitHub Copilot SDK for Node.js/TypeScript](https://github.com/github/copilot-sdk/tree/main/nodejs)
+- [GitHub Copilot SDK for Python](https://github.com/github/copilot-sdk/tree/main/python)
 - [Playwright MCP](https://github.com/microsoft/playwright-mcp)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 

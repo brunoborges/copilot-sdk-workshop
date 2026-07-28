@@ -30,6 +30,13 @@ Console application
 ```
 :::
 
+:::language nodejs
+The completed report is in [`samples/nodejs/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/nodejs/accessibility-report).
+:::
+:::language python
+The completed report is in [`samples/python/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/python/accessibility-report).
+:::
+
 ## Take the design beyond this workshop
 
 Understanding these boundaries lets you reuse the design in another application instead of only

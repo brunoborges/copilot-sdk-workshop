@@ -289,3 +289,14 @@ await ResponseStreamer.SendAndPrintAsync(
 :::
 
 Continue to [Step 5: Combine local and MCP tools](05-combine-tools.md).
+
+:::language nodejs
+Use the exact `mcpServers.playwright.tools: ["browser_navigate"]` allowlist and
+`availableTools: ["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"]`.
+The shared helper compares every URL component and reads only a new direct `page-*.yml` snapshot.
+:::
+:::language python
+Use the same three canonical tool names in `available_tools` and only `browser_navigate` in the
+Playwright MCP server configuration. The helper rejects existing, nested, symlink, empty, and
+over-1-MB snapshots.
+:::

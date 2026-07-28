@@ -221,3 +221,12 @@ await ResponseStreamer.SendAndPrintAsync(
 :::
 
 Continue to [Step 6: Produce a structured report](06-structured-report.md).
+
+:::language nodejs
+Run `npm start -- "{{TARGET_APP_URL}}"`; the checkpoint is
+[`checkpoints/nodejs/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/05-combine-tools).
+:::
+:::language python
+Run `python report.py "{{TARGET_APP_URL}}"`; the checkpoint is
+[`checkpoints/python/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/05-combine-tools).
+:::
