@@ -10,14 +10,11 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  content:
+    name: Content and site
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.0.x
 
       - uses: actions/setup-node@v4
         with:
@@ -27,22 +24,94 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Validate lessons and site behavior
+        run: bash scripts/validate-workshop.sh content
+
+  smoke-build:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: dotnet
+            name: .NET smoke build
+          - language: nodejs
+            name: Node.js / TypeScript smoke build
+          - language: python
+            name: Python smoke build
+          - language: go
+            name: Go smoke build
+          - language: rust
+            name: Rust smoke build
+          - language: java
+            name: Java smoke build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        if: matrix.language == 'dotnet'
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/setup-node@v4
+        if: matrix.language == 'nodejs'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            start/nodejs/package-lock.json
+            samples/nodejs/*/package-lock.json
+            checkpoints/nodejs/*/package-lock.json
+
+      - uses: actions/setup-python@v5
+        if: matrix.language == 'python'
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            start/python/requirements.txt
+            samples/python/*/requirements.txt
+            checkpoints/python/*/requirements.txt
+
       - uses: actions/setup-go@v5
+        if: matrix.language == 'go'
         with:
           go-version: "1.24.x"
+          cache-dependency-path: |
+            start/go/go.sum
+            samples/go/*/go.sum
+            checkpoints/go/*/go.sum
 
       - uses: dtolnay/rust-toolchain@stable
+        if: matrix.language == 'rust'
         with:
           toolchain: "1.94.0"
 
+      - uses: Swatinem/rust-cache@v2
+        if: matrix.language == 'rust'
+        with:
+          workspaces: |
+            start/rust
+            samples/rust/accessibility-report
+            samples/rust/hello-copilot-sdk
+            checkpoints/rust/01-first-session
+            checkpoints/rust/02-streaming
+            checkpoints/rust/03-local-tool
+            checkpoints/rust/04-mcp-safety
+            checkpoints/rust/05-combine-tools
+            checkpoints/rust/06-structured-report
+
       - uses: actions/setup-java@v4
+        if: matrix.language == 'java'
         with:
           distribution: temurin
           java-version: "17"
           cache: maven
 
       - name: Verify Maven
+        if: matrix.language == 'java'
         run: mvn --version
 
-      - name: Validate content and build checkpoints
-        run: bash scripts/validate-workshop.sh
+      - name: Build ${{ matrix.name }}
+        run: bash scripts/validate-workshop.sh "${{ matrix.language }}"

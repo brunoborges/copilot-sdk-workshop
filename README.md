@@ -88,6 +88,15 @@ It then runs browser-independent language-selection tests and restores, builds, 
 starter, every checkpoint, both samples, and the Blazor target without authenticating Copilot, launching
 a browser, or sending a prompt.
 
+Pass a language ID to run one smoke-build target:
+
+```bash
+bash scripts/validate-workshop.sh nodejs
+```
+
+Pull requests run content validation and all six language smoke builds as separate GitHub Actions
+jobs, so a failure identifies the affected SDK track.
+
 ## Deployment
 
 After validation passes, push to `main`. The
