@@ -674,11 +674,32 @@ def validate_workflows() -> None:
         ("actions/setup-java@v4", 'java-version: "17"'),
         ("mvn --version", "bash scripts/validate-workshop.sh"),
     )
-    for workflow_name in ("validate.yml", "deploy.yml"):
-        workflow = read(ROOT / ".github" / "workflows" / workflow_name)
-        for expected in required_setup:
-            for value in expected:
-                require(value in workflow, f"{workflow_name} is missing required validation setup: {value}")
+    validation_workflow = read(ROOT / ".github" / "workflows" / "validate.yml")
+    for expected in required_setup:
+        for value in expected:
+            require(value in validation_workflow, f"validate.yml is missing required validation setup: {value}")
+
+    deployment_workflow = read(ROOT / ".github" / "workflows" / "deploy.yml")
+    for forbidden in (
+        "actions/setup-dotnet",
+        "actions/setup-node",
+        "actions/setup-python",
+        "actions/setup-go",
+        "rust-toolchain",
+        "actions/setup-java",
+        "validate-workshop.sh",
+    ):
+        require(
+            forbidden not in deployment_workflow,
+            f"deploy.yml should publish the prevalidated site without running {forbidden}",
+        )
+    for required in (
+        "Prepare deployment",
+        "actions/configure-pages@v5",
+        "actions/upload-pages-artifact@v3",
+        "actions/deploy-pages@v5",
+    ):
+        require(required in deployment_workflow, f"deploy.yml is missing deployment step: {required}")
 
 
 validate_language_registry()
