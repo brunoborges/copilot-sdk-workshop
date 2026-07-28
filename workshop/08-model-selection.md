@@ -10,20 +10,25 @@ session.
 
 ## How model selection works
 
+:::language dotnet
 The Copilot runtime may expose more than one model. `ListModelsAsync` returns the models available
 for the current account. `SessionConfig.Model` selects one when you create a session.
+:::
 
 ## Swap models without changing the architecture
 
 Changing the model can affect latency, capability, and billing. It does not change the local tools,
 MCP configuration, or permission policy, which is why this topic comes after the core architecture.
 
+:::language dotnet
 Model selection configures `CopilotSession`. It does not replace the client or either tool boundary.
+:::
 
 ## Add a model picker
 
 Create `workshop-app/Helpers/ModelSelector.cs`:
 
+:::language dotnet
 ```csharp
 using GitHub.Copilot;
 
@@ -57,13 +62,15 @@ public static class ModelSelector
     }
 }
 ```
-
+:::
 After `PingAsync` in `Program.cs`, insert:
 
+:::language dotnet
 ```csharp
 var selectedModel = await ModelSelector.SelectAsync(client);
 ```
-
+:::
+:::language dotnet
 Then add `Model = selectedModel` to `SessionConfig`:
 
 ```csharp
@@ -74,15 +81,16 @@ await using var session = await client.CreateSessionAsync(new SessionConfig
     // Keep the existing permission, local-tool, and MCP configuration.
 });
 ```
-
+:::
 Do not remove the rest of the Step 6 session configuration.
 
 ## Run it
 
+:::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-
+:::
 Choose a model, enter the workshop target URL, and confirm the same scoped tools still run.
 
 <details>

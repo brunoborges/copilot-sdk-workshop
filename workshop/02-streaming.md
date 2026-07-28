@@ -30,6 +30,7 @@ The session flow is now `response deltas -> final message -> idle`.
 
 Create `workshop-app/Helpers/ResponseStreamer.cs`:
 
+:::language dotnet
 ```csharp
 using GitHub.Copilot;
 
@@ -68,7 +69,7 @@ public static class ResponseStreamer
     }
 }
 ```
-
+:::
 The final-message case handles a runtime that completes without sending deltas. An error completes
 the task with an exception instead of looking like a successful turn.
 
@@ -77,6 +78,7 @@ the task with an exception instead of looking like a successful turn.
 In `Program.cs`, add `using HelloCopilotSDK.Helpers;`, then replace the session and response code
 with:
 
+:::language dotnet
 ```csharp
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
@@ -88,13 +90,14 @@ await ResponseStreamer.SendAndPrintAsync(
     session,
     "Explain accessible names in three short bullet points.");
 ```
-
+:::
 ## Run it
 
+:::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-
+:::
 The bullets should start appearing before the process exits:
 
 ```text
@@ -106,6 +109,7 @@ Copilot:
 - Connects visible labels to form controls.
 ```
 
+:::language dotnet
 <details>
 <summary>Troubleshooting this run</summary>
 
@@ -116,6 +120,7 @@ Copilot:
 | Text is printed twice | Keep the `when !receivedDelta` guard on `AssistantMessageEvent`. |
 
 </details>
+:::
 
 > **You're ready to add tools when:** response text appears before the full answer is complete.
 
@@ -131,11 +136,12 @@ progressive output or intermediate events.
 
 </details>
 
+:::language dotnet
 <details>
 <summary>Complete Step 2 checkpoint</summary>
 
 The completed Step 2 project is in
-[`checkpoints/02-streaming`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/02-streaming).
+[`checkpoints/dotnet/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/dotnet/02-streaming).
 
 ```csharp
 using GitHub.Copilot;
@@ -159,7 +165,7 @@ await ResponseStreamer.SendAndPrintAsync(
     session,
     "Explain accessible names in three short bullet points.");
 ```
-
 </details>
+:::
 
 Continue to [Step 3: Add application-owned knowledge](03-local-tool.md).

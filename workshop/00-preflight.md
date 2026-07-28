@@ -8,6 +8,7 @@
 By the end of preflight, you'll have the repository cloned, the Copilot CLI authenticated, the
 starter project built, and Playwright MCP downloaded and ready.
 
+:::language dotnet
 ## What you need
 
 | Requirement | Why the workshop needs it | Verify |
@@ -28,6 +29,7 @@ v22.x.x
 $ copilot --version
 GitHub Copilot CLI ...
 ```
+:::
 
 ## 1. Clone the repository
 
@@ -48,6 +50,7 @@ Install the CLI with the method from the
 copilot login
 ```
 
+:::language dotnet
 The repository recognizes common WinGet and Homebrew installs. If `dotnet build` cannot find the
 Copilot CLI, set its path for the current terminal:
 
@@ -63,6 +66,7 @@ Copilot CLI, set its path for the current terminal:
     <pre><code class="language-bash">export COPILOT_CLI_BINARY_PATH="$(command -v copilot)"</code></pre>
   </div>
 </div>
+:::
 
 ## 3. Warm up Playwright MCP
 
@@ -76,6 +80,7 @@ The package version is pinned so everyone sees the same tool names and behavior.
 Microsoft Edge with `--browser=msedge`. If you prepared Google Chrome instead, use
 `--browser=chrome` when the argument appears in Step 4.
 
+:::language dotnet
 ## 4. Copy and build the starter
 
 <div class="workshop-tabs" data-tabs>
@@ -84,11 +89,11 @@ Microsoft Edge with `--browser=msedge`. If you prepared Google Chrome instead, u
     <button type="button" role="tab" aria-selected="false" data-tab="copy-unix">macOS or Linux</button>
   </div>
   <div role="tabpanel" data-panel="copy-windows">
-    <pre><code class="language-powershell">Copy-Item -Recurse start/HelloCopilotSDK workshop-app
+    <pre><code class="language-powershell">Copy-Item -Recurse start/dotnet workshop-app
 dotnet build workshop-app</code></pre>
   </div>
   <div role="tabpanel" data-panel="copy-unix" hidden>
-    <pre><code class="language-bash">cp -R start/HelloCopilotSDK workshop-app
+    <pre><code class="language-bash">cp -R start/dotnet workshop-app
 dotnet build workshop-app</code></pre>
   </div>
 </div>
@@ -122,5 +127,6 @@ Open the controlled target page once to make sure you can reach it:
 
 > **Start Step 1 when:** `dotnet build workshop-app` succeeds, `copilot login` is complete, and the
 > target page opens.
+:::
 
 Continue to [Step 1: Create your first Copilot session](01-first-session.md).

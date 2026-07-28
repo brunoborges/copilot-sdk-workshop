@@ -12,6 +12,10 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 WORKSHOP = ROOT / "workshop"
 DOCS = ROOT / "docs"
+DOTNET = "dotnet"
+START_PROJECT = ROOT / "start" / DOTNET / "HelloCopilotSDK.csproj"
+CHECKPOINT_ROOT = ROOT / "checkpoints" / DOTNET
+SAMPLE_ROOT = ROOT / "samples" / DOTNET
 
 LESSONS = [
     "00-preflight.md",
@@ -144,8 +148,8 @@ def validate_markdown_links(markdown_file: Path) -> None:
     for target_text in re.findall(r"!?\[[^\]]*\]\(([^)]+)\)", text):
         target_value = target_text.split(maxsplit=1)[0].strip("<>")
         local_github_prefixes = [
-            "https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/",
-            "https://github.com/codemillmatt/copilot-sdk-workshop/blob/main/",
+            "https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/",
+            "https://github.com/jamesmontemagno/copilot-sdk-workshop/blob/main/",
         ]
         matching_prefix = next(
             (prefix for prefix in local_github_prefixes if target_value.startswith(prefix)),
@@ -167,11 +171,67 @@ def validate_markdown_links(markdown_file: Path) -> None:
         require(target.exists(), f"{markdown_file.relative_to(ROOT)} links to missing file {target_value}")
 
 
+def validate_language_directives(markdown_file: Path) -> None:
+    active_language: str | None = None
+    has_dotnet_block = False
+    lines = markdown_file.read_text(encoding="utf-8").splitlines()
+    language_specific = re.compile(
+        r"\bdotnet\b|\bC#\b|start/dotnet|checkpoints/dotnet|samples/dotnet|"
+        r"CopilotClient|CopilotSession|SessionConfig|AIFunction|McpServerConfig|PermissionDecision",
+        re.IGNORECASE,
+    )
+
+    for line_number, line in enumerate(lines, start=1):
+        language_match = re.fullmatch(r":::language\s+(\S+)\s*", line)
+        if language_match:
+            require(
+                active_language is None,
+                f"{markdown_file.relative_to(ROOT)}:{line_number} nests a language directive",
+            )
+            active_language = language_match.group(1)
+            require(
+                active_language == DOTNET,
+                f"{markdown_file.relative_to(ROOT)}:{line_number} uses unknown language {active_language}",
+            )
+            has_dotnet_block = has_dotnet_block or active_language == DOTNET
+            continue
+
+        if re.fullmatch(r":::\s*", line):
+            require(
+                active_language is not None,
+                f"{markdown_file.relative_to(ROOT)}:{line_number} closes no language directive",
+            )
+            active_language = None
+            continue
+
+        if line.startswith(":::"):
+            require(
+                False,
+                f"{markdown_file.relative_to(ROOT)}:{line_number} has invalid language directive syntax",
+            )
+
+        if active_language is None and language_specific.search(line):
+            require(
+                False,
+                f"{markdown_file.relative_to(ROOT)}:{line_number} exposes .NET-specific content outside a language block",
+            )
+
+    require(
+        active_language is None,
+        f"{markdown_file.relative_to(ROOT)} has an unclosed language directive",
+    )
+    require(
+        has_dotnet_block,
+        f"{markdown_file.relative_to(ROOT)} has no .NET language block",
+    )
+
+
 for lesson_name in LESSONS:
     lesson_path = WORKSHOP / lesson_name
     require(lesson_path.exists(), f"Missing lesson {lesson_name}")
     if lesson_path.exists():
         validate_markdown_links(lesson_path)
+        validate_language_directives(lesson_path)
         lesson_text = lesson_path.read_text(encoding="utf-8")
         for heading in LESSON_HEADINGS[lesson_name]:
             require(heading in lesson_text, f"{lesson_name} is missing tailored heading: {heading}")
@@ -220,14 +280,14 @@ for lesson_name in CORE_LESSONS:
         require(section in lesson_text, f"{lesson_name} is missing required section: {section}")
 
 for checkpoint in CHECKPOINTS:
-    project = ROOT / "checkpoints" / checkpoint / "HelloCopilotSDK.csproj"
-    program = ROOT / "checkpoints" / checkpoint / "Program.cs"
+    project = CHECKPOINT_ROOT / checkpoint / "HelloCopilotSDK.csproj"
+    program = CHECKPOINT_ROOT / checkpoint / "Program.cs"
     require(project.exists(), f"Missing compiling project for checkpoint {checkpoint}")
     require(program.exists(), f"Missing complete Program.cs for checkpoint {checkpoint}")
 
 mcp_projects = [
-    ROOT / "samples" / "accessibility-report",
-    *(ROOT / "checkpoints" / checkpoint for checkpoint in CHECKPOINTS[3:]),
+    SAMPLE_ROOT / "accessibility-report",
+    *(CHECKPOINT_ROOT / checkpoint for checkpoint in CHECKPOINTS[3:]),
 ]
 for project_directory in mcp_projects:
     program_text = (project_directory / "Program.cs").read_text(encoding="utf-8")
@@ -245,7 +305,7 @@ for project_directory in mcp_projects:
     )
 
 permission_helpers = [
-    ROOT / "start" / "HelloCopilotSDK" / "Helpers" / "WorkshopPermissionHandler.cs",
+    START_PROJECT.parent / "Helpers" / "WorkshopPermissionHandler.cs",
     *(project / "Helpers" / "WorkshopPermissionHandler.cs" for project in mcp_projects),
 ]
 for helper in permission_helpers:
@@ -264,6 +324,9 @@ for forbidden in [
     "codemillmatt.github.io",
     "](../start/",
     "](../samples/",
+    "start/HelloCopilotSDK",
+    "checkpoints/01-first-session",
+    "samples/accessibility-report",
     "](../src/",
 ]:
     require(forbidden not in published_text, f"Published content contains forbidden link pattern: {forbidden}")

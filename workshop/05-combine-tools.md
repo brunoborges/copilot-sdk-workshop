@@ -33,6 +33,7 @@ The flow is now `URL -> Playwright evidence -> WCAG catalog lookup -> grounded r
 Remove the command-line argument validation from Step 4. After the banner and before creating the
 client, insert:
 
+:::language dotnet
 ```csharp
 Console.Write("Enter URL to analyze: ");
 var urlInput = Console.ReadLine()?.Trim();
@@ -55,13 +56,14 @@ if (!Uri.TryCreate(urlInput, UriKind.Absolute, out var targetUri) ||
     return;
 }
 ```
-
+:::
 The Step 4 handler receives this validated `targetUri`, so the URL boundary still applies.
 
 ### 2. Give the agent a three-tool goal
 
 Replace the final prompt:
 
+:::language dotnet
 ```csharp
 Console.WriteLine($"\nAnalyzing: {targetUri.AbsoluteUri}\n");
 await ResponseStreamer.SendAndPrintAsync(
@@ -75,16 +77,17 @@ await ResponseStreamer.SendAndPrintAsync(
     - the catalog's recommended remediation.
     """);
 ```
-
+:::
 The prompt assigns evidence and guidance to their correct sources. It leaves the order of the
 catalog lookups to the agent.
 
 ## Run it
 
+:::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-
+:::
 Paste this URL when prompted:
 
 ```text
@@ -133,11 +136,12 @@ source-of-truth criterion and remediation.
 
 </details>
 
+:::language dotnet
 <details>
 <summary>Complete Step 5 checkpoint</summary>
 
 A complete Step 5 project is available at
-[`checkpoints/05-combine-tools`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/05-combine-tools).
+[`checkpoints/dotnet/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/dotnet/05-combine-tools).
 
 ```csharp
 using GitHub.Copilot;
@@ -213,7 +217,7 @@ await ResponseStreamer.SendAndPrintAsync(
     - the catalog's recommended remediation.
     """);
 ```
-
 </details>
+:::
 
 Continue to [Step 6: Produce a structured report](06-structured-report.md).

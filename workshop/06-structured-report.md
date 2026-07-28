@@ -30,6 +30,7 @@ The agent now turns `browser evidence + catalog result` into a bounded, repeatab
 
 Create `workshop-app/Helpers/Prompts.cs`:
 
+:::language dotnet
 ```csharp
 namespace HelloCopilotSDK.Helpers;
 
@@ -60,22 +61,24 @@ public static class Prompts
         """;
 }
 ```
-
+:::
 ### 2. Use the contract
 
 Replace the final send call in `Program.cs`:
 
+:::language dotnet
 ```csharp
 Console.WriteLine($"\nAnalyzing: {targetUri.AbsoluteUri}\n");
 await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(targetUri));
 ```
-
+:::
 ## Run it
 
+:::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-
+:::
 When the app asks for a URL, paste:
 
 ```text
@@ -121,13 +124,14 @@ writing the remediation are interpretations based on that evidence and the catal
 
 </details>
 
+:::language dotnet
 <details>
 <summary>Complete Step 6 checkpoint</summary>
 
 For comparison, use the
-[`checkpoints/06-structured-report`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/06-structured-report)
+[`checkpoints/dotnet/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/dotnet/06-structured-report)
 project. The completed application is also in
-[`samples/accessibility-report`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/samples/accessibility-report).
+[`samples/dotnet/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/dotnet/accessibility-report).
 
 ```csharp
 using GitHub.Copilot;
@@ -194,7 +198,7 @@ await using var session = await client.CreateSessionAsync(new SessionConfig
 Console.WriteLine($"Analyzing: {targetUri.AbsoluteUri}\n");
 await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(targetUri));
 ```
-
 </details>
+:::
 
 Continue to [Step 7: Run and explain the application](07-run-explain.md).

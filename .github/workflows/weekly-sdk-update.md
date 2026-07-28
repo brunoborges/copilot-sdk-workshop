@@ -32,8 +32,8 @@ instructions that teach students how to install it.
 
 1. Inspect every `PackageReference` and workshop document that mentions
    `GitHub.Copilot.SDK`. The expected locations include:
-   - `samples/hello-copilot-sdk/`
-   - `samples/accessibility-report/`
+   - `samples/dotnet/hello-copilot-sdk/`
+   - `samples/dotnet/accessibility-report/`
    - `workshop/`
 2. Determine the currently pinned version and query the configured NuGet source for
    the newest stable release. Do not select a prerelease version unless the currently
@@ -52,8 +52,8 @@ instructions that teach students how to install it.
    and walkthrough changes required by documented SDK changes; do not update unrelated
    dependencies, reformat unrelated files, or change the workshop scope.
 6. Run these non-interactive validations:
-   - `dotnet build samples/hello-copilot-sdk/hello-copilot-sdk.csproj`
-   - `dotnet build samples/accessibility-report/accessibility-report.csproj`
+   - `dotnet build samples/dotnet/hello-copilot-sdk/hello-copilot-sdk.csproj`
+   - `dotnet build samples/dotnet/accessibility-report/accessibility-report.csproj`
    - `dotnet build src/BlazorApp/BlazorApp.csproj`
    Do not run interactive authentication, send Copilot prompts, launch a browser, or
    treat unavailable credentials, browser runtimes, external services, or

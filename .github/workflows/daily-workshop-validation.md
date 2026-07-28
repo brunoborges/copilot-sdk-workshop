@@ -35,8 +35,8 @@ If commits are present, validate the workshop from a fresh-user perspective:
 
 1. Read the changed workshop documentation and related source files.
 2. Run the existing non-interactive checks that are safe on a GitHub-hosted runner:
-   - Build `samples/hello-copilot-sdk/hello-copilot-sdk.csproj`.
-   - Build `samples/accessibility-report/accessibility-report.csproj`.
+   - Build `samples/dotnet/hello-copilot-sdk/hello-copilot-sdk.csproj`.
+   - Build `samples/dotnet/accessibility-report/accessibility-report.csproj`.
    - Build `src/BlazorApp/BlazorApp.csproj`.
    - Check the documented command paths, package versions, and workflow configuration
      statically.

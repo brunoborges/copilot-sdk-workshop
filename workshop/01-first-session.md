@@ -7,6 +7,7 @@
 You'll connect the console application to the Copilot runtime, create a conversation, send a
 prompt, and print the response.
 
+:::language dotnet
 ## Meet the GitHub Copilot SDK and runtime
 
 The **GitHub Copilot SDK** is the .NET API your application uses to run Copilot as an agent. The
@@ -23,11 +24,13 @@ Keeping those responsibilities separate lets the runtime connection outlive any 
 It also gives you a small working example before streaming and tools enter the picture.
 
 At this point, the console app is simply `CopilotClient -> CopilotSession -> model response`.
+:::
 
 ## Fire up your first Copilot session
 
 Open `workshop-app/Program.cs` and **replace the entire file**:
 
+:::language dotnet
 ```csharp
 using GitHub.Copilot;
 
@@ -50,16 +53,17 @@ if (response is null)
 
 Console.WriteLine($"\nCopilot: {response.Data.Content}");
 ```
-
+:::
 `PingAsync` checks the runtime connection. `SendAndWaitAsync` sends the prompt and returns after the
 session becomes idle, so it works well when you only need the completed answer.
 
 ## Run it
 
+:::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-
+:::
 Your exact response will vary, but the output should have this shape:
 
 ```text
@@ -88,6 +92,7 @@ Copilot: An accessible name lets assistive technology identify the input's purpo
 Which object should usually live for the application lifetime, and which object owns one
 conversation's context?
 
+:::language dotnet
 <details>
 <summary>Check your answer</summary>
 
@@ -95,12 +100,14 @@ Keep `CopilotClient` for the lifetime of the runtime connection. A `CopilotSessi
 messages and tool context for one conversation.
 
 </details>
+:::
 
+:::language dotnet
 <details>
 <summary>Complete Step 1 checkpoint</summary>
 
 To compare your work with a complete project, open the
-[`checkpoints/01-first-session`](https://github.com/codemillmatt/copilot-sdk-workshop/tree/main/checkpoints/01-first-session)
+[`checkpoints/dotnet/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/dotnet/01-first-session)
 checkpoint.
 
 ```csharp
@@ -125,7 +132,7 @@ if (response is null)
 
 Console.WriteLine($"\nCopilot: {response.Data.Content}");
 ```
-
 </details>
+:::
 
 Continue to [Step 2: Stream a response](02-streaming.md).

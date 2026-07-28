@@ -6,7 +6,7 @@ In this self-guided workshop, you'll:
 
 1. Create a Copilot client and conversation session.
 2. Stream responses through session events.
-3. Expose application-owned Web Content Accessibility Guidelines (WCAG) data as a local C# tool.
+3. Expose application-owned Web Content Accessibility Guidelines (WCAG) data as a local tool.
 4. Connect Playwright MCP through a scoped permission boundary.
 5. Combine browser evidence and catalog guidance in a structured report.
 6. Explain the ownership, process, and trust boundaries in the completed application.
@@ -48,11 +48,11 @@ output, and troubleshooting.
 copilot-sdk-workshop/
 |-- docs/                         GitHub Pages site and controlled target page
 |-- workshop/                     Preflight, seven core lessons, optional extension
-|-- start/HelloCopilotSDK/        Learner starter with WCAG data and permission helper
-|-- checkpoints/                  Compiling state after each build step
-|-- samples/
-|   |-- hello-copilot-sdk/        Completed local-tool example
-|   `-- accessibility-report/     Completed local + MCP reporter
+|-- start/dotnet/                 .NET learner starter with WCAG data and permission helper
+|-- checkpoints/dotnet/           .NET compiling state after each build step
+|-- samples/dotnet/
+|   |-- hello-copilot-sdk/        Completed .NET local-tool example
+|   `-- accessibility-report/     Completed .NET local + MCP reporter
 |-- src/BlazorApp/                Source counterpart of the deployed target
 |-- scripts/                      Deterministic content and build validation
 `-- .github/workflows/            Validation and Pages deployment
