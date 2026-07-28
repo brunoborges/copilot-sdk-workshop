@@ -72,7 +72,8 @@ public final class AccessibilityReport {
         try (var client = new CopilotClient()) {
             client.start().get();
             var session = client.createSession(config).get();
-            session.sendAndWait(new MessageOptions().setPrompt(reportPrompt(target))).get();
+            var response = session.sendAndWait(new MessageOptions().setPrompt(reportPrompt(target))).get();
+            System.out.println(response);
         }
     }
 

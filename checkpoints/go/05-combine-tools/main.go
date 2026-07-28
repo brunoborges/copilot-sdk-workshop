@@ -107,13 +107,20 @@ func permissionForTarget(target string) copilot.PermissionHandlerFunc {
 }
 
 func streamResponse(session *copilot.Session, prompt string) error {
+	receivedDelta := false
 	unsubscribe := session.On(func(event copilot.SessionEvent) {
 		if delta, ok := event.Data.(*copilot.AssistantMessageDeltaData); ok {
+			receivedDelta = true
 			fmt.Print(delta.DeltaContent)
 		}
 	})
 	defer unsubscribe()
-	_, err := session.SendAndWait(context.Background(), copilot.MessageOptions{Prompt: prompt})
+	response, err := session.SendAndWait(context.Background(), copilot.MessageOptions{Prompt: prompt})
+	if err == nil && !receivedDelta && response != nil {
+		if message, ok := response.Data.(*copilot.AssistantMessageData); ok {
+			fmt.Print(message.Content)
+		}
+	}
 	fmt.Println()
 	return err
 }

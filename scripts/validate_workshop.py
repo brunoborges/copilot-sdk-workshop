@@ -212,7 +212,7 @@ def validate_runtime_flow(language: str, stage: str, text: str, label: Path) -> 
                 f"{label} does not store and propagate session errors after printing output")
     elif language == "go":
         if streaming:
-            event_output = contains_all(text, ("session.On(", "AssistantMessageDeltaData", "fmt.Print"))
+            event_output = contains_all(text, ("session.On(", "AssistantMessageDeltaData", "AssistantMessageData", "receivedDelta", "fmt.Print"))
             blocking_output = contains_all(text, ("AssistantMessageData", "fmt.Println(message.Content)"))
             require(event_output or blocking_output,
                     f"{label} does not print streamed or final assistant output")
