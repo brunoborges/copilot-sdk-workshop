@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="../light-theme.css">
     <script src="../theme-toggle.js"></script>
     <script src="../language-registry.js"></script>
+    <script src="../language-navigation.js"></script>
     <script src="../markdown-language-preprocessor.js"></script>
 </head>
 <body>
@@ -263,17 +264,15 @@
         }
 
         function getSelectedLanguage() {
-            const parameters = new URLSearchParams(window.location.search);
-            if (parameters.has('lang')) {
-                return WorkshopLanguages.getLanguage(parameters.get('lang'));
-            }
-            return WorkshopLanguages.getLanguage(getStoredLanguageId());
+            return WorkshopLanguageNavigation.resolveLanguage(
+                window.location.search,
+                getStoredLanguageId(),
+                WorkshopLanguages.getLanguage
+            );
         }
 
         function homeUrl(language) {
-            return language
-                ? `../index.html?lang=${encodeURIComponent(language.id)}`
-                : '../index.html';
+            return WorkshopLanguageNavigation.homeUrl(language?.id);
         }
 
         function updateLanguageControls(language) {
@@ -292,9 +291,7 @@
 
         function stepUrl(step) {
             const language = getSelectedLanguage();
-            return language
-                ? `?step=${step.id}&lang=${encodeURIComponent(language.id)}`
-                : `?step=${step.id}`;
+            return WorkshopLanguageNavigation.lessonUrl(step.id, language?.id);
         }
 
         function setNavigationOpen(open) {

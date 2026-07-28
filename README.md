@@ -35,6 +35,7 @@ the Markdown requests used by the lesson viewer.
 
 - [.NET 10 SDK](https://learn.microsoft.com/dotnet/core/install/)
 - [Node.js 22 or newer](https://nodejs.org/)
+- [Python 3.11 or newer](https://www.python.org/downloads/)
 - [Go 1.24 or newer](https://go.dev/dl/)
 - [Rust 1.94 or newer](https://rustup.rs/)
 - [Java 17 or newer](https://adoptium.net/) and [Maven](https://maven.apache.org/install.html)
@@ -83,7 +84,9 @@ bash scripts/validate-workshop.sh
 ```
 
 The command checks lesson structure, internal links, site behavior hooks, and checkpoint coverage.
-It also builds the starter, every checkpoint, both samples, and the Blazor target.
+It then runs browser-independent language-selection tests and restores, builds, or syntax-checks every
+starter, every checkpoint, both samples, and the Blazor target without authenticating Copilot, launching
+a browser, or sending a prompt.
 
 ## Deployment
 
@@ -103,6 +106,7 @@ deployment job reports the canonical workshop URL in its environment.
 - [GitHub Copilot SDK for Rust](https://github.com/github/copilot-sdk/tree/main/rust)
 - [GitHub Copilot SDK for Java](https://github.com/github/copilot-sdk/tree/main/java)
 - [Copilot SDK cookbook](https://github.com/github/copilot-sdk/tree/main/cookbook)
+- [Copilot SDK API and source](https://github.com/github/copilot-sdk)
 - [Install the GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli)
 - [Playwright MCP](https://github.com/microsoft/playwright-mcp)
 - [Model Context Protocol](https://modelcontextprotocol.io/)

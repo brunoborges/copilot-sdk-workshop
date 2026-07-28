@@ -1,23 +1,19 @@
 # Workshop checkpoints
 
-Each language track directory captures the complete, compiling state of `workshop-app` after the
-matching core step. .NET, Node.js/TypeScript, Python, Go, Rust, and Maven Java all provide
-checkpoints 01 through 06.
+Each language track contains the compiling state after core Steps 1 through 6. The completed
+applications are in `samples/<language>/hello-copilot-sdk` and
+`samples/<language>/accessibility-report`.
 
-From the repository root, build every checkpoint with:
-
-```bash
-for project in checkpoints/dotnet/*/*.csproj; do dotnet build "$project"; done
-```
-
-You can also find the finished application in
-[`samples/dotnet/accessibility-report`](../samples/dotnet/accessibility-report).
-Equivalent completed projects are in `samples/nodejs/accessibility-report` and
-`samples/python/accessibility-report`, `samples/go/accessibility-report`,
-`samples/rust/accessibility-report`, and `samples/java/accessibility-report`.
+Run the repository-wide deterministic validation from the root:
 
 ```bash
-for project in checkpoints/go/*; do (cd "$project" && go build ./...); done
-for project in checkpoints/rust/*; do (cd "$project" && cargo check --locked); done
-for project in checkpoints/java/*; do (cd "$project" && mvn compile); done
+bash scripts/validate-workshop.sh
 ```
+
+It validates all six language registries, lessons, local assets, security boundaries, starters,
+six checkpoints per language, and both samples per language. For a single checkpoint, use its
+native command: `dotnet build`, `npm ci && npm run build`, `python -m py_compile *.py`,
+`go test ./...`, `cargo test --locked`, or `mvn test`.
+
+The static validation intentionally does not authenticate the Copilot CLI, launch a browser, or
+send a Copilot request. Runtime setup is covered by the language-specific interactive preflight.

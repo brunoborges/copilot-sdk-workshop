@@ -23,6 +23,10 @@ jobs:
         with:
           node-version: 22
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24.x"
@@ -36,6 +40,9 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
+
+      - name: Verify Maven
+        run: mvn --version
 
       - name: Validate content and build checkpoints
         run: bash scripts/validate-workshop.sh

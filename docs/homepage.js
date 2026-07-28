@@ -34,7 +34,7 @@
         startLink.classList.toggle('disabled', !hasLanguage);
         startLink.setAttribute('aria-disabled', String(!hasLanguage));
         startLink.href = hasLanguage
-            ? `workshop/step.html?step=00-preflight&lang=${encodeURIComponent(language.id)}`
+            ? WorkshopLanguageNavigation.firstLessonUrl(language.id)
             : '#language-picker';
 
         if (!hasLanguage) {
@@ -76,10 +76,11 @@
         }
     });
 
-    const requestedLanguageId = new URLSearchParams(window.location.search).get('lang');
-    const requestedLanguage = WorkshopLanguages.getLanguage(requestedLanguageId);
-    const storedLanguage = WorkshopLanguages.getLanguage(getStoredLanguageId());
-    const initialLanguage = requestedLanguageId === null ? storedLanguage : requestedLanguage;
+    const initialLanguage = WorkshopLanguageNavigation.resolveLanguage(
+        window.location.search,
+        getStoredLanguageId(),
+        WorkshopLanguages.getLanguage
+    );
     if (initialLanguage) {
         picker.value = initialLanguage.id;
         storeLanguageId(initialLanguage.id);
