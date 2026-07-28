@@ -32,6 +32,7 @@ temp-inspect/
 # Cross-language validation outputs
 node_modules/
 target/
+.cargo-target/
 __pycache__/
 *.pyc
 copilot-sdk-workshop-go.exe

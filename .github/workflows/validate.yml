@@ -30,6 +30,8 @@ jobs:
   smoke-build:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/.cargo-target
     strategy:
       fail-fast: false
       matrix:
@@ -92,15 +94,15 @@ jobs:
         if: matrix.language == 'rust'
         with:
           workspaces: |
-            start/rust
-            samples/rust/accessibility-report
-            samples/rust/hello-copilot-sdk
-            checkpoints/rust/01-first-session
-            checkpoints/rust/02-streaming
-            checkpoints/rust/03-local-tool
-            checkpoints/rust/04-mcp-safety
-            checkpoints/rust/05-combine-tools
-            checkpoints/rust/06-structured-report
+            start/rust -> ../../.cargo-target
+            samples/rust/accessibility-report -> ../../../.cargo-target
+            samples/rust/hello-copilot-sdk -> ../../../.cargo-target
+            checkpoints/rust/01-first-session -> ../../../.cargo-target
+            checkpoints/rust/02-streaming -> ../../../.cargo-target
+            checkpoints/rust/03-local-tool -> ../../../.cargo-target
+            checkpoints/rust/04-mcp-safety -> ../../../.cargo-target
+            checkpoints/rust/05-combine-tools -> ../../../.cargo-target
+            checkpoints/rust/06-structured-report -> ../../../.cargo-target
 
       - uses: actions/setup-java@v4
         if: matrix.language == 'java'

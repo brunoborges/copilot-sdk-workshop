@@ -97,11 +97,14 @@ bash scripts/validate-workshop.sh nodejs
 Pull requests run content validation and all six language smoke builds as separate GitHub Actions
 jobs, so a failure identifies the affected SDK track.
 
+Rust checks share one Cargo target directory across all workshop projects, avoiding repeated SDK
+dependency compilation.
+
 ## Deployment
 
 After validation passes, push to `main`. The
-[Pages workflow](.github/workflows/deploy.yml) validates the workshop, builds the projects, and
-publishes `docs/` plus the Markdown lessons in `workshop/`.
+[Pages workflow](.github/workflows/deploy.yml) publishes `docs/` plus the Markdown lessons in
+`workshop/`. Build and content validation run separately in the validation workflow.
 
 Enable GitHub Pages in repository settings and choose **GitHub Actions** as the source. The
 deployment job reports the canonical workshop URL in its environment.
