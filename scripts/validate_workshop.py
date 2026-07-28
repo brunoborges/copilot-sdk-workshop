@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from html.parser import HTMLParser
+import json
 from pathlib import Path
 import re
 import sys
@@ -94,19 +95,29 @@ def has_manifest(directory: Path, language: str) -> bool:
     return bool(list(directory.glob(manifest))) if "*" in manifest else (directory / manifest).exists()
 
 
+def entrypoint_path(directory: Path, language: str) -> Path:
+    if language == "java" and directory.name == "hello-copilot-sdk":
+        return Path("src/main/java/workshop/AccessibilityGuidance.java")
+    return Path(ENTRYPOINTS[language])
+
+
 def project_source(directory: Path) -> str:
     source_suffixes = {
         ".cs", ".ts", ".py", ".go", ".rs", ".java"
     }
     return "\n".join(
         read(path) for path in directory.rglob("*")
-        if path.is_file() and path.suffix in source_suffixes
+        if path.is_file()
+        and path.suffix in source_suffixes
+        and not set(path.relative_to(directory).parts).intersection(
+            {"node_modules", "bin", "obj", "target", "__pycache__"}
+        )
     )
 
 
 def executable_source(directory: Path, language: str) -> str:
     """Read the launched entrypoint and any directly launched report module, not dormant helpers."""
-    entrypoint = directory / ENTRYPOINTS[language]
+    entrypoint = directory / entrypoint_path(directory, language)
     text = read(entrypoint)
     if language == "nodejs" and re.search(r'import\s+["\']\./report\.js["\']', text):
         text += "\n" + read(directory / "src" / "report.ts") + "\n" + read(directory / "src" / "workshop.ts")
@@ -175,8 +186,13 @@ def contains_all(text: str, markers: tuple[str, ...]) -> bool:
 
 def runtime_source(directory: Path, language: str, text: str) -> str:
     """Include the directly imported Node response helper for runtime-flow validation."""
-    if language == "nodejs" and re.search(r'from\s+["\']\./workshop\.js["\']', text):
-        return text + "\n" + read(directory / "src" / "workshop.ts")
+    if language == "nodejs":
+        if re.search(r'from\s+["\']\./local-tool\.js["\']', text):
+            return text + "\n" + read(directory / "src" / "local-tool.ts")
+        if re.search(r'from\s+["\']\./workshop\.js["\']', text):
+            return text + "\n" + read(directory / "src" / "workshop.ts")
+    if language == "dotnet" and "ResponseStreamer.SendAndPrintAsync" in text:
+        return text + "\n" + read(directory / "Helpers" / "ResponseStreamer.cs")
     return text
 
 
@@ -188,7 +204,8 @@ def validate_runtime_flow(language: str, stage: str, text: str, label: Path) -> 
         markers = (
             ("SendAndWaitAsync", 'Console.WriteLine($"\\nCopilot: {response.Data.Content}")', "await")
             if not streaming
-            else ("await ResponseStreamer.SendAndPrintAsync",)
+            else ("await ResponseStreamer.SendAndPrintAsync", "AssistantMessageDeltaEvent",
+                  "AssistantMessageEvent", "SessionIdleEvent", "SessionErrorEvent", "receivedDelta")
         )
         require(contains_all(text, markers),
                 f"{label} does not print a completed Copilot response")
@@ -234,8 +251,14 @@ def validate_runtime_flow(language: str, stage: str, text: str, label: Path) -> 
         require(contains_all(text, markers),
                 f"{label} does not subscribe, print, and await completion or errors")
     elif language == "java":
-        require(contains_all(text, ("sendAndWait", "System.out.println(response)", ".get()")),
-                f"{label} does not print a completed assistant response")
+        markers = (
+            ("sendAndWait", "System.out.println(response)", ".get()")
+            if not streaming or label != Path("samples/java/hello-copilot-sdk")
+            else ("AssistantMessageDeltaEvent", "AssistantMessageEvent", "receivedDelta",
+                  "System.out.print", "sendAndWait", ".get()")
+        )
+        require(contains_all(text, markers),
+                f"{label} does not print streamed output or a final-message fallback before awaiting completion")
 
 
 LATER_CAPABILITIES = {
@@ -315,6 +338,73 @@ def validate_executable_stage(language: str, stage: str, directory: Path) -> str
     return text
 
 
+def validate_hello_manifest_entrypoint(language: str, directory: Path) -> None:
+    """Ensure the sample's launch manifest reaches the entrypoint being inspected."""
+    label = directory.relative_to(ROOT)
+    entrypoint = directory / entrypoint_path(directory, language)
+    require(has_manifest(directory, language), f"{label} is missing its {language} manifest")
+    require(entrypoint.exists(), f"{label} manifest cannot reach {entrypoint_path(directory, language)}")
+
+    manifest = read(next(directory.glob(MANIFESTS[language]))) if "*" in MANIFESTS[language] else read(directory / MANIFESTS[language])
+    if language == "dotnet":
+        require("<OutputType>Exe</OutputType>" in manifest,
+                f"{label} project manifest does not define an executable")
+    elif language == "nodejs":
+        package = json.loads(manifest)
+        require(package.get("scripts", {}).get("start") == "tsx src/index.ts",
+                f"{label} package start script does not launch src/index.ts")
+    elif language == "python":
+        require("github-copilot-sdk==" in manifest
+                and "[project]" in read(directory / "pyproject.toml")
+                and 'if __name__ == "__main__":' in read(entrypoint),
+                f"{label} Python manifest and main.py do not define a runnable entrypoint")
+    elif language == "go":
+        require("module " in manifest and "package main" in read(entrypoint) and "func main()" in read(entrypoint),
+                f"{label} Go manifest does not reach package main")
+    elif language == "rust":
+        require("[package]" in manifest and "async fn main()" in read(entrypoint),
+                f"{label} Cargo manifest does not reach src/main.rs")
+    elif language == "java":
+        require("<mainClass>workshop.AccessibilityGuidance</mainClass>" in manifest
+                and "public static void main" in read(entrypoint),
+                f"{label} Maven manifest does not launch AccessibilityGuidance")
+
+
+def validate_hello_sample(language: str, directory: Path) -> None:
+    stage = "03-local-tool"
+    validate_hello_manifest_entrypoint(language, directory)
+    text = validate_executable_stage(language, stage, directory)
+    source = project_source(directory)
+    label = directory.relative_to(ROOT)
+
+    for capability in ("mcp", "browser", "snapshot", "permission", "report"):
+        markers = LANGUAGE_APIS[language].get(capability, ()) + LATER_CAPABILITIES[capability]
+        require(not contains_any(source, markers),
+                f"{label} includes later-stage {capability} behavior")
+
+    tool_config = {
+        "dotnet": ("Tools = [AccessibilityRuleCatalog.CreateLookupTool()]", 'AvailableTools = ["accessibility_rule_lookup"]'),
+        "nodejs": ("tools: [accessibilityRuleLookup]", 'availableTools: ["accessibility_rule_lookup"]'),
+        "python": ("tools=[accessibility_rule_lookup]", 'available_tools=["accessibility_rule_lookup"]'),
+        "go": ("Tools:          []copilot.Tool{lookup}", 'AvailableTools: []string{"accessibility_rule_lookup"}'),
+        "rust": ("config.tools = Some(vec![lookup])", 'config.available_tools = Some(vec!["accessibility_rule_lookup".to_owned()])'),
+        "java": (".setTools(List.of(lookup))", '.setAvailableTools(List.of("accessibility_rule_lookup"))'),
+    }[language]
+    require(contains_all(text, tool_config),
+            f"{label} does not register only accessibility_rule_lookup")
+
+    question_markers = {
+        "dotnet": ("Console.ReadLine()", "Accessibility question:", "Use accessibility_rule_lookup to answer this question:"),
+        "nodejs": ("readQuestion", "Accessibility question:", "Use accessibility_rule_lookup to answer this question:"),
+        "python": ("read_question", "Accessibility question:", "Use accessibility_rule_lookup to answer this question:"),
+        "go": ("readQuestion", "Accessibility question:", "Use accessibility_rule_lookup to answer this question:"),
+        "rust": ("read_question", "Accessibility question:", "Use accessibility_rule_lookup to answer this question:"),
+        "java": ("readQuestion", "Accessibility question:", "Use accessibility_rule_lookup to answer this question:"),
+    }[language]
+    require(contains_all(text, question_markers),
+            f"{label} does not accept an accessibility question and direct the lookup tool")
+
+
 def validate_html_assets(html_file: Path) -> None:
     parser = LocalAssetParser()
     parser.feed(read(html_file))
@@ -384,7 +474,7 @@ def validate_layout() -> None:
         for directory in [ROOT / "start" / language, ROOT / "samples" / language / "hello-copilot-sdk", ROOT / "samples" / language / "accessibility-report"]:
             require(directory.is_dir(), f"Missing {language} project directory {directory.relative_to(ROOT)}")
             require(has_manifest(directory, language), f"Missing {language} manifest in {directory.relative_to(ROOT)}")
-            require((directory / ENTRYPOINTS[language]).exists(),
+            require((directory / entrypoint_path(directory, language)).exists(),
                     f"Missing {language} executable entrypoint in {directory.relative_to(ROOT)}")
         for checkpoint in CHECKPOINTS:
             directory = ROOT / "checkpoints" / language / checkpoint
@@ -482,17 +572,17 @@ def validate_checkpoint_progression() -> None:
         )
 
     hello_sample_stages = {
-        "dotnet": "06-structured-report",
-        "nodejs": "01-first-session",
-        "python": "01-first-session",
-        "go": "01-first-session",
-        "rust": "01-first-session",
-        "java": "01-first-session",
+        "dotnet": "03-local-tool",
+        "nodejs": "03-local-tool",
+        "python": "03-local-tool",
+        "go": "03-local-tool",
+        "rust": "03-local-tool",
+        "java": "03-local-tool",
     }
     for language, stage in hello_sample_stages.items():
         directory = ROOT / "samples" / language / "hello-copilot-sdk"
-        text = executable_source(directory, language)
-        validate_runtime_flow(language, stage, runtime_source(directory, language, text), directory.relative_to(ROOT))
+        require(stage == "03-local-tool", f"{directory.relative_to(ROOT)} is not pinned to Step 3 local-tool")
+        validate_hello_sample(language, directory)
 
     for language, stage, directory in (
         ("go", "06-structured-report", ROOT / "samples" / "go" / "accessibility-report"),
@@ -501,10 +591,7 @@ def validate_checkpoint_progression() -> None:
     ):
         text = executable_source(directory, language)
         validate_runtime_flow(language, stage, runtime_source(directory, language, text), directory.relative_to(ROOT))
-    for directory in (
-        ROOT / "samples" / "python" / "hello-copilot-sdk",
-        ROOT / "samples" / "python" / "accessibility-report",
-    ):
+    for directory in (ROOT / "samples" / "python" / "accessibility-report",):
         validate_runtime_flow(
             "python",
             "06-structured-report",
@@ -515,7 +602,7 @@ def validate_checkpoint_progression() -> None:
     node_report_package = read(ROOT / "samples" / "nodejs" / "accessibility-report" / "package.json")
     require('"start": "tsx src/report.ts"' in node_report_package,
             "Node accessibility-report npm start must execute src/report.ts")
-    for directory in [ROOT / "start" / "nodejs", *(ROOT / "checkpoints" / "nodejs" / checkpoint for checkpoint in CHECKPOINTS), *(ROOT / "samples" / "nodejs" / sample for sample in ("hello-copilot-sdk", "accessibility-report"))]:
+    for directory in [ROOT / "start" / "nodejs", *(ROOT / "checkpoints" / "nodejs" / checkpoint for checkpoint in CHECKPOINTS), ROOT / "samples" / "nodejs" / "accessibility-report"]:
         source = read(directory / "src" / "workshop.ts")
         require("const existingSnapshots = safeSnapshotNames(outputDirectory)" in source,
                 f"{directory.relative_to(ROOT)} captures snapshot baseline lazily")
@@ -527,7 +614,8 @@ def validate_checkpoint_progression() -> None:
             require('if __name__ == "__main__":' in read(report_path),
                     f"{directory.relative_to(ROOT)} report entrypoint cannot be imported safely")
     for directory in [ROOT / "start" / "java", *(ROOT / "checkpoints" / "java" / checkpoint for checkpoint in CHECKPOINTS), *(ROOT / "samples" / "java" / sample for sample in ("hello-copilot-sdk", "accessibility-report"))]:
-        require("<mainClass>workshop.AccessibilityReport</mainClass>" in read(directory / "pom.xml"),
+        main_class = "AccessibilityGuidance" if directory.name == "hello-copilot-sdk" else "AccessibilityReport"
+        require(f"<mainClass>workshop.{main_class}</mainClass>" in read(directory / "pom.xml"),
                 f"{directory.relative_to(ROOT)} does not configure the Maven executable entrypoint")
 
 

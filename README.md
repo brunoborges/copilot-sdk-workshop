@@ -55,7 +55,7 @@ copilot-sdk-workshop/
 |-- start/dotnet/                 .NET learner starter with WCAG data and permission helper
 |-- checkpoints/dotnet/           .NET compiling state after each build step
 |-- samples/dotnet/
-|   |-- hello-copilot-sdk/        Completed .NET local-tool example
+|   |-- hello-copilot-sdk/        Completed local-tool example in every language
 |   `-- accessibility-report/     Completed .NET local + MCP reporter
 |-- start/nodejs/                 Node.js/TypeScript learner starter
 |-- checkpoints/nodejs/           Node.js/TypeScript checkpoint projects

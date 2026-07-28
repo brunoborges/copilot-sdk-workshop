@@ -1,21 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/url"
 	"os"
-	"path/filepath"
-	"sort"
 	"strings"
-	"time"
+	"sync/atomic"
 
 	copilot "github.com/github/copilot-sdk/go"
-	"github.com/github/copilot-sdk/go/rpc"
 )
-
-const maxSnapshotBytes = 1_000_000
 
 type accessibilityRule struct {
 	Criterion      string   `json:"criterion"`
@@ -59,169 +53,70 @@ func accessibilityRuleLookup(params lookupParams, _ copilot.ToolInvocation) (any
 	}, nil
 }
 
-func snapshotReader(workingDirectory string) func(struct{}, copilot.ToolInvocation) (string, error) {
-	outputDirectory := filepath.Join(workingDirectory, ".playwright-mcp")
-	existing := map[string]struct{}{}
-	if entries, err := os.ReadDir(outputDirectory); err == nil {
-		for _, entry := range entries {
-			if strings.HasPrefix(entry.Name(), "page-") && strings.HasSuffix(entry.Name(), ".yml") {
-				existing[filepath.Join(outputDirectory, entry.Name())] = struct{}{}
-			}
+func streamResponse(session *copilot.Session, prompt string) error {
+	var receivedDelta atomic.Bool
+	unsubscribe := session.On(func(event copilot.SessionEvent) {
+		if delta, ok := event.Data.(*copilot.AssistantMessageDeltaData); ok && delta.DeltaContent != "" {
+			receivedDelta.Store(true)
+			fmt.Print(delta.DeltaContent)
 		}
-	}
+	})
+	defer unsubscribe()
 
-	return func(_ struct{}, _ copilot.ToolInvocation) (string, error) {
-		entries, err := os.ReadDir(outputDirectory)
-		if err != nil {
-			return "", fmt.Errorf("No current-run Playwright snapshot is available. Call browser_navigate first.")
-		}
-		type candidate struct {
-			path string
-			mod  time.Time
-		}
-		var candidates []candidate
-		for _, entry := range entries {
-			path := filepath.Join(outputDirectory, entry.Name())
-			if _, alreadyExisted := existing[path]; alreadyExisted ||
-				entry.IsDir() ||
-				entry.Type()&os.ModeSymlink != 0 ||
-				!strings.HasPrefix(entry.Name(), "page-") ||
-				!strings.HasSuffix(entry.Name(), ".yml") {
-				continue
-			}
-			info, err := entry.Info()
-			if err != nil || !info.Mode().IsRegular() || info.Size() == 0 || info.Size() > maxSnapshotBytes {
-				continue
-			}
-			candidates = append(candidates, candidate{path, info.ModTime()})
-		}
-		if len(candidates) == 0 {
-			return "", fmt.Errorf("No current-run Playwright snapshot is available. Call browser_navigate first.")
-		}
-		sort.Slice(candidates, func(i, j int) bool { return candidates[i].mod.Before(candidates[j].mod) })
-		contents, err := os.ReadFile(candidates[len(candidates)-1].path)
-		if err != nil {
-			return "", err
-		}
-		return string(contents), nil
+	response, err := session.SendAndWait(context.Background(), copilot.MessageOptions{Prompt: prompt})
+	if err != nil {
+		return err
 	}
+	if !receivedDelta.Load() && response != nil {
+		if message, ok := response.Data.(*copilot.AssistantMessageData); ok {
+			fmt.Print(message.Content)
+		}
+	}
+	fmt.Println()
+	return nil
 }
 
-func sameURL(requested, allowed string) bool {
-	left, leftErr := url.Parse(requested)
-	right, rightErr := url.Parse(allowed)
-	if leftErr != nil || rightErr != nil {
-		return false
+func readQuestion() string {
+	if question := strings.TrimSpace(strings.Join(os.Args[1:], " ")); question != "" {
+		return question
 	}
-	userInfo := func(value *url.Userinfo) string {
-		if value == nil {
-			return ""
-		}
-		return value.String()
-	}
-	return strings.EqualFold(left.Scheme, right.Scheme) &&
-		strings.EqualFold(left.Hostname(), right.Hostname()) &&
-		left.Port() == right.Port() &&
-		userInfo(left.User) == userInfo(right.User) &&
-		left.EscapedPath() == right.EscapedPath() &&
-		left.RawQuery == right.RawQuery &&
-		left.Fragment == right.Fragment
-}
-
-func permissionForTarget(target string) copilot.PermissionHandlerFunc {
-	return func(request copilot.PermissionRequest, _ copilot.PermissionInvocation) (rpc.PermissionDecision, error) {
-		raw, err := json.Marshal(request)
-		if err == nil {
-			var value map[string]any
-			if json.Unmarshal(raw, &value) == nil &&
-				value["kind"] == "mcp" &&
-				value["serverName"] == "playwright" {
-				toolName, _ := value["toolName"].(string)
-				args, _ := value["args"].(map[string]any)
-				requested, _ := args["url"].(string)
-				if (toolName == "browser_navigate" || toolName == "playwright-browser_navigate") && sameURL(requested, target) {
-					return &rpc.PermissionDecisionApproveOnce{}, nil
-				}
-			}
-		}
-		feedback := "This workshop allows Playwright to navigate only to the exact requested target."
-		return &rpc.PermissionDecisionReject{Feedback: &feedback}, nil
-	}
-}
-
-func reportPrompt(target string) string {
-	return fmt.Sprintf(`Prepare an evidence-based accessibility review of %s.
-1. Use browser_navigate to open that exact URL.
-2. Call read_latest_accessibility_snapshot to inspect its accessibility tree.
-3. Identify three to five high-confidence issues supported by the snapshot.
-4. Call accessibility_rule_lookup for each issue before recommending a fix.
-
-Return only this structure:
-# Accessibility review
-## Finding 1: <short name>
-- Evidence: <specific element or page structure observed in the browser>
-- WCAG criterion: <criterion and title returned by the catalog>
-- Recommended remediation: <specific implementation change>
-Repeat the finding section as needed.
-## Review limits
-State that this is a focused review of browser-observable evidence, not a full WCAG conformance audit.
-Do not invent evidence, report unsupported statistics, or claim the page is WCAG compliant.`, target)
+	fmt.Print("Accessibility question: ")
+	question, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+	return strings.TrimSpace(question)
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintln(os.Stderr, "Usage: go run . <http-or-https-url>")
-		return
-	}
-	target := os.Args[1]
-	if !strings.Contains(target, "://") {
-		target = "https://" + target
-	}
-	parsed, err := url.ParseRequestURI(target)
-	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
-		fmt.Fprintln(os.Stderr, "Enter an absolute HTTP or HTTPS URL.")
+	question := readQuestion()
+	if question == "" {
+		fmt.Fprintln(os.Stderr, "Enter an accessibility question to continue.")
 		return
 	}
 
-	workingDirectory, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	lookup := copilot.DefineTool("accessibility_rule_lookup", "Looks up read-only WCAG guidance maintained by this application.", accessibilityRuleLookup)
+	lookup := copilot.DefineTool(
+		"accessibility_rule_lookup",
+		"Looks up read-only WCAG guidance maintained by this application.",
+		accessibilityRuleLookup,
+	)
 	lookup.SkipPermission = true
-	readSnapshot := copilot.DefineTool("read_latest_accessibility_snapshot", "Reads the newest Playwright accessibility snapshot created during this run.", snapshotReader(workingDirectory))
-	readSnapshot.SkipPermission = true
 
 	client := copilot.NewClient(&copilot.ClientOptions{LogLevel: "error"})
 	if err := client.Start(context.Background()); err != nil {
 		panic(err)
 	}
 	defer client.Stop()
+
 	session, err := client.CreateSession(context.Background(), &copilot.SessionConfig{
-		Streaming:           copilot.Bool(true),
-		Tools:               []copilot.Tool{lookup, readSnapshot},
-		AvailableTools:      []string{"accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"},
-		OnPermissionRequest: permissionForTarget(target),
-		MCPServers: map[string]copilot.MCPServerConfig{
-			"playwright": copilot.MCPStdioServerConfig{
-				Command:          "npx",
-				Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge"},
-				WorkingDirectory: workingDirectory,
-				Tools:            []string{"browser_navigate"},
-			},
-		},
+		Streaming:      copilot.Bool(true),
+		Tools:          []copilot.Tool{lookup},
+		AvailableTools: []string{"accessibility_rule_lookup"},
 	})
 	if err != nil {
 		panic(err)
 	}
 	defer session.Disconnect()
-	response, err := session.SendAndWait(context.Background(), copilot.MessageOptions{Prompt: reportPrompt(target)})
-	if err != nil {
+
+	fmt.Println("\nCopilot:")
+	if err := streamResponse(session, "Use accessibility_rule_lookup to answer this question: "+question); err != nil {
 		panic(err)
-	}
-	if response != nil {
-		if message, ok := response.Data.(*copilot.AssistantMessageData); ok {
-			fmt.Println(message.Content)
-		}
 	}
 }
