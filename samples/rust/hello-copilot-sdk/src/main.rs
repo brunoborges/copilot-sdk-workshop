@@ -7,8 +7,8 @@ use async_trait::async_trait;
 use github_copilot_sdk::handler::{PermissionHandler, PermissionResult};
 use github_copilot_sdk::tool::{JsonSchema, ToolHandler, schema_for};
 use github_copilot_sdk::types::{
-    McpServerConfig, McpStdioServerConfig, PermissionRequestData, RequestId, SessionConfig,
-    SessionId, Tool, ToolInvocation,
+    McpServerConfig, McpStdioServerConfig, MessageOptions, PermissionRequestData, RequestId,
+    SessionConfig, SessionId, Tool, ToolInvocation,
 };
 use github_copilot_sdk::{Client, ClientOptions, Error, ToolResult};
 use indexmap::IndexMap;
@@ -319,7 +319,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let client = Client::start(ClientOptions::default()).await?;
     let session = client.create_session(config).await?;
-    session.send(report_prompt(&target)).await?;
+    let response = session
+        .send_and_wait(MessageOptions::new(report_prompt(&target)))
+        .await?;
+    if let Some(message) = response {
+        if let Some(content) = message.data.get("content").and_then(|value| value.as_str()) {
+            println!("{content}");
+        }
+    }
     session.disconnect().await?;
     client.stop().await?;
     Ok(())

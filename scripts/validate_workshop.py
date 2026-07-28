@@ -205,11 +205,13 @@ def validate_runtime_flow(language: str, stage: str, text: str, label: Path) -> 
             ("AssistantMessageData", "print(content)", "SessionErrorData", "SessionIdleData",
              "await done.wait()", "if error is not None", "done.set()")
             if not streaming
-            else ("AssistantMessageDeltaData", "print(delta", "SessionErrorData", "SessionIdleData",
+            else ("AssistantMessageDeltaData", "AssistantMessageData", "received_delta = False",
+                 "received_delta = True", "not received_delta", "print(delta", "print(content)",
+                 "SessionErrorData", "SessionIdleData",
                   "await done.wait()", "if error is not None", "done.set()")
         )
         require(contains_all(text, markers),
-                f"{label} does not store and propagate session errors after printing output")
+               f"{label} does not print streamed output or a final-message fallback before propagating session errors")
     elif language == "go":
         if streaming:
             event_output = contains_all(text, ("session.On(", "AssistantMessageDeltaData", "AssistantMessageData", "receivedDelta", "fmt.Print"))
@@ -479,8 +481,20 @@ def validate_checkpoint_progression() -> None:
             f"{language} checkpoints have identical executable behavior; each checkpoint must demonstrate its named stage",
         )
 
+    hello_sample_stages = {
+        "dotnet": "06-structured-report",
+        "nodejs": "01-first-session",
+        "python": "01-first-session",
+        "go": "01-first-session",
+        "rust": "01-first-session",
+        "java": "01-first-session",
+    }
+    for language, stage in hello_sample_stages.items():
+        directory = ROOT / "samples" / language / "hello-copilot-sdk"
+        text = executable_source(directory, language)
+        validate_runtime_flow(language, stage, runtime_source(directory, language, text), directory.relative_to(ROOT))
+
     for language, stage, directory in (
-        ("nodejs", "01-first-session", ROOT / "samples" / "nodejs" / "hello-copilot-sdk"),
         ("go", "06-structured-report", ROOT / "samples" / "go" / "accessibility-report"),
         ("rust", "06-structured-report", ROOT / "samples" / "rust" / "accessibility-report"),
         ("java", "06-structured-report", ROOT / "samples" / "java" / "accessibility-report"),

@@ -215,7 +215,13 @@ func main() {
 		panic(err)
 	}
 	defer session.Disconnect()
-	if _, err := session.Send(context.Background(), copilot.MessageOptions{Prompt: reportPrompt(target)}); err != nil {
+	response, err := session.SendAndWait(context.Background(), copilot.MessageOptions{Prompt: reportPrompt(target)})
+	if err != nil {
 		panic(err)
+	}
+	if response != nil {
+		if message, ok := response.Data.(*copilot.AssistantMessageData); ok {
+			fmt.Println(message.Content)
+		}
 	}
 }
