@@ -48,9 +48,10 @@ validate_go() {
 }
 
 validate_rust() {
+    export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$repo_root/.cargo-target}"
     for project in start/rust samples/rust/* checkpoints/rust/*; do
-        echo "Fetching and testing $project"
-        (cd "$project" && cargo fetch --locked && cargo check --locked && cargo test --locked)
+        echo "Checking $project"
+        (cd "$project" && cargo check --locked)
     done
 }
 

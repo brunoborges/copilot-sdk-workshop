@@ -97,6 +97,9 @@ bash scripts/validate-workshop.sh nodejs
 Pull requests run content validation and all six language smoke builds as separate GitHub Actions
 jobs, so a failure identifies the affected SDK track.
 
+Rust checks share one Cargo target directory across all workshop projects, avoiding repeated SDK
+dependency compilation.
+
 ## Deployment
 
 After validation passes, push to `main`. The
