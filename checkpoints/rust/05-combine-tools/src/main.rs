@@ -15,6 +15,7 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
+const CHECKPOINT_STAGE: &str = "05-combine-tools";
 const MAX_SNAPSHOT_BYTES: u64 = 1_000_000;
 
 #[derive(Serialize)]
@@ -262,6 +263,7 @@ Do not invent evidence, report unsupported statistics, or claim the page is WCAG
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("Checkpoint: {CHECKPOINT_STAGE}");
     let argument = std::env::args()
         .nth(1)
         .ok_or("Usage: cargo run -- <http-or-https-url>")?;

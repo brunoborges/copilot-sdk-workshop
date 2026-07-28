@@ -34,3 +34,4 @@ node_modules/
 target/
 __pycache__/
 *.pyc
+copilot-sdk-workshop-go.exe

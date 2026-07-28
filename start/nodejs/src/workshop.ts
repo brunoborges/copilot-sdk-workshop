@@ -19,20 +19,21 @@ export const accessibilityRuleLookup = defineTool("accessibility_rule_lookup", {
 
 export function createSnapshotReader(workingDirectory: string) {
   const outputDirectory = resolve(workingDirectory, ".playwright-mcp");
-  let existingSnapshots: ReadonlySet<string>;
+  const existingSnapshots = safeSnapshotNames(outputDirectory)
+    .then((names) => new Set(names.map((name) => resolve(outputDirectory, name))));
   return defineTool("read_latest_accessibility_snapshot", {
     description: "Reads the newest Playwright accessibility snapshot created during this run.",
     parameters: z.object({}),
     skipPermission: true,
     handler: async () => {
-      existingSnapshots ??= new Set((await safeSnapshotNames(outputDirectory)).map((name) => resolve(outputDirectory, name)));
+      const baseline = await existingSnapshots;
       const candidates = await Promise.all((await safeSnapshotNames(outputDirectory)).map(async (name) => {
         const path = resolve(outputDirectory, name);
         const details = await lstat(path);
         return { path, details };
       }));
       const snapshot = candidates
-        .filter(({ path, details }) => !existingSnapshots.has(path) && !details.isSymbolicLink() && details.isFile() && details.size > 0 && details.size <= maxSnapshotBytes)
+        .filter(({ path, details }) => !baseline.has(path) && !details.isSymbolicLink() && details.isFile() && details.size > 0 && details.size <= maxSnapshotBytes)
         .sort((left, right) => right.details.mtimeMs - left.details.mtimeMs)[0];
       if (!snapshot) throw new Error("No current-run Playwright snapshot is available. Call browser_navigate first.");
       return readFile(snapshot.path, "utf8");

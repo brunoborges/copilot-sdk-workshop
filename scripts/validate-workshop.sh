@@ -21,13 +21,18 @@ for project in start/nodejs samples/nodejs/* checkpoints/nodejs/*; do
 done
 
 for project in start/python samples/python/* checkpoints/python/*; do
-    echo "Syntax-checking $project"
-    python3 -m py_compile "$project"/*.py
+    echo "Installing and smoke-checking $project"
+    (
+        cd "$project"
+        python3 -m pip install --disable-pip-version-check --no-input -r requirements.txt
+        python3 -m py_compile *.py
+        python3 -c "import main, report, workshop; from copilot import CopilotClient"
+    )
 done
 
 for project in start/go samples/go/* checkpoints/go/*; do
     echo "Resolving and testing $project"
-    (cd "$project" && go mod download && go build ./... && go test ./...)
+    (cd "$project" && go mod download && go build -mod=readonly ./... && go test -mod=readonly ./...)
 done
 
 for project in start/rust samples/rust/* checkpoints/rust/*; do

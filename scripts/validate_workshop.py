@@ -56,6 +56,22 @@ SOURCE_FILES = {
     "rust": "src/main.rs",
     "java": "src/main/java/workshop/AccessibilityReport.java",
 }
+ENTRYPOINTS = {
+    "dotnet": "Program.cs",
+    "nodejs": "src/index.ts",
+    "python": "main.py",
+    "go": "main.go",
+    "rust": "src/main.rs",
+    "java": "src/main/java/workshop/AccessibilityReport.java",
+}
+STAGE_MARKERS = {
+    "01-first-session": ("create", "session"),
+    "02-streaming": ("stream",),
+    "03-local-tool": ("accessibility_rule_lookup",),
+    "04-mcp-safety": ("browser_navigate", "playwright"),
+    "05-combine-tools": ("read_latest_accessibility_snapshot", "accessibility_rule_lookup"),
+    "06-structured-report": ("report", "accessibility"),
+}
 errors: list[str] = []
 
 
@@ -170,9 +186,9 @@ def validate_layout() -> None:
             require(directory.is_dir(), f"Missing {language} checkpoint {checkpoint}")
             require(has_manifest(directory, language), f"Missing {language} manifest in {directory.relative_to(ROOT)}")
             require((directory / SOURCE_FILES[language]).exists(), f"Missing {language} source in {directory.relative_to(ROOT)}")
-    for language in ("nodejs", "rust"):
+    for language in ("nodejs", "go", "rust"):
         for directory in [ROOT / "start" / language, *(ROOT / "samples" / language / sample for sample in ("hello-copilot-sdk", "accessibility-report")), *(ROOT / "checkpoints" / language / checkpoint for checkpoint in CHECKPOINTS)]:
-            lock = "package-lock.json" if language == "nodejs" else "Cargo.lock"
+            lock = {"nodejs": "package-lock.json", "go": "go.sum", "rust": "Cargo.lock"}[language]
             require((directory / lock).exists(), f"Missing deterministic {language} lock file in {directory.relative_to(ROOT)}")
 
 
@@ -203,6 +219,58 @@ def validate_security_invariants() -> None:
             require(exact_url_markers[language] in source, f"{directory.relative_to(ROOT)} does not compare target URL components exactly")
 
 
+def validate_checkpoint_progression() -> None:
+    for language in LANGUAGES:
+        entrypoint_hashes: set[str] = set()
+        for checkpoint in CHECKPOINTS:
+            directory = ROOT / "checkpoints" / language / checkpoint
+            entrypoint = directory / ENTRYPOINTS[language]
+            text = read(entrypoint)
+            entrypoint_hashes.add(text)
+            for marker in STAGE_MARKERS[checkpoint]:
+                require(
+                    marker.casefold() in project_source(directory).casefold(),
+                    f"{directory.relative_to(ROOT)} does not demonstrate {checkpoint}: missing {marker}",
+                )
+            if language == "nodejs":
+                package = read(directory / "package.json")
+                require('"start": "tsx src/index.ts"' in package, f"{directory.relative_to(ROOT)} start script bypasses its checkpoint entrypoint")
+                require("Continue with Step 1" not in text, f"{directory.relative_to(ROOT)} has a placeholder entrypoint")
+            if language == "python":
+                report = read(directory / "report.py")
+                require("case SessionErrorData(message=message): raise" not in report,
+                        f"{directory.relative_to(ROOT)} raises from an event callback instead of completing the wait")
+                require("error: RuntimeError | None = None" in report and "done.set()" in report,
+                        f"{directory.relative_to(ROOT)} does not propagate session errors to the awaited flow")
+                require('if __name__ == "__main__":' in report,
+                        f"{directory.relative_to(ROOT)} runs interactive code when imported")
+            if language == "java":
+                pom = read(directory / "pom.xml")
+                require("<mainClass>workshop.AccessibilityReport</mainClass>" in pom,
+                        f"{directory.relative_to(ROOT)} does not configure mvn exec:java")
+        require(
+            len(entrypoint_hashes) == len(CHECKPOINTS),
+            f"{language} checkpoints have identical entrypoints; each checkpoint must demonstrate its named stage",
+        )
+
+    node_report_package = read(ROOT / "samples" / "nodejs" / "accessibility-report" / "package.json")
+    require('"start": "tsx src/report.ts"' in node_report_package,
+            "Node accessibility-report npm start must execute src/report.ts")
+    for directory in [ROOT / "start" / "nodejs", *(ROOT / "checkpoints" / "nodejs" / checkpoint for checkpoint in CHECKPOINTS), *(ROOT / "samples" / "nodejs" / sample for sample in ("hello-copilot-sdk", "accessibility-report"))]:
+        source = read(directory / "src" / "workshop.ts")
+        require("const existingSnapshots = safeSnapshotNames(outputDirectory)" in source,
+                f"{directory.relative_to(ROOT)} captures snapshot baseline lazily")
+        require("const baseline = await existingSnapshots" in source,
+                f"{directory.relative_to(ROOT)} does not await the construction-time snapshot baseline")
+    for directory in [ROOT / "start" / "python", *(ROOT / "checkpoints" / "python" / checkpoint for checkpoint in CHECKPOINTS), *(ROOT / "samples" / "python" / sample for sample in ("hello-copilot-sdk", "accessibility-report"))]:
+        report = read(directory / "report.py")
+        require('if __name__ == "__main__":' in report,
+                f"{directory.relative_to(ROOT)} report entrypoint cannot be imported safely")
+    for directory in [ROOT / "start" / "java", *(ROOT / "checkpoints" / "java" / checkpoint for checkpoint in CHECKPOINTS), *(ROOT / "samples" / "java" / sample for sample in ("hello-copilot-sdk", "accessibility-report"))]:
+        require("<mainClass>workshop.AccessibilityReport</mainClass>" in read(directory / "pom.xml"),
+                f"{directory.relative_to(ROOT)} does not configure the Maven executable entrypoint")
+
+
 def validate_site_behavior() -> None:
     index = read(DOCS / "index.html")
     step = read(DOCS / "workshop" / "step.html")
@@ -230,6 +298,9 @@ def validate_documentation() -> None:
     for url in OFFICIAL_SDK_URLS.values():
         require(url in read(ROOT / "README.md"), f"README is missing official SDK link {url}")
     require("https://github.com/github/copilot-sdk/tree/main/cookbook" in read(ROOT / "README.md"), "README is missing the official cookbook link")
+    all_markdown = "\n".join(read(path) for path in [ROOT / "README.md", ROOT / "start" / "README.md", ROOT / "checkpoints" / "README.md", *WORKSHOP.glob("*.md")])
+    require("go run ./samples/" not in all_markdown and "go run samples/" not in all_markdown,
+            "Documentation runs Go modules from the repository root instead of their module directory")
 
 
 def validate_workflows() -> None:
@@ -260,6 +331,7 @@ for lesson in LESSONS:
                 require(section in read(lesson_path), f"{lesson} is missing required section: {section}")
 validate_layout()
 validate_security_invariants()
+validate_checkpoint_progression()
 validate_site_behavior()
 validate_documentation()
 validate_workflows()

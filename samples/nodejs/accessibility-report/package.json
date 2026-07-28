@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc --noEmit",
-    "start": "tsx src/index.ts"
+    "start": "tsx src/report.ts"
   },
   "engines": {
     "node": ">=22.12.0"

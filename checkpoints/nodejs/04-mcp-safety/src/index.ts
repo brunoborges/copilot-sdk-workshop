@@ -1,2 +1,24 @@
-console.log("The Copilot SDK workshop starter is ready.");
-console.log("Continue with Step 1 to create your first Copilot session.");
+import { CopilotClient } from "@github/copilot-sdk";
+import { accessibilityRuleLookup, createSnapshotReader, permissionForTarget, streamResponse } from "./workshop.js";
+
+const input = process.argv[2];
+if (!input) throw new Error("Usage: npm start -- <http-or-https-url>");
+const target = new URL(input.includes("://") ? input : `https://${input}`);
+const client = new CopilotClient();
+await client.start();
+try {
+  const session = await client.createSession({
+    streaming: true,
+    onPermissionRequest: permissionForTarget(target),
+    tools: [accessibilityRuleLookup, createSnapshotReader(process.cwd())],
+    availableTools: ["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"],
+    mcpServers: { playwright: { command: "npx", args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"], workingDirectory: process.cwd(), tools: ["browser_navigate"] } },
+  });
+  try {
+    await streamResponse(session, `Use browser_navigate to open ${target.href}, then read_latest_accessibility_snapshot and report the page title.`);
+  } finally {
+    await session.disconnect();
+  }
+} finally {
+  await client.stop();
+}

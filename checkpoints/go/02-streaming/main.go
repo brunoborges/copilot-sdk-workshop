@@ -15,6 +15,7 @@ import (
 	"github.com/github/copilot-sdk/go/rpc"
 )
 
+const checkpointStage = "02-streaming"
 const maxSnapshotBytes = 1_000_000
 
 type accessibilityRule struct {
@@ -169,6 +170,7 @@ Do not invent evidence, report unsupported statistics, or claim the page is WCAG
 }
 
 func main() {
+	fmt.Printf("Checkpoint: %s\n", checkpointStage)
 	if len(os.Args) != 2 {
 		fmt.Fprintln(os.Stderr, "Usage: go run . <http-or-https-url>")
 		return

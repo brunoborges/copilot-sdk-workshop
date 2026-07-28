@@ -1,2 +1,19 @@
-console.log("The Copilot SDK workshop starter is ready.");
-console.log("Continue with Step 1 to create your first Copilot session.");
+import { CopilotClient } from "@github/copilot-sdk";
+import { accessibilityRuleLookup, streamResponse } from "./workshop.js";
+
+const client = new CopilotClient();
+await client.start();
+try {
+  const session = await client.createSession({
+    streaming: true,
+    tools: [accessibilityRuleLookup],
+    availableTools: ["accessibility_rule_lookup"],
+  });
+  try {
+    await streamResponse(session, "Use accessibility_rule_lookup to explain WCAG 4.1.2.");
+  } finally {
+    await session.disconnect();
+  }
+} finally {
+  await client.stop();
+}

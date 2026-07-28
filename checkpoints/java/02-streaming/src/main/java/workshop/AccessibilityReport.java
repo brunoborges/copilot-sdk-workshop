@@ -24,12 +24,14 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public final class AccessibilityReport {
+    private static final String CHECKPOINT_STAGE = "02-streaming";
     private static final long MAX_SNAPSHOT_BYTES = 1_000_000;
 
     private AccessibilityReport() {
     }
 
     public static void main(String[] args) throws Exception {
+        System.out.println("Checkpoint: " + CHECKPOINT_STAGE);
         if (args.length != 1) {
             System.err.println("Usage: mvn exec:java -Dexec.args=<http-or-https-url>");
             return;
