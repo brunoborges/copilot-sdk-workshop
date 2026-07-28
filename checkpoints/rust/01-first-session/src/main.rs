@@ -2,7 +2,7 @@ use github_copilot_sdk::types::{MessageOptions, SessionConfig};
 use github_copilot_sdk::{Client, ClientOptions};
 
 #[tokio::main]
-async fn main() -> Result<(), github_copilot_sdk::Error> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::start(ClientOptions::default()).await?;
     let session = client.create_session(SessionConfig::default()).await?;
     let response = session
