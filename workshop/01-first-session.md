@@ -147,3 +147,12 @@ Replace `main.py` with an `async with CopilotClient()` session and `await sessio
 run it with `python main.py`. See
 [`checkpoints/python/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/01-first-session).
 :::
+:::language go
+Create `copilot.NewClient`, call `Start(context.Background())`, create a session, and call `Send`; run `go run .`. It prints the response after the session becomes idle. If startup cannot find the runtime, install the Copilot CLI or set `COPILOT_CLI_PATH`. See [`checkpoints/go/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/01-first-session).
+:::
+:::language rust
+Use `Client::start(ClientOptions::default()).await?`, `create_session`, and `session.send(...)`; run `cargo run`. The `Client` owns the runtime and `Session` owns one conversation. If it fails before a response, authenticate the Copilot CLI. See [`checkpoints/rust/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/01-first-session).
+:::
+:::language java
+Use `new CopilotClient()`, `client.start().get()`, `createSession`, and `session.sendAndWait(...)`; run `mvn exec:java`. The expected output is one assistant answer. If Maven starts but the runtime fails, install and authenticate the Copilot CLI. See [`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session).
+:::

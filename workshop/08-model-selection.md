@@ -127,3 +127,12 @@ Use `await client.listModels()` and pass the selected id as `model` to `createSe
 :::language python
 Use `await client.list_models()` and pass the selected id as `model` to `create_session`.
 :::
+:::language go
+Use `client.ListModels(context.Background())`, choose an id, and set `SessionConfig.Model`; run `go run .` after keeping the same scoped tools and permissions. The output remains a normal session response. If the chosen model is unavailable, list models again rather than hard-coding an unsupported id. See [`checkpoints/go/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/01-first-session).
+:::
+:::language rust
+Use `client.rpc().models().list().await?` and set the selected model on the session configuration; run `cargo run`. Model selection changes model choice, not the tool or permission boundary. If the model is absent, use the default and inspect the available list. See [`checkpoints/rust/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/01-first-session).
+:::
+:::language java
+Use the Java SDK model-list API and `SessionConfig.setModel(selectedId)` before `createSession`; run `mvn exec:java`. A model identifier affects only inference selection. If it is rejected, list supported models and keep Maven and the Copilot CLI installation unchanged. See [`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session).
+:::

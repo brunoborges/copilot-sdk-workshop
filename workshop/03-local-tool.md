@@ -202,3 +202,12 @@ because the catalog is application-owned, read-only data.
 Define `accessibility_rule_lookup` with `@define_tool`, a Pydantic parameter model, and
 `skip_permission=True` because the catalog is application-owned, read-only data.
 :::
+:::language go
+Define `accessibility_rule_lookup` with `copilot.DefineTool` and set `SkipPermission = true` only because the WCAG catalog is read-only application data; run `go run .`. The model receives a catalog result, not arbitrary file access. If it asks for unrelated access, keep that tool out of `AvailableTools`. See [`checkpoints/go/03-local-tool`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/03-local-tool).
+:::
+:::language rust
+Create a typed `Tool` with a `ToolHandler`, JSON schema, and `with_skip_permission(true)` for the read-only catalog; run `cargo run`. The response includes criterion guidance. Do not skip permission for side-effecting tools. See [`checkpoints/rust/03-local-tool`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/03-local-tool).
+:::
+:::language java
+Use `ToolDefinition.from("accessibility_rule_lookup", ..., Param.of(...), handler).skipPermission(true)` and add it to `SessionConfig`; run `mvn exec:java`. The expected tool result is WCAG guidance. Keep skip permission limited to this read-only lookup. See [`checkpoints/java/03-local-tool`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/03-local-tool).
+:::

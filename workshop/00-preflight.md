@@ -140,3 +140,12 @@ uses `npm install @github/copilot-sdk`.
 Use Python 3.11+ and copy `start/python` to `workshop-app`. Create a virtual environment, then run
 `python -m pip install -r requirements.txt`. See the official [Python SDK installation guide](https://github.com/github/copilot-sdk/tree/main/python).
 :::
+:::language go
+Install Go 1.24+ and the [Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli), copy `start/go`, then run `go build ./...`. A successful build prints no errors; if `copilot` is unavailable, install it on `PATH`. Compare with [`checkpoints/go/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/01-first-session).
+:::
+:::language rust
+Install Rust 1.94+ and the Copilot CLI, copy `start/rust`, then run `cargo check --locked`. `Finished` confirms setup; install or authenticate `copilot` if runtime startup later fails. Compare with [`checkpoints/rust/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/01-first-session).
+:::
+:::language java
+Install Java 17+, Maven, and the Copilot CLI, copy `start/java`, then run `mvn compile`. `BUILD SUCCESS` confirms setup; do not substitute JBang or Gradle. Compare with [`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session).
+:::

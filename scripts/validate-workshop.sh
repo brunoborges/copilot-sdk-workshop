@@ -31,3 +31,21 @@ for project in start/python samples/python/* checkpoints/python/*; do
     echo "Checking $project"
     python3 -m py_compile "$project"/*.py
 done
+
+for project in start/go samples/go/* checkpoints/go/*; do
+    echo "Building $project"
+    (cd "$project" && go build ./...)
+    (cd "$project" && go test ./...)
+done
+
+for project in start/rust samples/rust/* checkpoints/rust/*; do
+    echo "Checking $project"
+    (cd "$project" && cargo check --locked)
+    (cd "$project" && cargo test --locked)
+done
+
+for project in start/java samples/java/* checkpoints/java/*; do
+    echo "Compiling $project"
+    (cd "$project" && mvn --batch-mode --no-transfer-progress compile)
+    (cd "$project" && mvn --batch-mode --no-transfer-progress test)
+done

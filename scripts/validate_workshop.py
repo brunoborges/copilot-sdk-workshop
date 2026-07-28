@@ -15,7 +15,10 @@ DOCS = ROOT / "docs"
 DOTNET = "dotnet"
 NODEJS = "nodejs"
 PYTHON = "python"
-LANGUAGES = [DOTNET, NODEJS, PYTHON]
+GO = "go"
+RUST = "rust"
+JAVA = "java"
+LANGUAGES = [DOTNET, NODEJS, PYTHON, GO, RUST, JAVA]
 START_PROJECT = ROOT / "start" / DOTNET / "HelloCopilotSDK.csproj"
 CHECKPOINT_ROOT = ROOT / "checkpoints" / DOTNET
 SAMPLE_ROOT = ROOT / "samples" / DOTNET
@@ -288,7 +291,7 @@ for checkpoint in CHECKPOINTS:
     require(project.exists(), f"Missing compiling project for checkpoint {checkpoint}")
     require(program.exists(), f"Missing complete Program.cs for checkpoint {checkpoint}")
 
-for language in [NODEJS, PYTHON]:
+for language in [NODEJS, PYTHON, GO, RUST, JAVA]:
     start_directory = ROOT / "start" / language
     sample_directory = ROOT / "samples" / language
     checkpoint_directory = ROOT / "checkpoints" / language
@@ -298,7 +301,13 @@ for language in [NODEJS, PYTHON]:
     for checkpoint in CHECKPOINTS:
         directory = checkpoint_directory / checkpoint
         require(directory.exists(), f"Missing {language} checkpoint {checkpoint}")
-    report_file = "src/report.ts" if language == NODEJS else "report.py"
+    report_file = {
+        NODEJS: "src/report.ts",
+        PYTHON: "report.py",
+        GO: "main.go",
+        RUST: "src/main.rs",
+        JAVA: "src/main/java/workshop/AccessibilityReport.java",
+    }[language]
     for directory in [sample_directory / "accessibility-report", *(checkpoint_directory / checkpoint for checkpoint in CHECKPOINTS[3:])]:
         report = directory / report_file
         require(report.exists(), f"Missing {language} report source in {directory.relative_to(ROOT)}")
@@ -306,6 +315,8 @@ for language in [NODEJS, PYTHON]:
             text = report.read_text(encoding="utf-8")
             require("playwright-browser_navigate" in text, f"{report.relative_to(ROOT)} does not allow the canonical navigation tool")
             require("browser_snapshot" not in text, f"{report.relative_to(ROOT)} exposes browser_snapshot")
+            require("read_latest_accessibility_snapshot" in text, f"{report.relative_to(ROOT)} is missing the scoped snapshot reader")
+            require("accessibility_rule_lookup" in text, f"{report.relative_to(ROOT)} is missing the application-owned WCAG tool")
 
 mcp_projects = [
     SAMPLE_ROOT / "accessibility-report",

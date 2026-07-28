@@ -230,3 +230,12 @@ Run `npm start -- "{{TARGET_APP_URL}}"`; the checkpoint is
 Run `python report.py "{{TARGET_APP_URL}}"`; the checkpoint is
 [`checkpoints/python/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/05-combine-tools).
 :::
+:::language go
+Run `go run . "{{TARGET_APP_URL}}"`. The session can choose the exact-navigation MCP tool, the no-argument snapshot reader, and the WCAG lookup in sequence. If the model attempts another browser tool, it is outside the allowlist. See [`checkpoints/go/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/05-combine-tools).
+:::
+:::language rust
+Run `cargo run -- "{{TARGET_APP_URL}}"`. Events and tools stay in separate lanes: Playwright supplies evidence and the typed catalog supplies guidance. If no evidence is available, navigate before reading. See [`checkpoints/rust/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/05-combine-tools).
+:::
+:::language java
+Run `mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"`. `SessionConfig` contains the same three canonical tool names. If a permission is denied, verify the requested URL exactly matches the original canonical URL. See [`checkpoints/java/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/05-combine-tools).
+:::

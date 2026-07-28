@@ -1,6 +1,6 @@
 # Copilot SDK Workshop
 
-Build an AI-powered accessibility reviewer with .NET, Node.js/TypeScript, or Python and the GitHub Copilot SDK.
+Build an AI-powered accessibility reviewer with .NET, Node.js/TypeScript, Python, Go, Rust, or Maven Java and the GitHub Copilot SDK.
 
 In this self-guided workshop, you'll:
 
@@ -35,6 +35,9 @@ the Markdown requests used by the lesson viewer.
 
 - [.NET 10 SDK](https://learn.microsoft.com/dotnet/core/install/)
 - [Node.js 22 or newer](https://nodejs.org/)
+- [Go 1.24 or newer](https://go.dev/dl/)
+- [Rust 1.94 or newer](https://rustup.rs/)
+- [Java 17 or newer](https://adoptium.net/) and [Maven](https://maven.apache.org/install.html)
 - [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli)
 - GitHub Copilot subscription or trial
 - Microsoft Edge (the workshop default) or Google Chrome
@@ -59,6 +62,15 @@ copilot-sdk-workshop/
 |-- start/python/                 Python 3.11+ learner starter
 |-- checkpoints/python/           Python checkpoint projects
 |-- samples/python/               Completed Python examples
+|-- start/go/                     Go 1.24+ learner starter
+|-- checkpoints/go/               Go checkpoint projects
+|-- samples/go/                   Completed Go examples
+|-- start/rust/                   Rust 1.94+ learner starter
+|-- checkpoints/rust/             Rust checkpoint projects
+|-- samples/rust/                 Completed Rust examples
+|-- start/java/                   Maven Java 17+ learner starter
+|-- checkpoints/java/             Maven Java checkpoint projects
+|-- samples/java/                 Completed Maven Java examples
 |-- src/BlazorApp/                Source counterpart of the deployed target
 |-- scripts/                      Deterministic content and build validation
 `-- .github/workflows/            Validation and Pages deployment
@@ -87,6 +99,11 @@ deployment job reports the canonical workshop URL in its environment.
 - [GitHub Copilot SDK for .NET](https://github.com/github/copilot-sdk/tree/main/dotnet)
 - [GitHub Copilot SDK for Node.js/TypeScript](https://github.com/github/copilot-sdk/tree/main/nodejs)
 - [GitHub Copilot SDK for Python](https://github.com/github/copilot-sdk/tree/main/python)
+- [GitHub Copilot SDK for Go](https://github.com/github/copilot-sdk/tree/main/go)
+- [GitHub Copilot SDK for Rust](https://github.com/github/copilot-sdk/tree/main/rust)
+- [GitHub Copilot SDK for Java](https://github.com/github/copilot-sdk/tree/main/java)
+- [Copilot SDK cookbook](https://github.com/github/copilot-sdk/tree/main/cookbook)
+- [Install the GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli)
 - [Playwright MCP](https://github.com/microsoft/playwright-mcp)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 

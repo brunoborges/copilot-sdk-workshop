@@ -130,3 +130,12 @@ Complete references:
 - [GitHub Copilot SDK for .NET](https://github.com/github/copilot-sdk/tree/main/dotnet)
 - [Playwright MCP](https://github.com/microsoft/playwright-mcp)
 :::
+:::language go
+Run the completed reporter with `go run ./samples/go/accessibility-report "{{TARGET_APP_URL}}"`. Explain that `Client` owns the Copilot CLI lifecycle, the `Session` owns one conversation, and the permission handler gates external navigation. The expected report is evidence-bound; if the CLI is missing, install it rather than granting broader permissions. Review [`samples/go/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/go/accessibility-report) and [`checkpoints/go/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/06-structured-report).
+:::
+:::language rust
+Run `cargo run --manifest-path samples/rust/accessibility-report/Cargo.toml -- "{{TARGET_APP_URL}}"`. Explain that `Client` manages the runtime, `Session` dispatches events, typed tools are app-owned, and the permission handler trusts only exact navigation. If it cannot start, install and authenticate the Copilot CLI. Review [`samples/rust/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/rust/accessibility-report) and [`checkpoints/rust/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/06-structured-report).
+:::
+:::language java
+Run `mvn -f samples/java/accessibility-report/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"`. Explain that Maven compiles the Java 17 application, `CopilotClient` manages the runtime, tools remain scoped, and the permission callback accepts only the canonical URL. If the runtime is unavailable, install the Copilot CLI; do not replace Maven with JBang or Gradle. Review [`samples/java/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/java/accessibility-report) and [`checkpoints/java/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/06-structured-report).
+:::

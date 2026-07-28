@@ -178,3 +178,12 @@ output; the shared `streamResponse` helper is in `src/workshop.ts`.
 Use `AssistantMessageDeltaData` and `SessionIdleData` event payloads with `asyncio.Event`; the
 matching helper is in `workshop.py`.
 :::
+:::language go
+Subscribe with `session.On(func(event copilot.SessionEvent) { ... })`, print `AssistantMessageDeltaData`, and complete on `SessionIdleData`; run `go run .`. Deltas arrive before the final answer; if output is doubled, print either deltas or the completed message. See [`checkpoints/go/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/02-streaming).
+:::
+:::language rust
+Use `session.subscribe()` and handle assistant delta and idle events in the async event loop; run `cargo run`. Progressive text proves streaming is active; ensure the subscription stays alive until idle. See [`checkpoints/rust/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/02-streaming).
+:::
+:::language java
+Register `session.on(...)` handlers for assistant message events and wait for the idle completion; run `mvn exec:java`. Output should appear progressively. If it prints only once, confirm `setStreaming(true)` is in `SessionConfig`. See [`checkpoints/java/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/02-streaming).
+:::

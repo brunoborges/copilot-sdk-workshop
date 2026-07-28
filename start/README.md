@@ -24,6 +24,12 @@ cp -R start/dotnet workshop-app
 For Node.js/TypeScript use `start/nodejs`, then run `npm install` and `npm run build`.
 For Python 3.11+ use `start/python`, create a virtual environment, then run
 `python -m pip install -r requirements.txt`.
+For Go 1.24+ use `start/go`, then run `go build ./...`.
+For Rust 1.94+ use `start/rust`, then run `cargo check --locked`.
+For Maven Java 17+ use `start/java`, then run `mvn compile`.
+
+The Go, Rust, and Java SDK tracks require the [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli)
+to be installed and authenticated on `PATH`; these workshop projects do not bundle the CLI runtime.
 
 Keep using `workshop-app` throughout the workshop. Return to
 [Start the workshop](../README.md#start-the-workshop) to open the interactive lesson viewer.
