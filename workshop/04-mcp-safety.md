@@ -176,13 +176,13 @@ await ResponseStreamer.SendAndPrintAsync(
 ```
 :::
 :::language nodejs
-In `workshop-app/src/report.ts`, validate the target URL, configure
+In `workshop-app/src/index.ts`, validate the target URL, configure
 `mcpServers.playwright.tools: ["browser_navigate"]`, and expose only the three canonical tool
 names through `availableTools`. Use the prebuilt exact-URL permission and snapshot helpers from
 `src/workshop.ts`.
 :::
 :::language python
-In `workshop-app/report.py`, validate the target URL, configure only `browser_navigate` for the
+In `workshop-app/main.py`, validate the target URL, configure only `browser_navigate` for the
 Playwright server, and expose the three canonical names through `available_tools`. Use the prebuilt
 exact-URL permission and snapshot helpers from `workshop.py`.
 :::

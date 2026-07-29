@@ -4,13 +4,15 @@
 
 ## What you'll see
 
-Response text will arrive while the session is still working, and the application will know when
-the turn has finished.
+You'll configure a streaming-enabled session and make completion visible. The .NET, Node.js,
+Python, Go, and Rust checkpoints print response text while the session is still working. The Java
+checkpoint uses the same streaming configuration but waits for the completed response.
 
 ## How streaming changes the experience
 
-**Streaming** does not change the answer. It changes when your application receives it. Instead of
-waiting for one completed message, the session emits events throughout the turn:
+**Streaming** does not change the answer. It changes when an application that subscribes to the
+event stream receives it. Instead of waiting for one completed message, the session emits events
+throughout the turn:
 
 - Assistant message delta events contain each new piece of response text.
 - The completed assistant message event contains the full message.

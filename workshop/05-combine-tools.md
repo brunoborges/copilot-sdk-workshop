@@ -82,12 +82,12 @@ The prompt assigns evidence and guidance to their correct sources. It leaves the
 catalog lookups to the agent.
 
 :::language nodejs
-In `workshop-app/src/report.ts`, keep the scoped tools from Step 4 and replace the final prompt with
+In `workshop-app/src/index.ts`, keep the scoped tools from Step 4 and replace the final prompt with
 an evidence-backed request that navigates, reads the snapshot, and calls
 `accessibility_rule_lookup` for each issue.
 :::
 :::language python
-In `workshop-app/report.py`, keep the scoped tools from Step 4 and replace the final prompt with an
+In `workshop-app/main.py`, keep the scoped tools from Step 4 and replace the final prompt with an
 evidence-backed request that navigates, reads the snapshot, and calls
 `accessibility_rule_lookup` for each issue.
 :::
