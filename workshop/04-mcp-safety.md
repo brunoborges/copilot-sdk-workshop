@@ -38,9 +38,9 @@ The WCAG lookup and narrow snapshot reader stay in process.
 
 ### 1. Accept one controlled target
 
+:::language dotnet
 At the top of `Program.cs`, after the `using` statements and before the banner, insert:
 
-:::language dotnet
 ```csharp
 if (args.Length is not 1 ||
     !Uri.TryCreate(args[0], UriKind.Absolute, out var targetUri) ||
@@ -90,10 +90,10 @@ await using var session = await client.CreateSessionAsync(new SessionConfig
 The browser argument uses Microsoft Edge, the workshop default. If you prepared Google Chrome
 instead, use `--browser=chrome`.
 
-`AvailableTools` keeps unrelated runtime tools out of the session. The MCP server's `Tools` list
-exposes only navigation. In Playwright MCP 0.0.78, navigation writes its automatic accessibility
-tree to `.playwright-mcp/`. The prebuilt `PlaywrightSnapshotReader` accepts no arguments and reads
-only the newest Playwright snapshot created after the session started.
+The session tool allowlist keeps unrelated runtime tools out. The MCP server's tool list exposes
+only navigation. In Playwright MCP 0.0.78, navigation writes its automatic accessibility tree to
+`.playwright-mcp/`. The prebuilt application snapshot reader accepts no arguments and reads only
+the newest Playwright snapshot created after the session started.
 
 `browser_snapshot` stays off both allowlists because its optional `filename` argument can write a
 file. The runtime can automatically allow MCP tools annotated as read-only without calling your
@@ -114,8 +114,8 @@ comparison. Path, query, and fragment must match case-sensitively.
 <details>
 <summary>Inspect the prebuilt permission handler</summary>
 
-`workshop-app/Helpers/WorkshopPermissionHandler.cs` returns `ApproveOnce` only for exact-target
-navigation. Every other external request is rejected.
+The prebuilt permission handler returns a one-time approval only for exact-target navigation. Every
+other external request is rejected.
 
 :::language dotnet
 ```csharp
@@ -148,13 +148,12 @@ The SDK currently prefixes MCP permission tool names with the server name (for e
 <details>
 <summary>Inspect the prebuilt snapshot-reader boundary</summary>
 
-`workshop-app/Helpers/PlaywrightSnapshotReader.cs` captures the set of existing snapshots when the
-tool is created. Its tool callback accepts no model-supplied arguments, selects only a new direct
-child named `page-*.yml`, rejects symbolic links and oversized files, then returns the text.
+The prebuilt snapshot reader captures the set of existing snapshots when the tool is created. Its
+tool callback accepts no model-supplied arguments, selects only a new direct child named
+`page-*.yml`, rejects symbolic links and oversized files, then returns the text.
 
-The adapter uses `SkipPermission = true` because it is read-only, uses application-selected
-storage, and is implemented by the application. That is a narrower capability than a general file
-reader.
+The adapter skips permission because it is read-only, uses application-selected storage, and is
+implemented by the application. That is a narrower capability than a general file reader.
 
 </details>
 
@@ -209,7 +208,7 @@ Page title: Blazor Accessibility Target
 
 ## Check your understanding
 
-Why is Playwright an MCP server here instead of another local C# callback?
+Why is Playwright an MCP server here instead of another application-owned callback?
 
 <details>
 <summary>Check your answer</summary>

@@ -28,9 +28,9 @@ At this point, the console app is simply `CopilotClient -> CopilotSession -> mod
 
 ## Fire up your first Copilot session
 
+:::language dotnet
 Open `workshop-app/Program.cs` and **replace the entire file**:
 
-:::language dotnet
 ```csharp
 using GitHub.Copilot;
 
@@ -54,8 +54,8 @@ if (response is null)
 Console.WriteLine($"\nCopilot: {response.Data.Content}");
 ```
 :::
-`PingAsync` checks the runtime connection. `SendAndWaitAsync` sends the prompt and returns after the
-session becomes idle, so it works well when you only need the completed answer.
+The ping verifies the runtime connection. The completed-response send waits until the session
+becomes idle, so it works well when you only need the finished answer.
 
 ## Run it
 

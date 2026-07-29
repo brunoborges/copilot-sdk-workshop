@@ -28,9 +28,9 @@ The agent now turns `browser evidence + catalog result` into a bounded, repeatab
 
 ### 1. Add the report contract
 
+:::language dotnet
 Create `workshop-app/Helpers/Prompts.cs`:
 
-:::language dotnet
 ```csharp
 namespace HelloCopilotSDK.Helpers;
 
@@ -64,9 +64,9 @@ public static class Prompts
 :::
 ### 2. Use the contract
 
+:::language dotnet
 Replace the final send call in `Program.cs`:
 
-:::language dotnet
 ```csharp
 Console.WriteLine($"\nAnalyzing: {targetUri.AbsoluteUri}\n");
 await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(targetUri));

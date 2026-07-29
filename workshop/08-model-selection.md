@@ -26,9 +26,9 @@ Model selection configures `CopilotSession`. It does not replace the client or e
 
 ## Add a model picker
 
+:::language dotnet
 Create `workshop-app/Helpers/ModelSelector.cs`:
 
-:::language dotnet
 ```csharp
 using GitHub.Copilot;
 
@@ -63,9 +63,9 @@ public static class ModelSelector
 }
 ```
 :::
+:::language dotnet
 After `PingAsync` in `Program.cs`, insert:
 
-:::language dotnet
 ```csharp
 var selectedModel = await ModelSelector.SelectAsync(client);
 ```
@@ -100,7 +100,7 @@ Choose a model, enter the workshop target URL, and confirm the same scoped tools
 |---|---|
 | No models are listed | The helper falls back to the account default; verify authentication if this is unexpected. |
 | A number is outside the range | The helper safely uses the first model. |
-| Tools disappear | Add only `Model = selectedModel`; retain `Tools`, `McpServers`, and `OnPermissionRequest`. |
+| Tools disappear | Add only the model selection; retain the existing tool, MCP, and permission configuration. |
 
 </details>
 

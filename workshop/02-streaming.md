@@ -12,10 +12,10 @@ the turn has finished.
 **Streaming** does not change the answer. It changes when your application receives it. Instead of
 waiting for one completed message, the session emits events throughout the turn:
 
-- `AssistantMessageDeltaEvent` contains each new piece of response text.
-- `AssistantMessageEvent` contains the completed message.
-- `SessionIdleEvent` means the turn and any tool work have finished.
-- `SessionErrorEvent` reports a failed turn.
+- Assistant message delta events contain each new piece of response text.
+- The completed assistant message event contains the full message.
+- A session idle event means the turn and any tool work have finished.
+- A session error event reports a failed turn.
 
 ## Why progressive output feels better
 
@@ -28,9 +28,9 @@ The session flow is now `response deltas -> final message -> idle`.
 
 ### 1. Add the streaming helper
 
+:::language dotnet
 Create `workshop-app/Helpers/ResponseStreamer.cs`:
 
-:::language dotnet
 ```csharp
 using GitHub.Copilot;
 
@@ -75,10 +75,10 @@ the task with an exception instead of looking like a successful turn.
 
 ### 2. Use the helper
 
+:::language dotnet
 In `Program.cs`, add `using HelloCopilotSDK.Helpers;`, then replace the session and response code
 with:
 
-:::language dotnet
 ```csharp
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
@@ -126,13 +126,13 @@ Copilot:
 
 ## Check your understanding
 
-When would `SendAndWaitAsync` be a better choice than event streaming?
+When would a completed-response send be a better choice than event streaming?
 
 <details>
 <summary>Check your answer</summary>
 
-Use `SendAndWaitAsync` for background work or simple request/response code that does not need
-progressive output or intermediate events.
+Use a completed-response send for background work or simple request/response code that does not
+need progressive output or intermediate events.
 
 </details>
 

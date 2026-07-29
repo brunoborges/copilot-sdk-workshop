@@ -13,10 +13,10 @@ remediation guidance from the local WCAG catalog.
 session exposes two different tools through one interface:
 
 - Playwright discovers facts about the live page.
-- The C# catalog explains a matching criterion and remediation.
+- The application-owned catalog explains a matching criterion and remediation.
 
-Both tools report through `ToolExecutionStartEvent` and `ToolExecutionCompleteEvent`. Your
-application can observe the work without knowing how either tool is implemented.
+Both tools report through tool-start and tool-completion events. Your application can observe the
+work without knowing how either tool is implemented.
 
 ## Keep evidence and guidance in their lanes
 
