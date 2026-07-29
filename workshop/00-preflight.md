@@ -129,8 +129,6 @@ Open the controlled target page once to make sure you can reach it:
 > target page opens.
 :::
 
-Continue to [Step 1: Create your first Copilot session](01-first-session.md).
-
 :::language nodejs
 Use Node.js 22.12+ and copy `start/nodejs` to `workshop-app`. Run `npm install` then
 `npm run build`. The official [Node.js SDK installation guide](https://github.com/github/copilot-sdk/tree/main/nodejs)
@@ -149,3 +147,5 @@ Install Rust 1.94+ and the Copilot CLI, copy `start/rust`, then run `cargo check
 :::language java
 Install Java 17+, Maven, and the Copilot CLI, copy `start/java`, then run `mvn compile`. `BUILD SUCCESS` confirms setup; do not substitute JBang or Gradle. Compare with [`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session).
 :::
+
+Continue to [Step 1: Create your first Copilot session](01-first-session.md).

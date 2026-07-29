@@ -139,9 +139,11 @@ public static Func<PermissionRequest, PermissionInvocation, Task<PermissionDecis
 }
 ```
 :::
-The SDK currently prefixes MCP permission tool names with the server name (for example,
+:::language dotnet
+The .NET SDK currently prefixes MCP permission tool names with the server name (for example,
 `playwright-browser_navigate`), while MCP configuration uses `browser_navigate`.
 `IsPlaywrightTool` accepts those two exact forms rather than using a broad wildcard.
+:::
 
 </details>
 
@@ -180,16 +182,50 @@ await ResponseStreamer.SendAndPrintAsync(
 dotnet run --project workshop-app -- "{{TARGET_APP_URL}}"
 ```
 :::
-The first run may take longer while `npx` starts Playwright. Look for:
+:::language nodejs
+```bash
+cd workshop-app
+npm start -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language python
+```bash
+cd workshop-app
+python main.py "{{TARGET_APP_URL}}"
+```
+:::
+:::language go
+```bash
+cd workshop-app
+go run . "{{TARGET_APP_URL}}"
+```
+:::
+:::language rust
+```bash
+cd workshop-app
+cargo run -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language java
+```bash
+cd workshop-app
+mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"
+```
+:::
+The first run may take longer while `npx` starts Playwright.
+
+:::language dotnet
+Look for:
 
 ```text
 [tool:start] playwright-browser_navigate
-[tool:done] success=True
+[tool:done] success=...
 [tool:start] read_latest_accessibility_snapshot
 [tool:done] success=True
 
 Page title: Blazor Accessibility Target
 ```
+:::
 
 <details>
 <summary>Troubleshooting this run</summary>
@@ -287,8 +323,6 @@ await ResponseStreamer.SendAndPrintAsync(
 </details>
 :::
 
-Continue to [Step 5: Combine local and MCP tools](05-combine-tools.md).
-
 :::language nodejs
 Use the exact `mcpServers.playwright.tools: ["browser_navigate"]` allowlist and
 `availableTools: ["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"]`.
@@ -308,3 +342,5 @@ Set the Playwright `McpStdioServerConfig.tools` allowlist to `browser_navigate` 
 :::language java
 Set `McpStdioServerConfig.setTools(List.of("browser_navigate"))` and use `setOnPermissionRequest` to approve only the complete requested URL; run `mvn exec:java -Dexec.args=URL`. The reader rejects preexisting, nested, symlink, empty, and oversized snapshots. See [`checkpoints/java/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/04-mcp-safety).
 :::
+
+Continue to [Step 5: Combine local and MCP tools](05-combine-tools.md).

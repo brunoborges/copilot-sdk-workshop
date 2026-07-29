@@ -98,6 +98,36 @@ await ResponseStreamer.SendAndPrintAsync(
 dotnet run --project workshop-app
 ```
 :::
+:::language nodejs
+```bash
+cd workshop-app
+npm start
+```
+:::
+:::language python
+```bash
+cd workshop-app
+python main.py
+```
+:::
+:::language go
+```bash
+cd workshop-app
+go run .
+```
+:::
+:::language rust
+```bash
+cd workshop-app
+cargo run
+```
+:::
+:::language java
+```bash
+cd workshop-app
+mvn exec:java
+```
+:::
 The bullets should start appearing before the process exits:
 
 ```text
@@ -168,11 +198,9 @@ await ResponseStreamer.SendAndPrintAsync(
 </details>
 :::
 
-Continue to [Step 3: Add application-owned knowledge](03-local-tool.md).
-
 :::language nodejs
-Use `session.on("assistant.message_delta", ...)` and `session.on("session.idle", ...)` to stream
-output; the shared `streamResponse` helper is in `src/workshop.ts`.
+Use `session.on(callback)` and inspect each event's `type` to stream deltas, handle the final-message
+fallback, and finish on `session.idle`; the shared `streamResponse` helper is in `src/workshop.ts`.
 :::
 :::language python
 Use `AssistantMessageDeltaData` and `SessionIdleData` event payloads with `asyncio.Event`; the
@@ -185,5 +213,9 @@ Subscribe with `session.On(func(event copilot.SessionEvent) { ... })`, print `As
 Use `session.subscribe()` and handle assistant delta and idle events in the async event loop; run `cargo run`. Progressive text proves streaming is active; ensure the subscription stays alive until idle. See [`checkpoints/rust/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/02-streaming).
 :::
 :::language java
-Register `session.on(...)` handlers for assistant message events and wait for the idle completion; run `mvn exec:java`. Output should appear progressively. If it prints only once, confirm `setStreaming(true)` is in `SessionConfig`. See [`checkpoints/java/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/02-streaming).
+Set streaming on the session configuration, call `sendAndWait(...)`, and print the completed
+response; run `mvn exec:java`. See
+[`checkpoints/java/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/02-streaming).
 :::
+
+Continue to [Step 3: Add application-owned knowledge](03-local-tool.md).

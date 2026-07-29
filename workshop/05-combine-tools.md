@@ -87,12 +87,43 @@ catalog lookups to the agent.
 ```bash
 dotnet run --project workshop-app
 ```
-:::
+
 Paste this URL when prompted:
 
 ```text
 {{TARGET_APP_URL}}
 ```
+:::
+:::language nodejs
+```bash
+cd workshop-app
+npm start -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language python
+```bash
+cd workshop-app
+python main.py "{{TARGET_APP_URL}}"
+```
+:::
+:::language go
+```bash
+cd workshop-app
+go run . "{{TARGET_APP_URL}}"
+```
+:::
+:::language rust
+```bash
+cd workshop-app
+cargo run -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language java
+```bash
+cd workshop-app
+mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"
+```
+:::
 
 You should see activity from both kinds of tool:
 
@@ -220,8 +251,6 @@ await ResponseStreamer.SendAndPrintAsync(
 </details>
 :::
 
-Continue to [Step 6: Produce a structured report](06-structured-report.md).
-
 :::language nodejs
 Run `npm start -- "{{TARGET_APP_URL}}"`; the checkpoint is
 [`checkpoints/nodejs/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/05-combine-tools).
@@ -239,3 +268,5 @@ Run `cargo run -- "{{TARGET_APP_URL}}"`. Events and tools stay in separate lanes
 :::language java
 Run `mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"`. `SessionConfig` contains the same three canonical tool names. If a permission is denied, verify the requested URL exactly matches the original canonical URL. See [`checkpoints/java/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/05-combine-tools).
 :::
+
+Continue to [Step 6: Produce a structured report](06-structured-report.md).

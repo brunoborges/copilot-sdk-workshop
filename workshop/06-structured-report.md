@@ -78,12 +78,43 @@ await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(tar
 ```bash
 dotnet run --project workshop-app
 ```
-:::
+
 When the app asks for a URL, paste:
 
 ```text
 {{TARGET_APP_URL}}
 ```
+:::
+:::language nodejs
+```bash
+cd workshop-app
+npm start -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language python
+```bash
+cd workshop-app
+python main.py "{{TARGET_APP_URL}}"
+```
+:::
+:::language go
+```bash
+cd workshop-app
+go run . "{{TARGET_APP_URL}}"
+```
+:::
+:::language rust
+```bash
+cd workshop-app
+cargo run -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language java
+```bash
+cd workshop-app
+mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"
+```
+:::
 
 The report should follow this shape:
 
@@ -201,8 +232,6 @@ await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(tar
 </details>
 :::
 
-Continue to [Step 7: Run and explain the application](07-run-explain.md).
-
 :::language nodejs
 Use `reportPrompt(target)` from `src/workshop.ts`; it requires three to five evidence-backed
 findings and the same review limits as the .NET version.
@@ -220,3 +249,5 @@ Use `report_prompt(&target)` in `src/main.rs` and run `cargo run -- "{{TARGET_AP
 :::language java
 Use `reportPrompt(target)` in `AccessibilityReport.java` and run `mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"`. The result has three to five bounded findings plus Review limits. If Maven cannot execute the main class, use the checkpoint POM's configured exec plugin. See [`checkpoints/java/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/06-structured-report).
 :::
+
+Continue to [Step 7: Run and explain the application](07-run-explain.md).

@@ -64,6 +64,37 @@ becomes idle, so it works well when you only need the finished answer.
 dotnet run --project workshop-app
 ```
 :::
+:::language nodejs
+```bash
+cd workshop-app
+npm start
+```
+:::
+:::language python
+```bash
+cd workshop-app
+python main.py
+```
+:::
+:::language go
+```bash
+cd workshop-app
+go run .
+```
+:::
+:::language rust
+```bash
+cd workshop-app
+cargo run
+```
+:::
+:::language java
+```bash
+cd workshop-app
+mvn exec:java
+```
+:::
+:::language dotnet
 Your exact response will vary, but the output should have this shape:
 
 ```text
@@ -73,6 +104,7 @@ Connected to the Copilot runtime: ...
 
 Copilot: An accessible name lets assistive technology identify the input's purpose.
 ```
+:::
 
 <details>
 <summary>Troubleshooting this run</summary>
@@ -135,8 +167,6 @@ Console.WriteLine($"\nCopilot: {response.Data.Content}");
 </details>
 :::
 
-Continue to [Step 2: Stream a response](02-streaming.md).
-
 :::language nodejs
 Replace `src/index.ts` with a `CopilotClient`, `await client.start()`, and
 `await session.sendAndWait({ prompt })`; run it with `npm start`. See
@@ -156,3 +186,5 @@ Use `Client::start(ClientOptions::default()).await?`, `create_session`, and `ses
 :::language java
 Use `new CopilotClient()`, `client.start().get()`, `createSession`, and `session.sendAndWait(...)`; run `mvn exec:java`. The expected output is one assistant answer. If Maven starts but the runtime fails, install and authenticate the Copilot CLI. See [`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session).
 :::
+
+Continue to [Step 2: Stream a response](02-streaming.md).

@@ -120,6 +120,14 @@ STEP_3_TRACK_MARKERS = {
     "rust": ("src/main.rs", 'Tool::new("accessibility_rule_lookup")', "cargo run"),
     "java": ("AccessibilityReport.java", "ToolDefinition.from(", "mvn exec:java"),
 }
+RUN_COMMAND_MARKERS = {
+    "dotnet": "dotnet run --project workshop-app",
+    "nodejs": "npm start",
+    "python": "python main.py",
+    "go": "go run .",
+    "rust": "cargo run",
+    "java": "mvn exec:java",
+}
 UNSCOPED_TRACK_MARKERS = (
     "workshop-app/Program.cs",
     "workshop-app/Helpers/",
@@ -577,6 +585,19 @@ def render_language_markdown(markdown_file: Path, selected_language: str) -> str
     return "\n".join(rendered)
 
 
+def markdown_section(markdown: str, heading: str) -> str:
+    lines = markdown.splitlines()
+    try:
+        start = lines.index(heading)
+    except ValueError:
+        return ""
+    end = next(
+        (index for index in range(start + 1, len(lines)) if lines[index].startswith("## ")),
+        len(lines),
+    )
+    return "\n".join(lines[start:end])
+
+
 def validate_rendered_language_content(markdown_file: Path) -> None:
     for selected_language in LANGUAGES:
         rendered = render_language_markdown(markdown_file, selected_language)
@@ -603,6 +624,15 @@ def validate_rendered_language_content(markdown_file: Path) -> None:
                     f"{markdown_file.relative_to(ROOT)} is missing {selected_language} "
                     f"Step 3 guidance: {marker}",
                 )
+
+        if markdown_file.name != "00-preflight.md":
+            run_section = markdown_section(rendered, "## Run it")
+            run_marker = RUN_COMMAND_MARKERS[selected_language]
+            require(
+                run_marker.casefold() in run_section.casefold(),
+                f"{markdown_file.relative_to(ROOT)} has no {selected_language} "
+                f"run command in its Run it section: {run_marker}",
+            )
 
 
 def validate_language_registry() -> None:

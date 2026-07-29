@@ -60,6 +60,36 @@ you built.
 dotnet run --project workshop-app
 ```
 :::
+:::language nodejs
+```bash
+cd workshop-app
+npm start -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language python
+```bash
+cd workshop-app
+python main.py "{{TARGET_APP_URL}}"
+```
+:::
+:::language go
+```bash
+cd workshop-app
+go run . "{{TARGET_APP_URL}}"
+```
+:::
+:::language rust
+```bash
+cd workshop-app
+cargo run -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language java
+```bash
+cd workshop-app
+mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"
+```
+:::
 Use the workshop target:
 
 ```text

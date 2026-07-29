@@ -91,6 +91,36 @@ Do not remove the rest of the Step 6 session configuration.
 dotnet run --project workshop-app
 ```
 :::
+:::language nodejs
+```bash
+cd workshop-app
+npm start -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language python
+```bash
+cd workshop-app
+python main.py "{{TARGET_APP_URL}}"
+```
+:::
+:::language go
+```bash
+cd workshop-app
+go run . "{{TARGET_APP_URL}}"
+```
+:::
+:::language rust
+```bash
+cd workshop-app
+cargo run -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language java
+```bash
+cd workshop-app
+mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"
+```
+:::
 Choose a model, enter the workshop target URL, and confirm the same scoped tools still run.
 
 <details>
@@ -119,8 +149,6 @@ you to a useful Copilot response sooner and keeps the first lesson focused on cl
 
 </details>
 
-Return to [Step 7: Run and explain the application](07-run-explain.md).
-
 :::language nodejs
 Use `await client.listModels()` and pass the selected id as `model` to `createSession`.
 :::
@@ -136,3 +164,5 @@ Use `client.rpc().models().list().await?` and set the selected model on the sess
 :::language java
 Use the Java SDK model-list API and `SessionConfig.setModel(selectedId)` before `createSession`; run `mvn exec:java`. A model identifier affects only inference selection. If it is rejected, list supported models and keep Maven and the Copilot CLI installation unchanged. See [`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session).
 :::
+
+Return to [Step 7: Run and explain the application](07-run-explain.md).
