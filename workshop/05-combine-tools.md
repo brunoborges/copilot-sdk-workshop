@@ -28,12 +28,12 @@ The flow is now `URL -> Playwright evidence -> WCAG catalog lookup -> grounded r
 
 ## Put both tools to work
 
+:::language dotnet
 ### 1. Read and validate a URL
 
 Remove the command-line argument validation from Step 4. After the banner and before creating the
 client, insert:
 
-:::language dotnet
 ```csharp
 Console.Write("Enter URL to analyze: ");
 var urlInput = Console.ReadLine()?.Trim();
@@ -59,11 +59,11 @@ if (!Uri.TryCreate(urlInput, UriKind.Absolute, out var targetUri) ||
 :::
 The Step 4 handler receives this validated `targetUri`, so the URL boundary still applies.
 
+:::language dotnet
 ### 2. Give the agent a three-tool goal
 
 Replace the final prompt:
 
-:::language dotnet
 ```csharp
 Console.WriteLine($"\nAnalyzing: {targetUri.AbsoluteUri}\n");
 await ResponseStreamer.SendAndPrintAsync(

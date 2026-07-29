@@ -26,9 +26,9 @@ The agent now turns `browser evidence + catalog result` into a bounded, repeatab
 
 ## Give the report a contract
 
+:::language dotnet
 ### 1. Add the report contract
 
-:::language dotnet
 Create `workshop-app/Helpers/Prompts.cs`:
 
 ```csharp
@@ -62,9 +62,9 @@ public static class Prompts
 }
 ```
 :::
+:::language dotnet
 ### 2. Use the contract
 
-:::language dotnet
 Replace the final send call in `Program.cs`:
 
 ```csharp

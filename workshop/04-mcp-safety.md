@@ -36,9 +36,9 @@ The WCAG lookup and narrow snapshot reader stay in process.
 
 ## Put Playwright behind guardrails
 
+:::language dotnet
 ### 1. Accept one controlled target
 
-:::language dotnet
 At the top of `Program.cs`, after the `using` statements and before the banner, insert:
 
 ```csharp
@@ -51,11 +51,11 @@ if (args.Length is not 1 ||
 }
 ```
 :::
+:::language dotnet
 ### 2. Add Playwright MCP and scoped permissions
 
 Replace the session configuration with:
 
-:::language dotnet
 ```csharp
 var workingDirectory = Directory.GetCurrentDirectory();
 
@@ -157,11 +157,11 @@ implemented by the application. That is a narrower capability than a general fil
 
 </details>
 
+:::language dotnet
 ### 3. Request browser evidence
 
 Replace the final send call:
 
-:::language dotnet
 ```csharp
 Console.WriteLine($"\nInspecting: {targetUri.AbsoluteUri}\n");
 await ResponseStreamer.SendAndPrintAsync(

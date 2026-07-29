@@ -550,6 +550,11 @@ def validate_shared_language_content(markdown_file: Path) -> None:
         elif line == ":::":
             active_language = None
         elif active_language is None:
+            require(
+                not line.startswith("### "),
+                f"{markdown_file.relative_to(ROOT)}:{line_number} exposes a "
+                "language-specific procedure heading outside a language block",
+            )
             for marker in UNSCOPED_TRACK_MARKERS:
                 require(
                     marker.casefold() not in line.casefold(),

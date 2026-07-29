@@ -13,9 +13,8 @@ application-owned Web Content Accessibility Guidelines (WCAG) catalog.
 runs inside your application process. The model decides when to request it, but your code still owns
 the data, validation, execution, and result.
 
-The starter already contains the domain catalog. In this step, you expose its lookup as
-`accessibility_rule_lookup`, register that tool with the session, and explicitly make it available
-to the model.
+In this step, you expose application-owned WCAG guidance as `accessibility_rule_lookup`, register
+that tool with the session, and explicitly make it available to the model.
 
 ## Bring your own source of truth
 

@@ -26,9 +26,9 @@ The session flow is now `response deltas -> final message -> idle`.
 
 ## Let the response roll in
 
+:::language dotnet
 ### 1. Add the streaming helper
 
-:::language dotnet
 Create `workshop-app/Helpers/ResponseStreamer.cs`:
 
 ```csharp
@@ -73,9 +73,9 @@ public static class ResponseStreamer
 The final-message case handles a runtime that completes without sending deltas. An error completes
 the task with an exception instead of looking like a successful turn.
 
+:::language dotnet
 ### 2. Use the helper
 
-:::language dotnet
 In `Program.cs`, add `using HelloCopilotSDK.Helpers;`, then replace the session and response code
 with:
 
