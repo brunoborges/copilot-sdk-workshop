@@ -73,6 +73,9 @@ public final class AccessibilityReport {
             client.start().get();
             var session = client.createSession(config).get();
             var response = session.sendAndWait(new MessageOptions().setPrompt(reportPrompt(target))).get();
+            if (response == null) {
+                throw new IllegalStateException("Copilot completed without an assistant message.");
+            }
             System.out.println(response.getData().content());
         }
     }

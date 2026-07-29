@@ -15,6 +15,9 @@ public final class AccessibilityReport {
             var response = session.sendAndWait(new MessageOptions()
                     .setPrompt("In one sentence, explain why an accessible name matters for a form input."))
                     .get();
+            if (response == null) {
+                throw new IllegalStateException("Copilot completed without an assistant message.");
+            }
             System.out.println(response.getData().content());
         }
     }

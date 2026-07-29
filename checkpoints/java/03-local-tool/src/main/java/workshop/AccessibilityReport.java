@@ -29,6 +29,9 @@ public final class AccessibilityReport {
             var response = session.sendAndWait(new MessageOptions()
                     .setPrompt("Use accessibility_rule_lookup to explain WCAG 4.1.2."))
                     .get();
+            if (response == null) {
+                throw new IllegalStateException("Copilot completed without an assistant message.");
+            }
             System.out.println(response.getData().content());
         }
     }
