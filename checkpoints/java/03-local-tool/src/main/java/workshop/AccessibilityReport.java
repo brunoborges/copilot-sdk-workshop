@@ -29,7 +29,7 @@ public final class AccessibilityReport {
             var response = session.sendAndWait(new MessageOptions()
                     .setPrompt("Use accessibility_rule_lookup to explain WCAG 4.1.2."))
                     .get();
-            System.out.println(response);
+            System.out.println(response.getData().content());
         }
     }
 

@@ -73,7 +73,7 @@ public final class AccessibilityReport {
             client.start().get();
             var session = client.createSession(config).get();
             var response = session.sendAndWait(new MessageOptions().setPrompt(mcpSafetyPrompt(target))).get();
-            System.out.println(response);
+            System.out.println(response.getData().content());
         }
     }
 

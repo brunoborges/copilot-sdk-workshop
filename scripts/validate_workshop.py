@@ -394,7 +394,7 @@ def validate_runtime_flow(language: str, stage: str, text: str, label: Path) -> 
                 f"{label} does not subscribe, print, and await completion or errors")
     elif language == "java":
         markers = (
-            ("sendAndWait", "System.out.println(response)", ".get()")
+            ("sendAndWait", "response.getData().content()", ".get()")
             if not streaming or label != Path("samples/java/hello-copilot-sdk")
             else ("AssistantMessageDeltaEvent", "AssistantMessageEvent", "receivedDelta",
                   "System.out.print", "sendAndWait", ".get()")

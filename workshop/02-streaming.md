@@ -166,7 +166,7 @@ Copilot:
 The bullets should start appearing progressively.
 :::
 :::language nodejs
-The bullets should start appearing progressively through the event callback.
+The one-sentence response should start appearing progressively through the event callback.
 :::
 :::language python
 The bullets should start appearing progressively through the event callback.
