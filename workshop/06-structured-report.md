@@ -74,11 +74,26 @@ await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(tar
 :::
 :::language nodejs
 In `workshop-app/src/workshop.ts`, add or update `reportPrompt(target)` with the required finding
-shape and review limits, then call it from `src/report.ts`.
+shape and review limits, then call it from `src/report.ts`. Replace `workshop-app/src/index.ts` so
+the package start command launches that report entrypoint:
+
+```typescript
+import "./report.js";
+```
 :::
 :::language python
 In `workshop-app/workshop.py`, add or update `report_prompt(target)` with the required finding shape
-and review limits, then call it from `report.py`.
+and review limits, then call it from `report.py`. Replace `workshop-app/main.py` so the documented
+command launches that report entrypoint:
+
+```python
+from report import main
+
+import asyncio
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
 :::
 :::language go
 In `workshop-app/main.go`, add `reportPrompt(target)` with the required finding shape and review

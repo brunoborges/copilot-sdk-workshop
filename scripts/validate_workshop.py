@@ -166,8 +166,8 @@ PROCEDURE_MARKERS = {
     },
     "06-structured-report.md": {
         "dotnet": "Prompts.CreateReportPrompt",
-        "nodejs": "reportPrompt(target)",
-        "python": "report_prompt(target)",
+        "nodejs": 'import "./report.js"',
+        "python": "from report import main",
         "go": "reportPrompt(target)",
         "rust": "report_prompt(&target)",
         "java": "reportPrompt(target)",
