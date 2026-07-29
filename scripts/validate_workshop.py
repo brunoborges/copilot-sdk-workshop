@@ -77,7 +77,7 @@ LESSON_TRACK_MARKERS = {
     "nodejs": (
         "workshop-app/src/index.ts",
         "workshop-app/src/workshop.ts",
-        "npm start",
+        "npm --prefix workshop-app",
         "```typescript",
         "checkpoints/nodejs/",
         "samples/nodejs/",
@@ -85,28 +85,28 @@ LESSON_TRACK_MARKERS = {
     "python": (
         "workshop-app/main.py",
         "workshop-app/workshop.py",
-        "python main.py",
+        "python workshop-app/main.py",
         "```python",
         "checkpoints/python/",
         "samples/python/",
     ),
     "go": (
         "workshop-app/main.go",
-        "go run .",
+        "go -C workshop-app",
         "```go",
         "checkpoints/go/",
         "samples/go/",
     ),
     "rust": (
         "workshop-app/src/main.rs",
-        "cargo run",
+        "cargo run --manifest-path workshop-app/Cargo.toml",
         "```rust",
         "checkpoints/rust/",
         "samples/rust/",
     ),
     "java": (
         "workshop-app/src/main/java/",
-        "mvn exec:java",
+        "mvn -f workshop-app/pom.xml",
         "```java",
         "checkpoints/java/",
         "samples/java/",
@@ -114,19 +114,72 @@ LESSON_TRACK_MARKERS = {
 }
 STEP_3_TRACK_MARKERS = {
     "dotnet": ("AccessibilityRuleCatalog.cs", "CopilotTool.DefineTool", "dotnet run --project workshop-app"),
-    "nodejs": ("src/workshop.ts", 'defineTool("accessibility_rule_lookup"', "npm start"),
-    "python": ("workshop.py", '@define_tool(', "python main.py"),
-    "go": ("main.go", "copilot.DefineTool(", "go run ."),
-    "rust": ("src/main.rs", 'Tool::new("accessibility_rule_lookup")', "cargo run"),
-    "java": ("AccessibilityReport.java", "ToolDefinition.from(", "mvn exec:java"),
+    "nodejs": ("src/workshop.ts", 'defineTool("accessibility_rule_lookup"', "npm --prefix workshop-app start"),
+    "python": ("workshop.py", '@define_tool(', "python workshop-app/main.py"),
+    "go": ("main.go", "copilot.DefineTool(", "go -C workshop-app run ."),
+    "rust": ("src/main.rs", 'Tool::new("accessibility_rule_lookup")', "cargo run --manifest-path workshop-app/Cargo.toml"),
+    "java": ("AccessibilityReport.java", "ToolDefinition.from(", "mvn -f workshop-app/pom.xml exec:java"),
 }
 RUN_COMMAND_MARKERS = {
     "dotnet": "dotnet run --project workshop-app",
-    "nodejs": "npm start",
-    "python": "python main.py",
-    "go": "go run .",
-    "rust": "cargo run",
-    "java": "mvn exec:java",
+    "nodejs": "npm --prefix workshop-app start",
+    "python": "python workshop-app/main.py",
+    "go": "go -C workshop-app run .",
+    "rust": "cargo run --manifest-path workshop-app/Cargo.toml",
+    "java": "mvn -f workshop-app/pom.xml exec:java",
+}
+PROCEDURE_MARKERS = {
+    "01-first-session.md": {
+        "dotnet": "SendAndWaitAsync",
+        "nodejs": "sendAndWait",
+        "python": "create_session",
+        "go": "copilot.NewClient",
+        "rust": "Client::start",
+        "java": "new CopilotClient",
+    },
+    "02-streaming.md": {
+        "dotnet": "ResponseStreamer.SendAndPrintAsync",
+        "nodejs": "session.on(callback)",
+        "python": "AssistantMessageDeltaData",
+        "go": "session.On",
+        "rust": "session.subscribe()",
+        "java": "SessionConfig",
+    },
+    "03-local-tool.md": {
+        language: markers[1] for language, markers in STEP_3_TRACK_MARKERS.items()
+    },
+    "04-mcp-safety.md": {
+        "dotnet": "McpStdioServerConfig",
+        "nodejs": "mcpServers.playwright.tools",
+        "python": "available_tools",
+        "go": "MCPStdioServerConfig",
+        "rust": "McpStdioServerConfig.tools",
+        "java": "McpStdioServerConfig.setTools",
+    },
+    "05-combine-tools.md": {
+        "dotnet": "For each issue, call accessibility_rule_lookup",
+        "nodejs": "src/report.ts",
+        "python": "report.py",
+        "go": "AvailableTools",
+        "rust": "config.available_tools",
+        "java": "setAvailableTools",
+    },
+    "06-structured-report.md": {
+        "dotnet": "Prompts.CreateReportPrompt",
+        "nodejs": "reportPrompt(target)",
+        "python": "report_prompt(target)",
+        "go": "reportPrompt(target)",
+        "rust": "report_prompt(&target)",
+        "java": "reportPrompt(target)",
+    },
+    "08-model-selection.md": {
+        "dotnet": "ModelSelector.SelectAsync",
+        "nodejs": "client.listModels()",
+        "python": "client.list_models()",
+        "go": "client.ListModels",
+        "rust": "models().list()",
+        "java": "SessionConfig.setModel",
+    },
 }
 UNSCOPED_TRACK_MARKERS = (
     "workshop-app/Program.cs",
@@ -634,6 +687,16 @@ def validate_rendered_language_content(markdown_file: Path) -> None:
                 f"run command in its Run it section: {run_marker}",
             )
 
+        if markdown_file.name in PROCEDURE_MARKERS:
+            procedure_marker = PROCEDURE_MARKERS[markdown_file.name][selected_language]
+            run_position = rendered.find("## Run it")
+            procedure_position = rendered.casefold().find(procedure_marker.casefold())
+            require(
+                0 <= procedure_position < run_position,
+                f"{markdown_file.relative_to(ROOT)} does not show the {selected_language} "
+                f"procedure before Run it: {procedure_marker}",
+            )
+
 
 def validate_language_registry() -> None:
     registry = read(DOCS / "language-registry.js")
@@ -835,7 +898,7 @@ def validate_documentation() -> None:
     require("python report.py" not in all_markdown,
             "Documentation must invoke Python checkpoint main.py rather than an unwired report.py")
     for lesson in ("01-first-session.md", "05-combine-tools.md", "06-structured-report.md"):
-        require("python main.py" in read(WORKSHOP / lesson),
+        require("python workshop-app/main.py" in read(WORKSHOP / lesson),
                 f"{lesson} must run the Python checkpoint through main.py")
 
 

@@ -194,8 +194,7 @@ try {
 ## Run it
 
 ```bash
-cd workshop-app
-npm start
+npm --prefix workshop-app start
 ```
 
 Look for `[tool:start] accessibility_rule_lookup` and guidance for WCAG 4.1.2.
@@ -292,8 +291,7 @@ prompt change.
 ## Run it
 
 ```bash
-cd workshop-app
-python main.py
+python workshop-app/main.py
 ```
 
 The response should use the catalog's WCAG 4.1.2 title and recommendation.
@@ -384,8 +382,7 @@ if err := streamResponse(
 ## Run it
 
 ```bash
-cd workshop-app
-go run .
+go -C workshop-app run .
 ```
 
 The streamed response should use the lookup result for WCAG 4.1.2.
@@ -481,8 +478,7 @@ Keep the Step 2 disconnect and client shutdown after the macro call.
 ## Run it
 
 ```bash
-cd workshop-app
-cargo run
+cargo run --manifest-path workshop-app/Cargo.toml
 ```
 
 The streamed response should use the lookup result for WCAG 4.1.2.
@@ -565,8 +561,7 @@ System.out.println(response);
 ## Run it
 
 ```bash
-cd workshop-app
-mvn exec:java
+mvn -f workshop-app/pom.xml exec:java
 ```
 
 The response should use the lookup result for WCAG 4.1.2.

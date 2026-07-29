@@ -175,6 +175,32 @@ await ResponseStreamer.SendAndPrintAsync(
     """);
 ```
 :::
+:::language nodejs
+In `workshop-app/src/report.ts`, validate the target URL, configure
+`mcpServers.playwright.tools: ["browser_navigate"]`, and expose only the three canonical tool
+names through `availableTools`. Use the prebuilt exact-URL permission and snapshot helpers from
+`src/workshop.ts`.
+:::
+:::language python
+In `workshop-app/report.py`, validate the target URL, configure only `browser_navigate` for the
+Playwright server, and expose the three canonical names through `available_tools`. Use the prebuilt
+exact-URL permission and snapshot helpers from `workshop.py`.
+:::
+:::language go
+In `workshop-app/main.go`, configure `MCPStdioServerConfig` with only `browser_navigate`, register
+the snapshot reader, and use the exact-target permission handler. Keep the session allowlist to the
+three canonical tool names.
+:::
+:::language rust
+In `workshop-app/src/main.rs`, set `McpStdioServerConfig.tools` to only `browser_navigate`, register
+the no-argument snapshot tool, and install the exact-target `PermissionHandler`.
+:::
+:::language java
+In `workshop-app/src/main/java/workshop/AccessibilityReport.java`, call
+`McpStdioServerConfig.setTools(List.of("browser_navigate"))`, register the snapshot reader, and use
+`setOnPermissionRequest` with exact-target URL matching.
+:::
+
 ## Run it
 
 :::language dotnet
@@ -184,32 +210,27 @@ dotnet run --project workshop-app -- "{{TARGET_APP_URL}}"
 :::
 :::language nodejs
 ```bash
-cd workshop-app
-npm start -- "{{TARGET_APP_URL}}"
+npm --prefix workshop-app start -- "{{TARGET_APP_URL}}"
 ```
 :::
 :::language python
 ```bash
-cd workshop-app
-python main.py "{{TARGET_APP_URL}}"
+python workshop-app/main.py "{{TARGET_APP_URL}}"
 ```
 :::
 :::language go
 ```bash
-cd workshop-app
-go run . "{{TARGET_APP_URL}}"
+go -C workshop-app run . "{{TARGET_APP_URL}}"
 ```
 :::
 :::language rust
 ```bash
-cd workshop-app
-cargo run -- "{{TARGET_APP_URL}}"
+cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
 ```
 :::
 :::language java
 ```bash
-cd workshop-app
-mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"
+mvn -f workshop-app/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"
 ```
 :::
 The first run may take longer while `npx` starts Playwright.
@@ -324,23 +345,21 @@ await ResponseStreamer.SendAndPrintAsync(
 :::
 
 :::language nodejs
-Use the exact `mcpServers.playwright.tools: ["browser_navigate"]` allowlist and
-`availableTools: ["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"]`.
-The shared helper compares every URL component and reads only a new direct `page-*.yml` snapshot.
+Compare your work with
+[`checkpoints/nodejs/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/04-mcp-safety).
 :::
 :::language python
-Use the same three canonical tool names in `available_tools` and only `browser_navigate` in the
-Playwright MCP server configuration. The helper rejects existing, nested, symlink, empty, and
-over-1-MB snapshots.
+Compare your work with
+[`checkpoints/python/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/04-mcp-safety).
 :::
 :::language go
-Configure `MCPStdioServerConfig` with `Tools: []string{"browser_navigate"}` and expose only `accessibility_rule_lookup`, `read_latest_accessibility_snapshot`, and `playwright-browser_navigate`; run `go run . URL`. The permission handler approves only an exact canonical URL. If navigation is rejected, use the exact target including path, query, and fragment. See [`checkpoints/go/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/04-mcp-safety).
+Compare your work with [`checkpoints/go/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/04-mcp-safety).
 :::
 :::language rust
-Set the Playwright `McpStdioServerConfig.tools` allowlist to `browser_navigate` and install a scoped `PermissionHandler`; run `cargo run -- URL`. The snapshot tool has no file-path parameter and accepts only current-run direct files. If a snapshot is unavailable, navigate first. See [`checkpoints/rust/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/04-mcp-safety).
+Compare your work with [`checkpoints/rust/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/04-mcp-safety).
 :::
 :::language java
-Set `McpStdioServerConfig.setTools(List.of("browser_navigate"))` and use `setOnPermissionRequest` to approve only the complete requested URL; run `mvn exec:java -Dexec.args=URL`. The reader rejects preexisting, nested, symlink, empty, and oversized snapshots. See [`checkpoints/java/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/04-mcp-safety).
+Compare your work with [`checkpoints/java/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/04-mcp-safety).
 :::
 
 Continue to [Step 5: Combine local and MCP tools](05-combine-tools.md).

@@ -24,9 +24,9 @@ MCP configuration, or permission policy, which is why this topic comes after the
 Model selection configures `CopilotSession`. It does not replace the client or either tool boundary.
 :::
 
+:::language dotnet
 ## Add a model picker
 
-:::language dotnet
 Create `workshop-app/Helpers/ModelSelector.cs`:
 
 ```csharp
@@ -84,6 +84,37 @@ await using var session = await client.CreateSessionAsync(new SessionConfig
 :::
 Do not remove the rest of the Step 6 session configuration.
 
+:::language nodejs
+## Add a model picker
+
+Use `await client.listModels()`, let the user select an available id, and pass it as `model` to
+`createSession` without changing the existing tool or permission configuration.
+:::
+:::language python
+## Add a model picker
+
+Use `await client.list_models()`, let the user select an available id, and pass it as `model` to
+`create_session` without changing the existing tool or permission configuration.
+:::
+:::language go
+## Add a model picker
+
+Use `client.ListModels(context.Background())`, choose an available id, and set
+`SessionConfig.Model` without changing the existing tool or permission configuration.
+:::
+:::language rust
+## Add a model picker
+
+Use `client.rpc().models().list().await?`, choose an available id, and set it on the session
+configuration without changing the existing tool or permission configuration.
+:::
+:::language java
+## Add a model picker
+
+Use the Java SDK model-list API, choose an available id, and call
+`SessionConfig.setModel(selectedId)` without changing the existing tool or permission configuration.
+:::
+
 ## Run it
 
 :::language dotnet
@@ -93,32 +124,27 @@ dotnet run --project workshop-app
 :::
 :::language nodejs
 ```bash
-cd workshop-app
-npm start -- "{{TARGET_APP_URL}}"
+npm --prefix workshop-app start -- "{{TARGET_APP_URL}}"
 ```
 :::
 :::language python
 ```bash
-cd workshop-app
-python main.py "{{TARGET_APP_URL}}"
+python workshop-app/main.py "{{TARGET_APP_URL}}"
 ```
 :::
 :::language go
 ```bash
-cd workshop-app
-go run . "{{TARGET_APP_URL}}"
+go -C workshop-app run . "{{TARGET_APP_URL}}"
 ```
 :::
 :::language rust
 ```bash
-cd workshop-app
-cargo run -- "{{TARGET_APP_URL}}"
+cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
 ```
 :::
 :::language java
 ```bash
-cd workshop-app
-mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"
+mvn -f workshop-app/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"
 ```
 :::
 Choose a model, enter the workshop target URL, and confirm the same scoped tools still run.
@@ -148,21 +174,5 @@ Model selection is configuration rather than a core agent concept. Leaving it un
 you to a useful Copilot response sooner and keeps the first lesson focused on clients and sessions.
 
 </details>
-
-:::language nodejs
-Use `await client.listModels()` and pass the selected id as `model` to `createSession`.
-:::
-:::language python
-Use `await client.list_models()` and pass the selected id as `model` to `create_session`.
-:::
-:::language go
-Use `client.ListModels(context.Background())`, choose an id, and set `SessionConfig.Model`; run `go run .` after keeping the same scoped tools and permissions. The output remains a normal session response. If the chosen model is unavailable, list models again rather than hard-coding an unsupported id. See [`checkpoints/go/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/01-first-session).
-:::
-:::language rust
-Use `client.rpc().models().list().await?` and set the selected model on the session configuration; run `cargo run`. Model selection changes model choice, not the tool or permission boundary. If the model is absent, use the default and inspect the available list. See [`checkpoints/rust/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/01-first-session).
-:::
-:::language java
-Use the Java SDK model-list API and `SessionConfig.setModel(selectedId)` before `createSession`; run `mvn exec:java`. A model identifier affects only inference selection. If it is rejected, list supported models and keep Maven and the Copilot CLI installation unchanged. See [`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session).
-:::
 
 Return to [Step 7: Run and explain the application](07-run-explain.md).

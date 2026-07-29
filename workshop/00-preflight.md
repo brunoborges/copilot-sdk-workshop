@@ -130,22 +130,30 @@ Open the controlled target page once to make sure you can reach it:
 :::
 
 :::language nodejs
-Use Node.js 22.12+ and copy `start/nodejs` to `workshop-app`. Run `npm install` then
-`npm run build`. The official [Node.js SDK installation guide](https://github.com/github/copilot-sdk/tree/main/nodejs)
+Use Node.js 22.12+ and copy `start/nodejs` to `workshop-app`. Run
+`npm --prefix workshop-app install` then `npm --prefix workshop-app run build`. The official
+[Node.js SDK installation guide](https://github.com/github/copilot-sdk/tree/main/nodejs)
 uses `npm install @github/copilot-sdk`.
 :::
 :::language python
 Use Python 3.11+ and copy `start/python` to `workshop-app`. Create a virtual environment, then run
-`python -m pip install -r requirements.txt`. See the official [Python SDK installation guide](https://github.com/github/copilot-sdk/tree/main/python).
+`python -m pip install -r workshop-app/requirements.txt`. See the official
+[Python SDK installation guide](https://github.com/github/copilot-sdk/tree/main/python).
 :::
 :::language go
-Install Go 1.24+ and the [Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli), copy `start/go`, then run `go build ./...`. A successful build prints no errors; if `copilot` is unavailable, install it on `PATH`. Compare with [`checkpoints/go/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/01-first-session).
+Install Go 1.24+ and the [Copilot CLI](https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli), copy `start/go`, then run `go -C workshop-app build ./...`. A successful build prints no errors; if `copilot` is unavailable, install it on `PATH`. Compare with [`checkpoints/go/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/01-first-session).
 :::
 :::language rust
-Install Rust 1.94+ and the Copilot CLI, copy `start/rust`, then run `cargo check --locked`. `Finished` confirms setup; install or authenticate `copilot` if runtime startup later fails. Compare with [`checkpoints/rust/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/01-first-session).
+Install Rust 1.94+ and the Copilot CLI, copy `start/rust`, then run
+`cargo check --manifest-path workshop-app/Cargo.toml --locked`. `Finished` confirms setup; install
+or authenticate `copilot` if runtime startup later fails. Compare with
+[`checkpoints/rust/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/01-first-session).
 :::
 :::language java
-Install Java 17+, Maven, and the Copilot CLI, copy `start/java`, then run `mvn compile`. `BUILD SUCCESS` confirms setup; do not substitute JBang or Gradle. Compare with [`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session).
+Install Java 17+, Maven, and the Copilot CLI, copy `start/java`, then run
+`mvn -f workshop-app/pom.xml compile`. `BUILD SUCCESS` confirms setup; do not substitute JBang or
+Gradle. Compare with
+[`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session).
 :::
 
 Continue to [Step 1: Create your first Copilot session](01-first-session.md).

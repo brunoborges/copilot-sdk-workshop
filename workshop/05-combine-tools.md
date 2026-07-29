@@ -81,6 +81,30 @@ await ResponseStreamer.SendAndPrintAsync(
 The prompt assigns evidence and guidance to their correct sources. It leaves the order of the
 catalog lookups to the agent.
 
+:::language nodejs
+In `workshop-app/src/report.ts`, keep the scoped tools from Step 4 and replace the final prompt with
+an evidence-backed request that navigates, reads the snapshot, and calls
+`accessibility_rule_lookup` for each issue.
+:::
+:::language python
+In `workshop-app/report.py`, keep the scoped tools from Step 4 and replace the final prompt with an
+evidence-backed request that navigates, reads the snapshot, and calls
+`accessibility_rule_lookup` for each issue.
+:::
+:::language go
+In `workshop-app/main.go`, keep the three `AvailableTools` and replace the prompt with the
+evidence-backed two-tool goal from the Step 5 checkpoint.
+:::
+:::language rust
+In `workshop-app/src/main.rs`, keep `config.available_tools` scoped to the same three names and
+replace the prompt with the evidence-backed two-tool goal.
+:::
+:::language java
+In `workshop-app/src/main/java/workshop/AccessibilityReport.java`, keep
+`setAvailableTools` scoped to the same three names and replace the prompt with the evidence-backed
+two-tool goal.
+:::
+
 ## Run it
 
 :::language dotnet
@@ -96,32 +120,27 @@ Paste this URL when prompted:
 :::
 :::language nodejs
 ```bash
-cd workshop-app
-npm start -- "{{TARGET_APP_URL}}"
+npm --prefix workshop-app start -- "{{TARGET_APP_URL}}"
 ```
 :::
 :::language python
 ```bash
-cd workshop-app
-python main.py "{{TARGET_APP_URL}}"
+python workshop-app/main.py "{{TARGET_APP_URL}}"
 ```
 :::
 :::language go
 ```bash
-cd workshop-app
-go run . "{{TARGET_APP_URL}}"
+go -C workshop-app run . "{{TARGET_APP_URL}}"
 ```
 :::
 :::language rust
 ```bash
-cd workshop-app
-cargo run -- "{{TARGET_APP_URL}}"
+cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
 ```
 :::
 :::language java
 ```bash
-cd workshop-app
-mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"
+mvn -f workshop-app/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"
 ```
 :::
 
@@ -252,21 +271,21 @@ await ResponseStreamer.SendAndPrintAsync(
 :::
 
 :::language nodejs
-Run `npm start -- "{{TARGET_APP_URL}}"`; the checkpoint is
+Compare your work with
 [`checkpoints/nodejs/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/05-combine-tools).
 :::
 :::language python
-Run `python main.py "{{TARGET_APP_URL}}"`; the checkpoint is
+Compare your work with
 [`checkpoints/python/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/05-combine-tools).
 :::
 :::language go
-Run `go run . "{{TARGET_APP_URL}}"`. The session can choose the exact-navigation MCP tool, the no-argument snapshot reader, and the WCAG lookup in sequence. If the model attempts another browser tool, it is outside the allowlist. See [`checkpoints/go/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/05-combine-tools).
+Compare your work with [`checkpoints/go/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/05-combine-tools).
 :::
 :::language rust
-Run `cargo run -- "{{TARGET_APP_URL}}"`. Events and tools stay in separate lanes: Playwright supplies evidence and the typed catalog supplies guidance. If no evidence is available, navigate before reading. See [`checkpoints/rust/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/05-combine-tools).
+Compare your work with [`checkpoints/rust/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/05-combine-tools).
 :::
 :::language java
-Run `mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"`. `SessionConfig` contains the same three canonical tool names. If a permission is denied, verify the requested URL exactly matches the original canonical URL. See [`checkpoints/java/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/05-combine-tools).
+Compare your work with [`checkpoints/java/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/05-combine-tools).
 :::
 
 Continue to [Step 6: Produce a structured report](06-structured-report.md).

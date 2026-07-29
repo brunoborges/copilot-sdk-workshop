@@ -91,6 +91,30 @@ await ResponseStreamer.SendAndPrintAsync(
     "Explain accessible names in three short bullet points.");
 ```
 :::
+:::language nodejs
+Use `session.on(callback)` in `workshop-app/src/workshop.ts`, inspect each event's `type`, print
+assistant deltas, keep a final-message fallback, reject session errors, and resolve on idle. Call
+that `streamResponse` helper from `src/index.ts`.
+:::
+:::language python
+In `workshop-app/main.py`, handle `AssistantMessageDeltaData`, `AssistantMessageData`,
+`SessionErrorData`, and `SessionIdleData` with an `asyncio.Event`, then wait for completion after
+`session.send`.
+:::
+:::language go
+In `workshop-app/main.go`, subscribe with `session.On`, print `AssistantMessageDeltaData`, keep an
+`AssistantMessageData` fallback, and use `SendAndWait` to propagate completion errors.
+:::
+:::language rust
+In `workshop-app/src/main.rs`, call `session.subscribe()` and use `tokio::select!` to print
+assistant deltas while waiting for both send completion and the session idle event.
+:::
+:::language java
+In `workshop-app/src/main/java/workshop/AccessibilityReport.java`, set streaming on
+`SessionConfig`, call `sendAndWait`, and print the completed response returned by the Java
+checkpoint.
+:::
+
 ## Run it
 
 :::language dotnet
@@ -100,36 +124,32 @@ dotnet run --project workshop-app
 :::
 :::language nodejs
 ```bash
-cd workshop-app
-npm start
+npm --prefix workshop-app start
 ```
 :::
 :::language python
 ```bash
-cd workshop-app
-python main.py
+python workshop-app/main.py
 ```
 :::
 :::language go
 ```bash
-cd workshop-app
-go run .
+go -C workshop-app run .
 ```
 :::
 :::language rust
 ```bash
-cd workshop-app
-cargo run
+cargo run --manifest-path workshop-app/Cargo.toml
 ```
 :::
 :::language java
 ```bash
-cd workshop-app
-mvn exec:java
+mvn -f workshop-app/pom.xml exec:java
 ```
 :::
-The bullets should start appearing before the process exits:
+The response should print before the process exits:
 
+:::language dotnet
 ```text
 Connected to the Copilot runtime: ...
 
@@ -138,6 +158,27 @@ Copilot:
 - Helps screen-reader users understand its purpose.
 - Connects visible labels to form controls.
 ```
+:::
+
+:::language dotnet
+The bullets should start appearing progressively.
+:::
+:::language nodejs
+The bullets should start appearing progressively through the event callback.
+:::
+:::language python
+The bullets should start appearing progressively through the event callback.
+:::
+:::language go
+The bullets should start appearing progressively through the event callback.
+:::
+:::language rust
+The bullets should start appearing progressively through the event subscription.
+:::
+:::language java
+The Java checkpoint uses a streaming-enabled session with `sendAndWait`, so it prints the completed
+response when the turn finishes.
+:::
 
 :::language dotnet
 <details>
@@ -152,7 +193,8 @@ Copilot:
 </details>
 :::
 
-> **You're ready to add tools when:** response text appears before the full answer is complete.
+> **You're ready to add tools when:** the configured response path prints an answer and completes
+> the turn without hiding session errors.
 
 ## Check your understanding
 
@@ -199,22 +241,21 @@ await ResponseStreamer.SendAndPrintAsync(
 :::
 
 :::language nodejs
-Use `session.on(callback)` and inspect each event's `type` to stream deltas, handle the final-message
-fallback, and finish on `session.idle`; the shared `streamResponse` helper is in `src/workshop.ts`.
+Compare your work with
+[`checkpoints/nodejs/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/02-streaming).
 :::
 :::language python
-Use `AssistantMessageDeltaData` and `SessionIdleData` event payloads with `asyncio.Event`; the
-matching helper is in `workshop.py`.
+Compare your work with
+[`checkpoints/python/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/02-streaming).
 :::
 :::language go
-Subscribe with `session.On(func(event copilot.SessionEvent) { ... })`, print `AssistantMessageDeltaData`, and complete on `SessionIdleData`; run `go run .`. Deltas arrive before the final answer; if output is doubled, print either deltas or the completed message. See [`checkpoints/go/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/02-streaming).
+Compare your work with [`checkpoints/go/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/02-streaming).
 :::
 :::language rust
-Use `session.subscribe()` and handle assistant delta and idle events in the async event loop; run `cargo run`. Progressive text proves streaming is active; ensure the subscription stays alive until idle. See [`checkpoints/rust/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/02-streaming).
+Compare your work with [`checkpoints/rust/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/02-streaming).
 :::
 :::language java
-Set streaming on the session configuration, call `sendAndWait(...)`, and print the completed
-response; run `mvn exec:java`. See
+Compare your work with
 [`checkpoints/java/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/02-streaming).
 :::
 
