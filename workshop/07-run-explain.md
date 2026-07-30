@@ -60,6 +60,31 @@ you built.
 dotnet run --project workshop-app
 ```
 :::
+:::language nodejs
+```bash
+npm --prefix workshop-app start -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language python
+```bash
+python workshop-app/main.py "{{TARGET_APP_URL}}"
+```
+:::
+:::language go
+```bash
+go -C workshop-app run . "{{TARGET_APP_URL}}"
+```
+:::
+:::language rust
+```bash
+cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language java
+```bash
+mvn -f workshop-app/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"
+```
+:::
 Use the workshop target:
 
 ```text
@@ -109,7 +134,7 @@ do not accept a finding that is absent from both the snapshot and source.
 1. The session owns one conversation's messages, model response, and tool results.
 2. The application owns the catalog data and deterministic lookup, so the function stays local.
 3. Playwright is a reusable browser capability with its own Node.js process and dependencies.
-4. The MCP tool allowlist exposes only navigation, and `WorkshopPermissionHandler` approves only
+4. The MCP tool allowlist exposes only navigation, and the permission handler approves only
    the exact target. The trusted local reader accepts no path and reads only a new generated
    snapshot; the catalog is also read-only. Those application-owned tools skip permission.
 5. Add the server configuration, expose only needed tools, define its trust policy, and keep

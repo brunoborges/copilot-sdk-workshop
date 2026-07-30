@@ -15,7 +15,10 @@ public final class AccessibilityReport {
             var response = session.sendAndWait(new MessageOptions()
                     .setPrompt("Explain accessible names in three short bullet points."))
                     .get();
-            System.out.println(response);
+            if (response == null) {
+                throw new IllegalStateException("Copilot completed without an assistant message.");
+            }
+            System.out.println(response.getData().content());
         }
     }
 }

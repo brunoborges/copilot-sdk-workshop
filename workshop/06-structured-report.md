@@ -26,11 +26,11 @@ The agent now turns `browser evidence + catalog result` into a bounded, repeatab
 
 ## Give the report a contract
 
+:::language dotnet
 ### 1. Add the report contract
 
 Create `workshop-app/Helpers/Prompts.cs`:
 
-:::language dotnet
 ```csharp
 namespace HelloCopilotSDK.Helpers;
 
@@ -62,28 +62,90 @@ public static class Prompts
 }
 ```
 :::
+:::language dotnet
 ### 2. Use the contract
 
 Replace the final send call in `Program.cs`:
 
-:::language dotnet
 ```csharp
 Console.WriteLine($"\nAnalyzing: {targetUri.AbsoluteUri}\n");
 await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(targetUri));
 ```
 :::
+:::language nodejs
+In `workshop-app/src/workshop.ts`, add or update `reportPrompt(target)` with the required finding
+shape and review limits, then call it from `src/report.ts`. Replace `workshop-app/src/index.ts` so
+the package start command launches that report entrypoint:
+
+```typescript
+import "./report.js";
+```
+:::
+:::language python
+In `workshop-app/workshop.py`, add or update `report_prompt(target)` with the required finding shape
+and review limits, then call it from `report.py`. Replace `workshop-app/main.py` so the documented
+command launches that report entrypoint:
+
+```python
+from report import main
+
+import asyncio
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+:::
+:::language go
+In `workshop-app/main.go`, add `reportPrompt(target)` with the required finding shape and review
+limits, then pass it to the session.
+:::
+:::language rust
+In `workshop-app/src/main.rs`, add `report_prompt(&target)` with the required finding shape and
+review limits, then pass it to the session.
+:::
+:::language java
+In `workshop-app/src/main/java/workshop/AccessibilityReport.java`, add `reportPrompt(target)` with
+the required finding shape and review limits, then pass it to the session.
+:::
+
 ## Run it
 
 :::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-:::
+
 When the app asks for a URL, paste:
 
 ```text
 {{TARGET_APP_URL}}
 ```
+:::
+:::language nodejs
+```bash
+npm --prefix workshop-app start -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language python
+```bash
+python workshop-app/main.py "{{TARGET_APP_URL}}"
+```
+:::
+:::language go
+```bash
+go -C workshop-app run . "{{TARGET_APP_URL}}"
+```
+:::
+:::language rust
+```bash
+cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language java
+```bash
+mvn -f workshop-app/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"
+```
+:::
 
 The report should follow this shape:
 
@@ -201,22 +263,22 @@ await ResponseStreamer.SendAndPrintAsync(session, Prompts.CreateReportPrompt(tar
 </details>
 :::
 
-Continue to [Step 7: Run and explain the application](07-run-explain.md).
-
 :::language nodejs
-Use `reportPrompt(target)` from `src/workshop.ts`; it requires three to five evidence-backed
-findings and the same review limits as the .NET version.
+Compare your work with
+[`checkpoints/nodejs/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/06-structured-report).
 :::
 :::language python
-Run `python main.py "{{TARGET_APP_URL}}"`. It calls `report_prompt(target)` from `workshop.py`,
-which requires three to five evidence-backed findings and the same review limits as the .NET version.
+Compare your work with
+[`checkpoints/python/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/06-structured-report).
 :::
 :::language go
-Use `reportPrompt(target)` in `main.go` and run `go run . "{{TARGET_APP_URL}}"`. It requires three to five evidence-backed findings, catalog mapping, remediation, and the review-limit statement. If output claims compliance, preserve the explicit limits in the prompt. See [`checkpoints/go/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/06-structured-report).
+Compare your work with [`checkpoints/go/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/06-structured-report).
 :::
 :::language rust
-Use `report_prompt(&target)` in `src/main.rs` and run `cargo run -- "{{TARGET_APP_URL}}"`. The expected report contains evidence, criterion, remediation, and no unsupported statistics. If a finding lacks snapshot evidence, exclude it. See [`checkpoints/rust/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/06-structured-report).
+Compare your work with [`checkpoints/rust/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/06-structured-report).
 :::
 :::language java
-Use `reportPrompt(target)` in `AccessibilityReport.java` and run `mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"`. The result has three to five bounded findings plus Review limits. If Maven cannot execute the main class, use the checkpoint POM's configured exec plugin. See [`checkpoints/java/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/06-structured-report).
+Compare your work with [`checkpoints/java/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/06-structured-report).
 :::
+
+Continue to [Step 7: Run and explain the application](07-run-explain.md).

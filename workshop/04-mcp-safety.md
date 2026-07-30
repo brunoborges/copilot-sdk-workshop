@@ -36,11 +36,11 @@ The WCAG lookup and narrow snapshot reader stay in process.
 
 ## Put Playwright behind guardrails
 
+:::language dotnet
 ### 1. Accept one controlled target
 
 At the top of `Program.cs`, after the `using` statements and before the banner, insert:
 
-:::language dotnet
 ```csharp
 if (args.Length is not 1 ||
     !Uri.TryCreate(args[0], UriKind.Absolute, out var targetUri) ||
@@ -51,11 +51,11 @@ if (args.Length is not 1 ||
 }
 ```
 :::
+:::language dotnet
 ### 2. Add Playwright MCP and scoped permissions
 
 Replace the session configuration with:
 
-:::language dotnet
 ```csharp
 var workingDirectory = Directory.GetCurrentDirectory();
 
@@ -90,10 +90,10 @@ await using var session = await client.CreateSessionAsync(new SessionConfig
 The browser argument uses Microsoft Edge, the workshop default. If you prepared Google Chrome
 instead, use `--browser=chrome`.
 
-`AvailableTools` keeps unrelated runtime tools out of the session. The MCP server's `Tools` list
-exposes only navigation. In Playwright MCP 0.0.78, navigation writes its automatic accessibility
-tree to `.playwright-mcp/`. The prebuilt `PlaywrightSnapshotReader` accepts no arguments and reads
-only the newest Playwright snapshot created after the session started.
+The session tool allowlist keeps unrelated runtime tools out. The MCP server's tool list exposes
+only navigation. In Playwright MCP 0.0.78, navigation writes its automatic accessibility tree to
+`.playwright-mcp/`. The prebuilt application snapshot reader accepts no arguments and reads only
+the newest Playwright snapshot created after the session started.
 
 `browser_snapshot` stays off both allowlists because its optional `filename` argument can write a
 file. The runtime can automatically allow MCP tools annotated as read-only without calling your
@@ -114,8 +114,8 @@ comparison. Path, query, and fragment must match case-sensitively.
 <details>
 <summary>Inspect the prebuilt permission handler</summary>
 
-`workshop-app/Helpers/WorkshopPermissionHandler.cs` returns `ApproveOnce` only for exact-target
-navigation. Every other external request is rejected.
+The prebuilt permission handler returns a one-time approval only for exact-target navigation. Every
+other external request is rejected.
 
 :::language dotnet
 ```csharp
@@ -139,30 +139,31 @@ public static Func<PermissionRequest, PermissionInvocation, Task<PermissionDecis
 }
 ```
 :::
-The SDK currently prefixes MCP permission tool names with the server name (for example,
+:::language dotnet
+The .NET SDK currently prefixes MCP permission tool names with the server name (for example,
 `playwright-browser_navigate`), while MCP configuration uses `browser_navigate`.
 `IsPlaywrightTool` accepts those two exact forms rather than using a broad wildcard.
+:::
 
 </details>
 
 <details>
 <summary>Inspect the prebuilt snapshot-reader boundary</summary>
 
-`workshop-app/Helpers/PlaywrightSnapshotReader.cs` captures the set of existing snapshots when the
-tool is created. Its tool callback accepts no model-supplied arguments, selects only a new direct
-child named `page-*.yml`, rejects symbolic links and oversized files, then returns the text.
+The prebuilt snapshot reader captures the set of existing snapshots when the tool is created. Its
+tool callback accepts no model-supplied arguments, selects only a new direct child named
+`page-*.yml`, rejects symbolic links and oversized files, then returns the text.
 
-The adapter uses `SkipPermission = true` because it is read-only, uses application-selected
-storage, and is implemented by the application. That is a narrower capability than a general file
-reader.
+The adapter skips permission because it is read-only, uses application-selected storage, and is
+implemented by the application. That is a narrower capability than a general file reader.
 
 </details>
 
+:::language dotnet
 ### 3. Request browser evidence
 
 Replace the final send call:
 
-:::language dotnet
 ```csharp
 Console.WriteLine($"\nInspecting: {targetUri.AbsoluteUri}\n");
 await ResponseStreamer.SendAndPrintAsync(
@@ -174,6 +175,32 @@ await ResponseStreamer.SendAndPrintAsync(
     """);
 ```
 :::
+:::language nodejs
+In `workshop-app/src/index.ts`, validate the target URL, configure
+`mcpServers.playwright.tools: ["browser_navigate"]`, and expose only the three canonical tool
+names through `availableTools`. Use the prebuilt exact-URL permission and snapshot helpers from
+`src/workshop.ts`.
+:::
+:::language python
+In `workshop-app/main.py`, validate the target URL, configure only `browser_navigate` for the
+Playwright server, and expose the three canonical names through `available_tools`. Use the prebuilt
+exact-URL permission and snapshot helpers from `workshop.py`.
+:::
+:::language go
+In `workshop-app/main.go`, configure `MCPStdioServerConfig` with only `browser_navigate`, register
+the snapshot reader, and use the exact-target permission handler. Keep the session allowlist to the
+three canonical tool names.
+:::
+:::language rust
+In `workshop-app/src/main.rs`, set `McpStdioServerConfig.tools` to only `browser_navigate`, register
+the no-argument snapshot tool, and install the exact-target `PermissionHandler`.
+:::
+:::language java
+In `workshop-app/src/main/java/workshop/AccessibilityReport.java`, call
+`McpStdioServerConfig.setTools(List.of("browser_navigate"))`, register the snapshot reader, and use
+`setOnPermissionRequest` with exact-target URL matching.
+:::
+
 ## Run it
 
 :::language dotnet
@@ -181,16 +208,45 @@ await ResponseStreamer.SendAndPrintAsync(
 dotnet run --project workshop-app -- "{{TARGET_APP_URL}}"
 ```
 :::
-The first run may take longer while `npx` starts Playwright. Look for:
+:::language nodejs
+```bash
+npm --prefix workshop-app start -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language python
+```bash
+python workshop-app/main.py "{{TARGET_APP_URL}}"
+```
+:::
+:::language go
+```bash
+go -C workshop-app run . "{{TARGET_APP_URL}}"
+```
+:::
+:::language rust
+```bash
+cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language java
+```bash
+mvn -f workshop-app/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"
+```
+:::
+The first run may take longer while `npx` starts Playwright.
+
+:::language dotnet
+Look for:
 
 ```text
 [tool:start] playwright-browser_navigate
-[tool:done] success=True
+[tool:done] success=...
 [tool:start] read_latest_accessibility_snapshot
 [tool:done] success=True
 
 Page title: Blazor Accessibility Target
 ```
+:::
 
 <details>
 <summary>Troubleshooting this run</summary>
@@ -209,7 +265,7 @@ Page title: Blazor Accessibility Target
 
 ## Check your understanding
 
-Why is Playwright an MCP server here instead of another local C# callback?
+Why is Playwright an MCP server here instead of another application-owned callback?
 
 <details>
 <summary>Check your answer</summary>
@@ -288,24 +344,22 @@ await ResponseStreamer.SendAndPrintAsync(
 </details>
 :::
 
-Continue to [Step 5: Combine local and MCP tools](05-combine-tools.md).
-
 :::language nodejs
-Use the exact `mcpServers.playwright.tools: ["browser_navigate"]` allowlist and
-`availableTools: ["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"]`.
-The shared helper compares every URL component and reads only a new direct `page-*.yml` snapshot.
+Compare your work with
+[`checkpoints/nodejs/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/04-mcp-safety).
 :::
 :::language python
-Use the same three canonical tool names in `available_tools` and only `browser_navigate` in the
-Playwright MCP server configuration. The helper rejects existing, nested, symlink, empty, and
-over-1-MB snapshots.
+Compare your work with
+[`checkpoints/python/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/04-mcp-safety).
 :::
 :::language go
-Configure `MCPStdioServerConfig` with `Tools: []string{"browser_navigate"}` and expose only `accessibility_rule_lookup`, `read_latest_accessibility_snapshot`, and `playwright-browser_navigate`; run `go run . URL`. The permission handler approves only an exact canonical URL. If navigation is rejected, use the exact target including path, query, and fragment. See [`checkpoints/go/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/04-mcp-safety).
+Compare your work with [`checkpoints/go/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/04-mcp-safety).
 :::
 :::language rust
-Set the Playwright `McpStdioServerConfig.tools` allowlist to `browser_navigate` and install a scoped `PermissionHandler`; run `cargo run -- URL`. The snapshot tool has no file-path parameter and accepts only current-run direct files. If a snapshot is unavailable, navigate first. See [`checkpoints/rust/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/04-mcp-safety).
+Compare your work with [`checkpoints/rust/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/04-mcp-safety).
 :::
 :::language java
-Set `McpStdioServerConfig.setTools(List.of("browser_navigate"))` and use `setOnPermissionRequest` to approve only the complete requested URL; run `mvn exec:java -Dexec.args=URL`. The reader rejects preexisting, nested, symlink, empty, and oversized snapshots. See [`checkpoints/java/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/04-mcp-safety).
+Compare your work with [`checkpoints/java/04-mcp-safety`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/04-mcp-safety).
 :::
+
+Continue to [Step 5: Combine local and MCP tools](05-combine-tools.md).

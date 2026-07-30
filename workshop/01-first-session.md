@@ -28,9 +28,9 @@ At this point, the console app is simply `CopilotClient -> CopilotSession -> mod
 
 ## Fire up your first Copilot session
 
+:::language dotnet
 Open `workshop-app/Program.cs` and **replace the entire file**:
 
-:::language dotnet
 ```csharp
 using GitHub.Copilot;
 
@@ -54,8 +54,29 @@ if (response is null)
 Console.WriteLine($"\nCopilot: {response.Data.Content}");
 ```
 :::
-`PingAsync` checks the runtime connection. `SendAndWaitAsync` sends the prompt and returns after the
-session becomes idle, so it works well when you only need the completed answer.
+The ping verifies the runtime connection. The completed-response send waits until the session
+becomes idle, so it works well when you only need the finished answer.
+
+:::language nodejs
+Replace `workshop-app/src/index.ts` with a `CopilotClient`, `await client.start()`, a session from
+`createSession`, and `await session.sendAndWait({ prompt })`.
+:::
+:::language python
+Replace `workshop-app/main.py` with an `async with CopilotClient()` flow, create a session with
+`create_session`, send the prompt, and wait for the assistant and idle events.
+:::
+:::language go
+In `workshop-app/main.go`, create `copilot.NewClient`, call `Start`, create a session, and call
+`SendAndWait` for the first prompt.
+:::
+:::language rust
+In `workshop-app/src/main.rs`, use `Client::start(ClientOptions::default()).await?`, create a
+session, and call `send_and_wait`.
+:::
+:::language java
+In `workshop-app/src/main/java/workshop/AccessibilityReport.java`, create `new CopilotClient()`,
+start it, create a session, and call `sendAndWait`.
+:::
 
 ## Run it
 
@@ -64,6 +85,32 @@ session becomes idle, so it works well when you only need the completed answer.
 dotnet run --project workshop-app
 ```
 :::
+:::language nodejs
+```bash
+npm --prefix workshop-app start
+```
+:::
+:::language python
+```bash
+python workshop-app/main.py
+```
+:::
+:::language go
+```bash
+go -C workshop-app run .
+```
+:::
+:::language rust
+```bash
+cargo run --manifest-path workshop-app/Cargo.toml
+```
+:::
+:::language java
+```bash
+mvn -f workshop-app/pom.xml exec:java
+```
+:::
+:::language dotnet
 Your exact response will vary, but the output should have this shape:
 
 ```text
@@ -73,6 +120,7 @@ Connected to the Copilot runtime: ...
 
 Copilot: An accessible name lets assistive technology identify the input's purpose.
 ```
+:::
 
 <details>
 <summary>Troubleshooting this run</summary>
@@ -135,24 +183,22 @@ Console.WriteLine($"\nCopilot: {response.Data.Content}");
 </details>
 :::
 
-Continue to [Step 2: Stream a response](02-streaming.md).
-
 :::language nodejs
-Replace `src/index.ts` with a `CopilotClient`, `await client.start()`, and
-`await session.sendAndWait({ prompt })`; run it with `npm start`. See
+Compare your work with
 [`checkpoints/nodejs/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/01-first-session).
 :::
 :::language python
-Replace `main.py` with an `async with CopilotClient()` session and `await session.send(prompt)`;
-run it with `python main.py`. See
+Compare your work with
 [`checkpoints/python/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/01-first-session).
 :::
 :::language go
-Create `copilot.NewClient`, call `Start(context.Background())`, create a session, and call `Send`; run `go run .`. It prints the response after the session becomes idle. If startup cannot find the runtime, install the Copilot CLI or set `COPILOT_CLI_PATH`. See [`checkpoints/go/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/01-first-session).
+Compare your work with [`checkpoints/go/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/01-first-session).
 :::
 :::language rust
-Use `Client::start(ClientOptions::default()).await?`, `create_session`, and `session.send(...)`; run `cargo run`. The `Client` owns the runtime and `Session` owns one conversation. If it fails before a response, authenticate the Copilot CLI. See [`checkpoints/rust/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/01-first-session).
+Compare your work with [`checkpoints/rust/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/01-first-session).
 :::
 :::language java
-Use `new CopilotClient()`, `client.start().get()`, `createSession`, and `session.sendAndWait(...)`; run `mvn exec:java`. The expected output is one assistant answer. If Maven starts but the runtime fails, install and authenticate the Copilot CLI. See [`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session).
+Compare your work with [`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session).
 :::
+
+Continue to [Step 2: Stream a response](02-streaming.md).

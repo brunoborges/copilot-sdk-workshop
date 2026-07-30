@@ -13,10 +13,10 @@ remediation guidance from the local WCAG catalog.
 session exposes two different tools through one interface:
 
 - Playwright discovers facts about the live page.
-- The C# catalog explains a matching criterion and remediation.
+- The application-owned catalog explains a matching criterion and remediation.
 
-Both tools report through `ToolExecutionStartEvent` and `ToolExecutionCompleteEvent`. Your
-application can observe the work without knowing how either tool is implemented.
+Both tools report through tool-start and tool-completion events. Your application can observe the
+work without knowing how either tool is implemented.
 
 ## Keep evidence and guidance in their lanes
 
@@ -28,12 +28,12 @@ The flow is now `URL -> Playwright evidence -> WCAG catalog lookup -> grounded r
 
 ## Put both tools to work
 
+:::language dotnet
 ### 1. Read and validate a URL
 
 Remove the command-line argument validation from Step 4. After the banner and before creating the
 client, insert:
 
-:::language dotnet
 ```csharp
 Console.Write("Enter URL to analyze: ");
 var urlInput = Console.ReadLine()?.Trim();
@@ -59,11 +59,11 @@ if (!Uri.TryCreate(urlInput, UriKind.Absolute, out var targetUri) ||
 :::
 The Step 4 handler receives this validated `targetUri`, so the URL boundary still applies.
 
+:::language dotnet
 ### 2. Give the agent a three-tool goal
 
 Replace the final prompt:
 
-:::language dotnet
 ```csharp
 Console.WriteLine($"\nAnalyzing: {targetUri.AbsoluteUri}\n");
 await ResponseStreamer.SendAndPrintAsync(
@@ -81,18 +81,68 @@ await ResponseStreamer.SendAndPrintAsync(
 The prompt assigns evidence and guidance to their correct sources. It leaves the order of the
 catalog lookups to the agent.
 
+:::language nodejs
+In `workshop-app/src/index.ts`, keep the scoped tools from Step 4 and replace the final prompt with
+an evidence-backed request that navigates, reads the snapshot, and calls
+`accessibility_rule_lookup` for each issue.
+:::
+:::language python
+In `workshop-app/main.py`, keep the scoped tools from Step 4 and replace the final prompt with an
+evidence-backed request that navigates, reads the snapshot, and calls
+`accessibility_rule_lookup` for each issue.
+:::
+:::language go
+In `workshop-app/main.go`, keep the three `AvailableTools` and replace the prompt with the
+evidence-backed two-tool goal from the Step 5 checkpoint.
+:::
+:::language rust
+In `workshop-app/src/main.rs`, keep `config.available_tools` scoped to the same three names and
+replace the prompt with the evidence-backed two-tool goal.
+:::
+:::language java
+In `workshop-app/src/main/java/workshop/AccessibilityReport.java`, keep
+`setAvailableTools` scoped to the same three names and replace the prompt with the evidence-backed
+two-tool goal.
+:::
+
 ## Run it
 
 :::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-:::
+
 Paste this URL when prompted:
 
 ```text
 {{TARGET_APP_URL}}
 ```
+:::
+:::language nodejs
+```bash
+npm --prefix workshop-app start -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language python
+```bash
+python workshop-app/main.py "{{TARGET_APP_URL}}"
+```
+:::
+:::language go
+```bash
+go -C workshop-app run . "{{TARGET_APP_URL}}"
+```
+:::
+:::language rust
+```bash
+cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
+```
+:::
+:::language java
+```bash
+mvn -f workshop-app/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"
+```
+:::
 
 You should see activity from both kinds of tool:
 
@@ -220,22 +270,22 @@ await ResponseStreamer.SendAndPrintAsync(
 </details>
 :::
 
-Continue to [Step 6: Produce a structured report](06-structured-report.md).
-
 :::language nodejs
-Run `npm start -- "{{TARGET_APP_URL}}"`; the checkpoint is
+Compare your work with
 [`checkpoints/nodejs/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/05-combine-tools).
 :::
 :::language python
-Run `python main.py "{{TARGET_APP_URL}}"`; the checkpoint is
+Compare your work with
 [`checkpoints/python/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/05-combine-tools).
 :::
 :::language go
-Run `go run . "{{TARGET_APP_URL}}"`. The session can choose the exact-navigation MCP tool, the no-argument snapshot reader, and the WCAG lookup in sequence. If the model attempts another browser tool, it is outside the allowlist. See [`checkpoints/go/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/05-combine-tools).
+Compare your work with [`checkpoints/go/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/05-combine-tools).
 :::
 :::language rust
-Run `cargo run -- "{{TARGET_APP_URL}}"`. Events and tools stay in separate lanes: Playwright supplies evidence and the typed catalog supplies guidance. If no evidence is available, navigate before reading. See [`checkpoints/rust/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/05-combine-tools).
+Compare your work with [`checkpoints/rust/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/05-combine-tools).
 :::
 :::language java
-Run `mvn exec:java -Dexec.args="{{TARGET_APP_URL}}"`. `SessionConfig` contains the same three canonical tool names. If a permission is denied, verify the requested URL exactly matches the original canonical URL. See [`checkpoints/java/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/05-combine-tools).
+Compare your work with [`checkpoints/java/05-combine-tools`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/05-combine-tools).
 :::
+
+Continue to [Step 6: Produce a structured report](06-structured-report.md).

@@ -4,18 +4,20 @@
 
 ## What you'll see
 
-Response text will arrive while the session is still working, and the application will know when
-the turn has finished.
+You'll configure a streaming-enabled session and make completion visible. The .NET, Node.js,
+Python, Go, and Rust checkpoints print response text while the session is still working. The Java
+checkpoint uses the same streaming configuration but waits for the completed response.
 
 ## How streaming changes the experience
 
-**Streaming** does not change the answer. It changes when your application receives it. Instead of
-waiting for one completed message, the session emits events throughout the turn:
+**Streaming** does not change the answer. It changes when an application that subscribes to the
+event stream receives it. Instead of waiting for one completed message, the session emits events
+throughout the turn:
 
-- `AssistantMessageDeltaEvent` contains each new piece of response text.
-- `AssistantMessageEvent` contains the completed message.
-- `SessionIdleEvent` means the turn and any tool work have finished.
-- `SessionErrorEvent` reports a failed turn.
+- Assistant message delta events contain each new piece of response text.
+- The completed assistant message event contains the full message.
+- A session idle event means the turn and any tool work have finished.
+- A session error event reports a failed turn.
 
 ## Why progressive output feels better
 
@@ -26,11 +28,11 @@ The session flow is now `response deltas -> final message -> idle`.
 
 ## Let the response roll in
 
+:::language dotnet
 ### 1. Add the streaming helper
 
 Create `workshop-app/Helpers/ResponseStreamer.cs`:
 
-:::language dotnet
 ```csharp
 using GitHub.Copilot;
 
@@ -73,12 +75,12 @@ public static class ResponseStreamer
 The final-message case handles a runtime that completes without sending deltas. An error completes
 the task with an exception instead of looking like a successful turn.
 
+:::language dotnet
 ### 2. Use the helper
 
 In `Program.cs`, add `using HelloCopilotSDK.Helpers;`, then replace the session and response code
 with:
 
-:::language dotnet
 ```csharp
 await using var session = await client.CreateSessionAsync(new SessionConfig
 {
@@ -91,6 +93,30 @@ await ResponseStreamer.SendAndPrintAsync(
     "Explain accessible names in three short bullet points.");
 ```
 :::
+:::language nodejs
+Use `session.on(callback)` in `workshop-app/src/workshop.ts`, inspect each event's `type`, print
+assistant deltas, keep a final-message fallback, reject session errors, and resolve on idle. Call
+that `streamResponse` helper from `src/index.ts`.
+:::
+:::language python
+In `workshop-app/main.py`, handle `AssistantMessageDeltaData`, `AssistantMessageData`,
+`SessionErrorData`, and `SessionIdleData` with an `asyncio.Event`, then wait for completion after
+`session.send`.
+:::
+:::language go
+In `workshop-app/main.go`, subscribe with `session.On`, print `AssistantMessageDeltaData`, keep an
+`AssistantMessageData` fallback, and use `SendAndWait` to propagate completion errors.
+:::
+:::language rust
+In `workshop-app/src/main.rs`, call `session.subscribe()` and use `tokio::select!` to print
+assistant deltas while waiting for both send completion and the session idle event.
+:::
+:::language java
+In `workshop-app/src/main/java/workshop/AccessibilityReport.java`, set streaming on
+`SessionConfig`, call `sendAndWait`, and print the completed response returned by the Java
+checkpoint.
+:::
+
 ## Run it
 
 :::language dotnet
@@ -98,8 +124,34 @@ await ResponseStreamer.SendAndPrintAsync(
 dotnet run --project workshop-app
 ```
 :::
-The bullets should start appearing before the process exits:
+:::language nodejs
+```bash
+npm --prefix workshop-app start
+```
+:::
+:::language python
+```bash
+python workshop-app/main.py
+```
+:::
+:::language go
+```bash
+go -C workshop-app run .
+```
+:::
+:::language rust
+```bash
+cargo run --manifest-path workshop-app/Cargo.toml
+```
+:::
+:::language java
+```bash
+mvn -f workshop-app/pom.xml exec:java
+```
+:::
+The response should print before the process exits:
 
+:::language dotnet
 ```text
 Connected to the Copilot runtime: ...
 
@@ -108,6 +160,27 @@ Copilot:
 - Helps screen-reader users understand its purpose.
 - Connects visible labels to form controls.
 ```
+:::
+
+:::language dotnet
+The bullets should start appearing progressively.
+:::
+:::language nodejs
+The one-sentence response should start appearing progressively through the event callback.
+:::
+:::language python
+The bullets should start appearing progressively through the event callback.
+:::
+:::language go
+The bullets should start appearing progressively through the event callback.
+:::
+:::language rust
+The bullets should start appearing progressively through the event subscription.
+:::
+:::language java
+The Java checkpoint uses a streaming-enabled session with `sendAndWait`, so it prints the completed
+response when the turn finishes.
+:::
 
 :::language dotnet
 <details>
@@ -122,17 +195,18 @@ Copilot:
 </details>
 :::
 
-> **You're ready to add tools when:** response text appears before the full answer is complete.
+> **You're ready to add tools when:** the configured response path prints an answer and completes
+> the turn without hiding session errors.
 
 ## Check your understanding
 
-When would `SendAndWaitAsync` be a better choice than event streaming?
+When would a completed-response send be a better choice than event streaming?
 
 <details>
 <summary>Check your answer</summary>
 
-Use `SendAndWaitAsync` for background work or simple request/response code that does not need
-progressive output or intermediate events.
+Use a completed-response send for background work or simple request/response code that does not
+need progressive output or intermediate events.
 
 </details>
 
@@ -168,22 +242,23 @@ await ResponseStreamer.SendAndPrintAsync(
 </details>
 :::
 
-Continue to [Step 3: Add application-owned knowledge](03-local-tool.md).
-
 :::language nodejs
-Use `session.on("assistant.message_delta", ...)` and `session.on("session.idle", ...)` to stream
-output; the shared `streamResponse` helper is in `src/workshop.ts`.
+Compare your work with
+[`checkpoints/nodejs/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/02-streaming).
 :::
 :::language python
-Use `AssistantMessageDeltaData` and `SessionIdleData` event payloads with `asyncio.Event`; the
-matching helper is in `workshop.py`.
+Compare your work with
+[`checkpoints/python/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/02-streaming).
 :::
 :::language go
-Subscribe with `session.On(func(event copilot.SessionEvent) { ... })`, print `AssistantMessageDeltaData`, and complete on `SessionIdleData`; run `go run .`. Deltas arrive before the final answer; if output is doubled, print either deltas or the completed message. See [`checkpoints/go/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/02-streaming).
+Compare your work with [`checkpoints/go/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/02-streaming).
 :::
 :::language rust
-Use `session.subscribe()` and handle assistant delta and idle events in the async event loop; run `cargo run`. Progressive text proves streaming is active; ensure the subscription stays alive until idle. See [`checkpoints/rust/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/02-streaming).
+Compare your work with [`checkpoints/rust/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/02-streaming).
 :::
 :::language java
-Register `session.on(...)` handlers for assistant message events and wait for the idle completion; run `mvn exec:java`. Output should appear progressively. If it prints only once, confirm `setStreaming(true)` is in `SessionConfig`. See [`checkpoints/java/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/02-streaming).
+Compare your work with
+[`checkpoints/java/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/02-streaming).
 :::
+
+Continue to [Step 3: Add application-owned knowledge](03-local-tool.md).

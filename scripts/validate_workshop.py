@@ -65,6 +65,148 @@ ENTRYPOINTS = {
     "rust": "src/main.rs",
     "java": "src/main/java/workshop/AccessibilityReport.java",
 }
+LESSON_TRACK_MARKERS = {
+    "dotnet": (
+        "workshop-app/Program.cs",
+        "workshop-app/Helpers/",
+        "dotnet run",
+        "```csharp",
+        "checkpoints/dotnet/",
+        "samples/dotnet/",
+    ),
+    "nodejs": (
+        "workshop-app/src/index.ts",
+        "workshop-app/src/workshop.ts",
+        "npm --prefix workshop-app",
+        "```typescript",
+        "checkpoints/nodejs/",
+        "samples/nodejs/",
+    ),
+    "python": (
+        "workshop-app/main.py",
+        "workshop-app/workshop.py",
+        "python workshop-app/main.py",
+        "```python",
+        "checkpoints/python/",
+        "samples/python/",
+    ),
+    "go": (
+        "workshop-app/main.go",
+        "go -C workshop-app",
+        "```go",
+        "checkpoints/go/",
+        "samples/go/",
+    ),
+    "rust": (
+        "workshop-app/src/main.rs",
+        "cargo run --manifest-path workshop-app/Cargo.toml",
+        "```rust",
+        "checkpoints/rust/",
+        "samples/rust/",
+    ),
+    "java": (
+        "workshop-app/src/main/java/",
+        "mvn -f workshop-app/pom.xml",
+        "```java",
+        "checkpoints/java/",
+        "samples/java/",
+    ),
+}
+STEP_3_TRACK_MARKERS = {
+    "dotnet": ("AccessibilityRuleCatalog.cs", "CopilotTool.DefineTool", "dotnet run --project workshop-app"),
+    "nodejs": ("src/workshop.ts", 'defineTool("accessibility_rule_lookup"', "npm --prefix workshop-app start"),
+    "python": ("workshop.py", '@define_tool(', "python workshop-app/main.py"),
+    "go": ("main.go", "copilot.DefineTool(", "go -C workshop-app run ."),
+    "rust": ("src/main.rs", 'Tool::new("accessibility_rule_lookup")', "cargo run --manifest-path workshop-app/Cargo.toml"),
+    "java": ("AccessibilityReport.java", "ToolDefinition.from(", "mvn -f workshop-app/pom.xml exec:java"),
+}
+RUN_COMMAND_MARKERS = {
+    "dotnet": "dotnet run --project workshop-app",
+    "nodejs": "npm --prefix workshop-app start",
+    "python": "python workshop-app/main.py",
+    "go": "go -C workshop-app run .",
+    "rust": "cargo run --manifest-path workshop-app/Cargo.toml",
+    "java": "mvn -f workshop-app/pom.xml exec:java",
+}
+PROCEDURE_MARKERS = {
+    "01-first-session.md": {
+        "dotnet": "SendAndWaitAsync",
+        "nodejs": "sendAndWait",
+        "python": "create_session",
+        "go": "copilot.NewClient",
+        "rust": "Client::start",
+        "java": "new CopilotClient",
+    },
+    "02-streaming.md": {
+        "dotnet": "ResponseStreamer.SendAndPrintAsync",
+        "nodejs": "session.on(callback)",
+        "python": "AssistantMessageDeltaData",
+        "go": "session.On",
+        "rust": "session.subscribe()",
+        "java": "SessionConfig",
+    },
+    "03-local-tool.md": {
+        language: markers[1] for language, markers in STEP_3_TRACK_MARKERS.items()
+    },
+    "04-mcp-safety.md": {
+        "dotnet": "McpStdioServerConfig",
+        "nodejs": "workshop-app/src/index.ts",
+        "python": "workshop-app/main.py",
+        "go": "MCPStdioServerConfig",
+        "rust": "McpStdioServerConfig.tools",
+        "java": "McpStdioServerConfig.setTools",
+    },
+    "05-combine-tools.md": {
+        "dotnet": "For each issue, call accessibility_rule_lookup",
+        "nodejs": "src/index.ts",
+        "python": "main.py",
+        "go": "AvailableTools",
+        "rust": "config.available_tools",
+        "java": "setAvailableTools",
+    },
+    "06-structured-report.md": {
+        "dotnet": "Prompts.CreateReportPrompt",
+        "nodejs": 'import "./report.js"',
+        "python": "from report import main",
+        "go": "reportPrompt(target)",
+        "rust": "report_prompt(&target)",
+        "java": "reportPrompt(target)",
+    },
+    "08-model-selection.md": {
+        "dotnet": "ModelSelector.SelectAsync",
+        "nodejs": "client.listModels()",
+        "python": "client.list_models()",
+        "go": "client.ListModels",
+        "rust": "models().list()",
+        "java": "SessionConfig.setModel",
+    },
+}
+UNSCOPED_TRACK_MARKERS = (
+    "workshop-app/Program.cs",
+    "workshop-app/Helpers/",
+    "workshop-app/src/index.ts",
+    "workshop-app/src/workshop.ts",
+    "workshop-app/main.py",
+    "workshop-app/workshop.py",
+    "workshop-app/main.go",
+    "workshop-app/src/main.rs",
+    "workshop-app/src/main/java/",
+    "```csharp",
+    "```typescript",
+    "```python",
+    "```go",
+    "```rust",
+    "```java",
+    "PingAsync",
+    "SendAndWaitAsync",
+    "AssistantMessageDeltaEvent",
+    "AssistantMessageEvent",
+    "SessionIdleEvent",
+    "SessionErrorEvent",
+    "ToolExecutionStartEvent",
+    "ToolExecutionCompleteEvent",
+    "ListModelsAsync",
+)
 errors: list[str] = []
 
 
@@ -252,7 +394,7 @@ def validate_runtime_flow(language: str, stage: str, text: str, label: Path) -> 
                 f"{label} does not subscribe, print, and await completion or errors")
     elif language == "java":
         markers = (
-            ("sendAndWait", "System.out.println(response)", ".get()")
+            ("sendAndWait", "response == null", "response.getData().content()", ".get()")
             if not streaming or label != Path("samples/java/hello-copilot-sdk")
             else ("AssistantMessageDeltaEvent", "AssistantMessageEvent", "receivedDelta",
                   "System.out.print", "sendAndWait", ".get()")
@@ -460,6 +602,102 @@ def validate_language_directives(markdown_file: Path) -> None:
     require(blocks == set(LANGUAGES), f"{markdown_file.relative_to(ROOT)} must contain exactly one or more blocks for all six languages")
 
 
+def validate_shared_language_content(markdown_file: Path) -> None:
+    active_language: str | None = None
+    for line_number, line in enumerate(read(markdown_file).splitlines(), start=1):
+        opening = re.fullmatch(r":::language ([a-z0-9]+)", line)
+        if opening:
+            active_language = opening.group(1)
+        elif line == ":::":
+            active_language = None
+        elif active_language is None:
+            require(
+                not line.startswith("### "),
+                f"{markdown_file.relative_to(ROOT)}:{line_number} exposes a "
+                "language-specific procedure heading outside a language block",
+            )
+            for marker in UNSCOPED_TRACK_MARKERS:
+                require(
+                    marker.casefold() not in line.casefold(),
+                    f"{markdown_file.relative_to(ROOT)}:{line_number} exposes "
+                    f"language-specific content outside a language block: {marker}",
+                )
+
+
+def render_language_markdown(markdown_file: Path, selected_language: str) -> str:
+    rendered: list[str] = []
+    active_language: str | None = None
+    for line in read(markdown_file).splitlines():
+        opening = re.fullmatch(r":::language ([a-z0-9]+)", line)
+        if opening:
+            active_language = opening.group(1)
+        elif line == ":::":
+            active_language = None
+        elif active_language is None or active_language == selected_language:
+            rendered.append(line)
+    return "\n".join(rendered)
+
+
+def markdown_section(markdown: str, heading: str) -> str:
+    lines = markdown.splitlines()
+    try:
+        start = lines.index(heading)
+    except ValueError:
+        return ""
+    end = next(
+        (index for index in range(start + 1, len(lines)) if lines[index].startswith("## ")),
+        len(lines),
+    )
+    return "\n".join(lines[start:end])
+
+
+def validate_rendered_language_content(markdown_file: Path) -> None:
+    for selected_language in LANGUAGES:
+        rendered = render_language_markdown(markdown_file, selected_language)
+        rendered_folded = rendered.casefold()
+        for other_language, markers in LESSON_TRACK_MARKERS.items():
+            if other_language == selected_language:
+                continue
+            for marker in markers:
+                require(
+                    marker.casefold() not in rendered_folded,
+                    f"{markdown_file.relative_to(ROOT)} shows {other_language} content "
+                    f"for the {selected_language} track: {marker}",
+                )
+
+        if markdown_file.name == "03-local-tool.md":
+            for marker in (
+                *STEP_3_TRACK_MARKERS[selected_language],
+                f"checkpoints/{selected_language}/03-local-tool",
+                "## Run it",
+                "Troubleshooting this run",
+            ):
+                require(
+                    marker.casefold() in rendered_folded,
+                    f"{markdown_file.relative_to(ROOT)} is missing {selected_language} "
+                    f"Step 3 guidance: {marker}",
+                )
+
+        if markdown_file.name != "00-preflight.md":
+            run_section = markdown_section(rendered, "## Run it")
+            run_marker = RUN_COMMAND_MARKERS[selected_language]
+            require(
+                run_marker.casefold() in run_section.casefold(),
+                f"{markdown_file.relative_to(ROOT)} has no {selected_language} "
+                f"run command in its Run it section: {run_marker}",
+            )
+
+        if markdown_file.name in PROCEDURE_MARKERS:
+            procedure_marker = PROCEDURE_MARKERS[markdown_file.name][selected_language]
+            run_position = rendered.find("## Run it")
+            procedure_position = rendered.casefold().find(procedure_marker.casefold())
+            require(
+                0 <= procedure_position < run_position,
+                f"{markdown_file.relative_to(ROOT)} does not show the {selected_language} "
+                f"procedure before Run it: {procedure_marker}",
+            )
+
+
 def validate_language_registry() -> None:
     registry = read(DOCS / "language-registry.js")
     ids = re.findall(r"\bid: '([a-z0-9]+)'", registry)
@@ -660,7 +898,7 @@ def validate_documentation() -> None:
     require("python report.py" not in all_markdown,
             "Documentation must invoke Python checkpoint main.py rather than an unwired report.py")
     for lesson in ("01-first-session.md", "05-combine-tools.md", "06-structured-report.md"):
-        require("python main.py" in read(WORKSHOP / lesson),
+        require("python workshop-app/main.py" in read(WORKSHOP / lesson),
                 f"{lesson} must run the Python checkpoint through main.py")
 
 
@@ -708,6 +946,8 @@ for lesson in LESSONS:
     require(lesson_path.exists(), f"Missing lesson {lesson}")
     if lesson_path.exists():
         validate_language_directives(lesson_path)
+        validate_shared_language_content(lesson_path)
+        validate_rendered_language_content(lesson_path)
         for section in ("## Run it", "## Check your understanding"):
             if lesson.startswith("0") and lesson != "00-preflight.md":
                 require(section in read(lesson_path), f"{lesson} is missing required section: {section}")
