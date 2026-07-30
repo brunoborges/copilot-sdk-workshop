@@ -4,9 +4,9 @@
 
 ## What you'll see
 
-You'll configure a streaming-enabled session and make completion visible. The .NET, Node.js,
-Python, Go, and Rust checkpoints print response text while the session is still working. The Java
-checkpoint uses the same streaming configuration but waits for the completed response.
+You'll configure a streaming-enabled session and make completion visible. Most language tracks
+print response text while the session is still working. The Java track enables the same streaming
+session configuration and prints the completed assistant message returned by `sendAndWait`.
 
 ## How streaming changes the experience
 
@@ -26,9 +26,9 @@ show activity from local and MCP tools.
 
 The session flow is now `response deltas -> final message -> idle`.
 
-## Let the response roll in
-
 :::language dotnet
+## Stream the response in C#
+
 ### 1. Add the streaming helper
 
 Create `workshop-app/Helpers/ResponseStreamer.cs`:
@@ -71,15 +71,14 @@ public static class ResponseStreamer
     }
 }
 ```
-:::
+
 The final-message case handles a runtime that completes without sending deltas. An error completes
 the task with an exception instead of looking like a successful turn.
 
-:::language dotnet
 ### 2. Use the helper
 
-In `Program.cs`, add `using HelloCopilotSDK.Helpers;`, then replace the session and response code
-with:
+In `workshop-app/Program.cs`, add `using HelloCopilotSDK.Helpers;`, then replace the session and
+response code with:
 
 ```csharp
 await using var session = await client.CreateSessionAsync(new SessionConfig
@@ -92,66 +91,15 @@ await ResponseStreamer.SendAndPrintAsync(
     session,
     "Explain accessible names in three short bullet points.");
 ```
-:::
-:::language nodejs
-Use `session.on(callback)` in `workshop-app/src/workshop.ts`, inspect each event's `type`, print
-assistant deltas, keep a final-message fallback, reject session errors, and resolve on idle. Call
-that `streamResponse` helper from `src/index.ts`.
-:::
-:::language python
-In `workshop-app/main.py`, handle `AssistantMessageDeltaData`, `AssistantMessageData`,
-`SessionErrorData`, and `SessionIdleData` with an `asyncio.Event`, then wait for completion after
-`session.send`.
-:::
-:::language go
-In `workshop-app/main.go`, subscribe with `session.On`, print `AssistantMessageDeltaData`, keep an
-`AssistantMessageData` fallback, and use `SendAndWait` to propagate completion errors.
-:::
-:::language rust
-In `workshop-app/src/main.rs`, call `session.subscribe()` and use `tokio::select!` to print
-assistant deltas while waiting for both send completion and the session idle event.
-:::
-:::language java
-In `workshop-app/src/main/java/workshop/AccessibilityReport.java`, set streaming on
-`SessionConfig`, call `sendAndWait`, and print the completed response returned by the Java
-checkpoint.
-:::
 
 ## Run it
 
-:::language dotnet
 ```bash
 dotnet run --project workshop-app
 ```
-:::
-:::language nodejs
-```bash
-npm --prefix workshop-app start
-```
-:::
-:::language python
-```bash
-python workshop-app/main.py
-```
-:::
-:::language go
-```bash
-go -C workshop-app run .
-```
-:::
-:::language rust
-```bash
-cargo run --manifest-path workshop-app/Cargo.toml
-```
-:::
-:::language java
-```bash
-mvn -f workshop-app/pom.xml exec:java
-```
-:::
-The response should print before the process exits:
 
-:::language dotnet
+The bullets should start appearing progressively before the process exits:
+
 ```text
 Connected to the Copilot runtime: ...
 
@@ -160,29 +108,7 @@ Copilot:
 - Helps screen-reader users understand its purpose.
 - Connects visible labels to form controls.
 ```
-:::
 
-:::language dotnet
-The bullets should start appearing progressively.
-:::
-:::language nodejs
-The one-sentence response should start appearing progressively through the event callback.
-:::
-:::language python
-The bullets should start appearing progressively through the event callback.
-:::
-:::language go
-The bullets should start appearing progressively through the event callback.
-:::
-:::language rust
-The bullets should start appearing progressively through the event subscription.
-:::
-:::language java
-The Java checkpoint uses a streaming-enabled session with `sendAndWait`, so it prints the completed
-response when the turn finishes.
-:::
-
-:::language dotnet
 <details>
 <summary>Troubleshooting this run</summary>
 
@@ -193,29 +119,58 @@ response when the turn finishes.
 | Text is printed twice | Keep the `when !receivedDelta` guard on `AssistantMessageEvent`. |
 
 </details>
-:::
 
 > **You're ready to add tools when:** the configured response path prints an answer and completes
 > the turn without hiding session errors.
 
-## Check your understanding
-
-When would a completed-response send be a better choice than event streaming?
-
-<details>
-<summary>Check your answer</summary>
-
-Use a completed-response send for background work or simple request/response code that does not
-need progressive output or intermediate events.
-
-</details>
-
-:::language dotnet
 <details>
 <summary>Complete Step 2 checkpoint</summary>
 
 The completed Step 2 project is in
 [`checkpoints/dotnet/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/dotnet/02-streaming).
+
+`workshop-app/Helpers/ResponseStreamer.cs`:
+
+```csharp
+using GitHub.Copilot;
+
+namespace HelloCopilotSDK.Helpers;
+
+public static class ResponseStreamer
+{
+    public static async Task SendAndPrintAsync(CopilotSession session, string prompt)
+    {
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var receivedDelta = false;
+
+        using var subscription = session.On<SessionEvent>(sessionEvent =>
+        {
+            switch (sessionEvent)
+            {
+                case AssistantMessageDeltaEvent delta when !string.IsNullOrEmpty(delta.Data.DeltaContent):
+                    receivedDelta = true;
+                    Console.Write(delta.Data.DeltaContent);
+                    break;
+                case AssistantMessageEvent message when !receivedDelta:
+                    Console.Write(message.Data.Content);
+                    break;
+                case SessionIdleEvent:
+                    Console.WriteLine();
+                    completed.TrySetResult();
+                    break;
+                case SessionErrorEvent error:
+                    completed.TrySetException(new InvalidOperationException(error.Data.Message));
+                    break;
+            }
+        });
+
+        await session.SendAsync(new MessageOptions { Prompt = prompt });
+        await completed.Task;
+    }
+}
+```
+
+`workshop-app/Program.cs`:
 
 ```csharp
 using GitHub.Copilot;
@@ -239,26 +194,765 @@ await ResponseStreamer.SendAndPrintAsync(
     session,
     "Explain accessible names in three short bullet points.");
 ```
+
 </details>
 :::
 
 :::language nodejs
-Compare your work with
+## Stream the response in TypeScript
+
+### 1. Inspect the streaming helper
+
+Open `workshop-app/src/workshop.ts`. The starter already exports `streamResponse`, which subscribes
+with `session.on`, prints assistant deltas, keeps a final-message fallback, rejects session errors,
+and resolves on idle:
+
+```typescript
+export async function streamResponse(session: CopilotSession, prompt: string): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    let receivedDelta = false;
+    const unsubscribe = session.on((event) => {
+      if (event.type === "assistant.message_delta" && event.data.deltaContent) {
+        receivedDelta = true;
+        process.stdout.write(event.data.deltaContent);
+      } else if (event.type === "assistant.message" && !receivedDelta) {
+        process.stdout.write(event.data.content);
+      } else if (event.type === "tool.execution_start") {
+        console.log(`\n[tool:start] ${event.data.toolName}`);
+      } else if (event.type === "tool.execution_complete") {
+        console.log(`[tool:done] success=${event.data.success}`);
+      } else if (event.type === "session.error") {
+        reject(new Error(event.data.message));
+      } else if (event.type === "session.idle") {
+        console.log();
+        unsubscribe();
+        resolve();
+      }
+    });
+    void session.send({ prompt }).catch(reject);
+  });
+}
+```
+
+The tool start and completion branches stay quiet in this step and become useful once you register
+tools later.
+
+### 2. Wire the helper into the entrypoint
+
+Replace `workshop-app/src/index.ts` with:
+
+```typescript
+import { CopilotClient } from "@github/copilot-sdk";
+import { streamResponse } from "./workshop.js";
+
+const client = new CopilotClient();
+await client.start();
+try {
+  const session = await client.createSession({ streaming: true });
+  try {
+    await streamResponse(
+      session,
+      "Describe why streaming improves an interactive assistant in one sentence.",
+    );
+  } finally {
+    await session.disconnect();
+  }
+} finally {
+  await client.stop();
+}
+```
+
+## Run it
+
+```bash
+npm --prefix workshop-app start
+```
+
+The one-sentence response should start appearing progressively through the event callback:
+
+```text
+Streaming shows partial answers as soon as tokens arrive, so the assistant feels responsive while it works.
+```
+
+<details>
+<summary>Troubleshooting this run</summary>
+
+| Symptom | Fix |
+|---|---|
+| Text appears only at the end | Confirm `streaming: true` is passed to `createSession`. |
+| The process exits before text appears | Confirm `streamResponse` waits for `session.idle` before resolving. |
+| Text is printed twice | Keep the `!receivedDelta` guard on the `assistant.message` branch. |
+| Cannot find module `./workshop.js` | Import the helper as `./workshop.js` even though the source file is `workshop.ts`. |
+
+</details>
+
+> **You're ready to add tools when:** the configured response path prints an answer and completes
+> the turn without hiding session errors.
+
+<details>
+<summary>Complete Step 2 checkpoint</summary>
+
+The completed Step 2 project is in
 [`checkpoints/nodejs/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/02-streaming).
+
+`workshop-app/src/workshop.ts` (`streamResponse`):
+
+```typescript
+export async function streamResponse(session: CopilotSession, prompt: string): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    let receivedDelta = false;
+    const unsubscribe = session.on((event) => {
+      if (event.type === "assistant.message_delta" && event.data.deltaContent) {
+        receivedDelta = true;
+        process.stdout.write(event.data.deltaContent);
+      } else if (event.type === "assistant.message" && !receivedDelta) {
+        process.stdout.write(event.data.content);
+      } else if (event.type === "tool.execution_start") {
+        console.log(`\n[tool:start] ${event.data.toolName}`);
+      } else if (event.type === "tool.execution_complete") {
+        console.log(`[tool:done] success=${event.data.success}`);
+      } else if (event.type === "session.error") {
+        reject(new Error(event.data.message));
+      } else if (event.type === "session.idle") {
+        console.log();
+        unsubscribe();
+        resolve();
+      }
+    });
+    void session.send({ prompt }).catch(reject);
+  });
+}
+```
+
+`workshop-app/src/index.ts`:
+
+```typescript
+import { CopilotClient } from "@github/copilot-sdk";
+import { streamResponse } from "./workshop.js";
+
+const client = new CopilotClient();
+await client.start();
+try {
+  const session = await client.createSession({ streaming: true });
+  try {
+    await streamResponse(
+      session,
+      "Describe why streaming improves an interactive assistant in one sentence.",
+    );
+  } finally {
+    await session.disconnect();
+  }
+} finally {
+  await client.stop();
+}
+```
+
+</details>
 :::
+
 :::language python
-Compare your work with
+## Stream the response in Python
+
+### 1. Subscribe to session events
+
+Replace `workshop-app/main.py` with an async entrypoint that enables streaming, handles
+`AssistantMessageDeltaData`, keeps an `AssistantMessageData` fallback, surfaces
+`SessionErrorData`, and waits for `SessionIdleData`:
+
+```python
+import asyncio
+
+from copilot import CopilotClient
+from copilot.session_events import (
+    AssistantMessageData,
+    AssistantMessageDeltaData,
+    SessionErrorData,
+    SessionIdleData,
+)
+
+
+async def main() -> None:
+    async with CopilotClient() as client:
+        async with await client.create_session(streaming=True) as session:
+            done = asyncio.Event()
+            error: RuntimeError | None = None
+            received_delta = False
+
+            def on_event(event) -> None:
+                nonlocal error, received_delta
+                match event.data:
+                    case AssistantMessageDeltaData(delta_content=delta) if delta:
+                        received_delta = True
+                        print(delta, end="", flush=True)
+                    case AssistantMessageData(content=content) if content and not received_delta:
+                        print(content)
+                    case SessionErrorData(message=message):
+                        error = RuntimeError(message)
+                        done.set()
+                    case SessionIdleData():
+                        done.set()
+
+            session.on(on_event)
+            await session.send(
+                "Explain accessible names in three short bullet points."
+            )
+            await done.wait()
+            if error is not None:
+                raise error
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+The final-message case handles a runtime that completes without deltas. A session error sets
+`error` and completes the wait so the turn does not look successful.
+
+## Run it
+
+```bash
+python workshop-app/main.py
+```
+
+The bullets should start appearing progressively through the event callback:
+
+```text
+- Gives a control a programmatic identity.
+- Helps screen-reader users understand its purpose.
+- Connects visible labels to form controls.
+```
+
+<details>
+<summary>Troubleshooting this run</summary>
+
+| Symptom | Fix |
+|---|---|
+| Text appears only at the end | Confirm `streaming=True` is passed to `create_session`. |
+| The process exits before text appears | Confirm you `await done.wait()` after `session.send`. |
+| Text is printed twice | Keep the `not received_delta` guard on `AssistantMessageData`. |
+| Import errors for session events | Import the event types from `copilot.session_events`. |
+
+</details>
+
+> **You're ready to add tools when:** the configured response path prints an answer and completes
+> the turn without hiding session errors.
+
+<details>
+<summary>Complete Step 2 checkpoint</summary>
+
+The completed Step 2 project is in
 [`checkpoints/python/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/02-streaming).
+
+`workshop-app/main.py`:
+
+```python
+import asyncio
+
+from copilot import CopilotClient
+from copilot.session_events import AssistantMessageData, AssistantMessageDeltaData, SessionErrorData, SessionIdleData
+
+
+async def main() -> None:
+    async with CopilotClient() as client:
+        async with await client.create_session(streaming=True) as session:
+            done = asyncio.Event()
+            error: RuntimeError | None = None
+            received_delta = False
+
+            def on_event(event) -> None:
+                nonlocal error, received_delta
+                match event.data:
+                    case AssistantMessageDeltaData(delta_content=delta) if delta:
+                        received_delta = True
+                        print(delta, end="", flush=True)
+                    case AssistantMessageData(content=content) if content and not received_delta:
+                        print(content)
+                    case SessionErrorData(message=message):
+                        error = RuntimeError(message)
+                        done.set()
+                    case SessionIdleData():
+                        done.set()
+
+            session.on(on_event)
+            await session.send("Explain accessible names in three short bullet points.")
+            await done.wait()
+            if error is not None:
+                raise error
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+</details>
 :::
+
 :::language go
-Compare your work with [`checkpoints/go/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/02-streaming).
+## Stream the response in Go
+
+### 1. Add the streaming helper
+
+In `workshop-app/main.go`, replace the package contents with a `streamResponse` helper that
+subscribes with `session.On`, prints `AssistantMessageDeltaData`, keeps an `AssistantMessageData`
+fallback after `SendAndWait`, and returns send errors:
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	copilot "github.com/github/copilot-sdk/go"
+)
+
+func streamResponse(session *copilot.Session, prompt string) error {
+	receivedDelta := false
+	unsubscribe := session.On(func(event copilot.SessionEvent) {
+		if delta, ok := event.Data.(*copilot.AssistantMessageDeltaData); ok {
+			receivedDelta = true
+			fmt.Print(delta.DeltaContent)
+		}
+	})
+	defer unsubscribe()
+
+	response, err := session.SendAndWait(context.Background(), copilot.MessageOptions{Prompt: prompt})
+	if err == nil && !receivedDelta && response != nil {
+		if message, ok := response.Data.(*copilot.AssistantMessageData); ok {
+			fmt.Print(message.Content)
+		}
+	}
+	fmt.Println()
+	return err
+}
+```
+
+### 2. Create a streaming session and call the helper
+
+Add `main` below the helper:
+
+```go
+func main() {
+	client := copilot.NewClient(&copilot.ClientOptions{LogLevel: "error"})
+	if err := client.Start(context.Background()); err != nil {
+		panic(err)
+	}
+	defer client.Stop()
+
+	session, err := client.CreateSession(context.Background(), &copilot.SessionConfig{
+		Streaming: copilot.Bool(true),
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer session.Disconnect()
+
+	if err := streamResponse(session, "Explain accessible names in three short bullet points."); err != nil {
+		panic(err)
+	}
+}
+```
+
+## Run it
+
+```bash
+go -C workshop-app run .
+```
+
+The bullets should start appearing progressively through the event callback:
+
+```text
+- Gives a control a programmatic identity.
+- Helps screen-reader users understand its purpose.
+- Connects visible labels to form controls.
+```
+
+<details>
+<summary>Troubleshooting this run</summary>
+
+| Symptom | Fix |
+|---|---|
+| Text appears only at the end | Confirm `Streaming: copilot.Bool(true)` is set on `SessionConfig`. |
+| The process exits without output | Confirm `streamResponse` uses `SendAndWait` and returns its error. |
+| Text is printed twice | Keep the `!receivedDelta` guard before printing `AssistantMessageData`. |
+| Import path errors | Use `copilot "github.com/github/copilot-sdk/go"`. |
+
+</details>
+
+> **You're ready to add tools when:** the configured response path prints an answer and completes
+> the turn without hiding session errors.
+
+<details>
+<summary>Complete Step 2 checkpoint</summary>
+
+The completed Step 2 project is in
+[`checkpoints/go/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/02-streaming).
+
+`workshop-app/main.go`:
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	copilot "github.com/github/copilot-sdk/go"
+)
+
+func streamResponse(session *copilot.Session, prompt string) error {
+	receivedDelta := false
+	unsubscribe := session.On(func(event copilot.SessionEvent) {
+		if delta, ok := event.Data.(*copilot.AssistantMessageDeltaData); ok {
+			receivedDelta = true
+			fmt.Print(delta.DeltaContent)
+		}
+	})
+	defer unsubscribe()
+
+	response, err := session.SendAndWait(context.Background(), copilot.MessageOptions{Prompt: prompt})
+	if err == nil && !receivedDelta && response != nil {
+		if message, ok := response.Data.(*copilot.AssistantMessageData); ok {
+			fmt.Print(message.Content)
+		}
+	}
+	fmt.Println()
+	return err
+}
+
+func main() {
+	client := copilot.NewClient(&copilot.ClientOptions{LogLevel: "error"})
+	if err := client.Start(context.Background()); err != nil {
+		panic(err)
+	}
+	defer client.Stop()
+
+	session, err := client.CreateSession(context.Background(), &copilot.SessionConfig{
+		Streaming: copilot.Bool(true),
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer session.Disconnect()
+
+	if err := streamResponse(session, "Explain accessible names in three short bullet points."); err != nil {
+		panic(err)
+	}
+}
+```
+
+</details>
 :::
+
 :::language rust
-Compare your work with [`checkpoints/rust/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/02-streaming).
+## Stream the response in Rust
+
+### 1. Add the streaming helper macro
+
+Replace `workshop-app/src/main.rs` with a `stream_response!` macro that calls
+`session.subscribe()`, prints assistant deltas with `tokio::select!`, keeps a final-message
+fallback, and waits until both send completion and `session.idle` have happened:
+
+```rust
+use std::io::{self, Write};
+
+use github_copilot_sdk::types::SessionConfig;
+use github_copilot_sdk::{Client, ClientOptions};
+
+macro_rules! stream_response {
+    ($session:expr, $prompt:expr) => {{
+        let mut events = $session.subscribe();
+        let send = $session.send($prompt);
+        tokio::pin!(send);
+        let mut sent = false;
+        let mut idle = false;
+        let mut received_delta = false;
+
+        while !sent || !idle {
+            tokio::select! {
+                result = &mut send, if !sent => {
+                    result?;
+                    sent = true;
+                }
+                event = events.recv() => {
+                    let event = event?;
+                    match event.event_type.as_str() {
+                        "assistant.message_delta" => {
+                            if let Some(delta) = event.data.get("deltaContent").and_then(|value| value.as_str()) {
+                                received_delta = true;
+                                print!("{delta}");
+                                io::stdout().flush()?;
+                            }
+                        }
+                        "assistant.message" if !received_delta => {
+                            if let Some(content) = event.data.get("content").and_then(|value| value.as_str()) {
+                                print!("{content}");
+                                io::stdout().flush()?;
+                            }
+                        }
+                        "session.error" => {
+                            let message = event.data.get("message").and_then(|value| value.as_str())
+                                .unwrap_or("Copilot session failed");
+                            return Err(std::io::Error::new(std::io::ErrorKind::Other, message.to_owned()).into());
+                        }
+                        "session.idle" => idle = true,
+                        _ => {}
+                    }
+                }
+            }
+        }
+        println!();
+    }};
+}
+```
+
+### 2. Create a streaming session and invoke the macro
+
+Add the async entrypoint below the macro:
+
+```rust
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::start(ClientOptions::default()).await?;
+    let mut config = SessionConfig::default();
+    config.streaming = Some(true);
+    let session = client.create_session(config).await?;
+
+    stream_response!(
+        session,
+        "Explain accessible names in three short bullet points.".to_owned()
+    );
+    session.disconnect().await?;
+    client.stop().await?;
+    Ok(())
+}
+```
+
+## Run it
+
+```bash
+cargo run --manifest-path workshop-app/Cargo.toml
+```
+
+The bullets should start appearing progressively through the event subscription:
+
+```text
+- Gives a control a programmatic identity.
+- Helps screen-reader users understand its purpose.
+- Connects visible labels to form controls.
+```
+
+<details>
+<summary>Troubleshooting this run</summary>
+
+| Symptom | Fix |
+|---|---|
+| Text appears only at the end | Confirm `config.streaming = Some(true)` before `create_session`. |
+| The process exits before text appears | Keep the `while !sent \|\| !idle` loop and wait for `session.idle`. |
+| Text is printed twice | Keep the `if !received_delta` guard on `"assistant.message"`. |
+| Output looks buffered | Flush stdout after each `print!` of delta content. |
+
+</details>
+
+> **You're ready to add tools when:** the configured response path prints an answer and completes
+> the turn without hiding session errors.
+
+<details>
+<summary>Complete Step 2 checkpoint</summary>
+
+The completed Step 2 project is in
+[`checkpoints/rust/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/02-streaming).
+
+`workshop-app/src/main.rs`:
+
+```rust
+use std::io::{self, Write};
+
+use github_copilot_sdk::types::SessionConfig;
+use github_copilot_sdk::{Client, ClientOptions};
+
+macro_rules! stream_response {
+    ($session:expr, $prompt:expr) => {{
+        let mut events = $session.subscribe();
+        let send = $session.send($prompt);
+        tokio::pin!(send);
+        let mut sent = false;
+        let mut idle = false;
+        let mut received_delta = false;
+
+        while !sent || !idle {
+            tokio::select! {
+                result = &mut send, if !sent => {
+                    result?;
+                    sent = true;
+                }
+                event = events.recv() => {
+                    let event = event?;
+                    match event.event_type.as_str() {
+                        "assistant.message_delta" => {
+                            if let Some(delta) = event.data.get("deltaContent").and_then(|value| value.as_str()) {
+                                received_delta = true;
+                                print!("{delta}");
+                                io::stdout().flush()?;
+                            }
+                        }
+                        "assistant.message" if !received_delta => {
+                            if let Some(content) = event.data.get("content").and_then(|value| value.as_str()) {
+                                print!("{content}");
+                                io::stdout().flush()?;
+                            }
+                        }
+                        "session.error" => {
+                            let message = event.data.get("message").and_then(|value| value.as_str())
+                                .unwrap_or("Copilot session failed");
+                            return Err(std::io::Error::new(std::io::ErrorKind::Other, message.to_owned()).into());
+                        }
+                        "session.idle" => idle = true,
+                        _ => {}
+                    }
+                }
+            }
+        }
+        println!();
+    }};
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::start(ClientOptions::default()).await?;
+    let mut config = SessionConfig::default();
+    config.streaming = Some(true);
+    let session = client.create_session(config).await?;
+
+    stream_response!(
+        session,
+        "Explain accessible names in three short bullet points.".to_owned()
+    );
+    session.disconnect().await?;
+    client.stop().await?;
+    Ok(())
+}
+```
+
+</details>
 :::
+
 :::language java
-Compare your work with
+## Stream the response in Java
+
+### 1. Enable streaming on the session
+
+The Java SDK checkpoint uses a streaming-enabled `SessionConfig` and `sendAndWait`, then prints the
+completed assistant message. Replace `workshop-app/src/main/java/workshop/AccessibilityReport.java`
+with:
+
+```java
+package workshop;
+
+import com.github.copilot.CopilotClient;
+import com.github.copilot.rpc.MessageOptions;
+import com.github.copilot.rpc.SessionConfig;
+
+public final class AccessibilityReport {
+    private AccessibilityReport() {
+    }
+
+    public static void main(String[] args) throws Exception {
+        try (var client = new CopilotClient()) {
+            client.start().get();
+            var session = client.createSession(new SessionConfig().setStreaming(true)).get();
+            var response = session.sendAndWait(new MessageOptions()
+                    .setPrompt("Explain accessible names in three short bullet points."))
+                    .get();
+            if (response == null) {
+                throw new IllegalStateException("Copilot completed without an assistant message.");
+            }
+            System.out.println(response.getData().content());
+        }
+    }
+}
+```
+
+`setStreaming(true)` keeps this step aligned with the other language tracks. The Java checkpoint
+waits for the completed response from `sendAndWait` and prints that full message when the turn
+finishes.
+
+## Run it
+
+```bash
+mvn -f workshop-app/pom.xml exec:java
+```
+
+The completed response should print before the process exits:
+
+```text
+- Gives a control a programmatic identity.
+- Helps screen-reader users understand its purpose.
+- Connects visible labels to form controls.
+```
+
+<details>
+<summary>Troubleshooting this run</summary>
+
+| Symptom | Fix |
+|---|---|
+| No response is printed | Confirm `setStreaming(true)` is on `SessionConfig` and you call `sendAndWait`. |
+| The process fails with a null response | Keep the `response == null` guard and throw when the turn completes without a message. |
+| Maven cannot find the main class | Run from the workshop app with `mvn -f workshop-app/pom.xml exec:java`. |
+
+</details>
+
+> **You're ready to add tools when:** the configured response path prints an answer and completes
+> the turn without hiding session errors.
+
+<details>
+<summary>Complete Step 2 checkpoint</summary>
+
+The completed Step 2 project is in
 [`checkpoints/java/02-streaming`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/02-streaming).
+
+`workshop-app/src/main/java/workshop/AccessibilityReport.java`:
+
+```java
+package workshop;
+
+import com.github.copilot.CopilotClient;
+import com.github.copilot.rpc.MessageOptions;
+import com.github.copilot.rpc.SessionConfig;
+
+public final class AccessibilityReport {
+    private AccessibilityReport() {
+    }
+
+    public static void main(String[] args) throws Exception {
+        try (var client = new CopilotClient()) {
+            client.start().get();
+            var session = client.createSession(new SessionConfig().setStreaming(true)).get();
+            var response = session.sendAndWait(new MessageOptions()
+                    .setPrompt("Explain accessible names in three short bullet points."))
+                    .get();
+            if (response == null) {
+                throw new IllegalStateException("Copilot completed without an assistant message.");
+            }
+            System.out.println(response.getData().content());
+        }
+    }
+}
+```
+
+</details>
 :::
+
+## Check your understanding
+
+When would a completed-response send be a better choice than event streaming?
+
+<details>
+<summary>Check your answer</summary>
+
+Use a completed-response send for background work or simple request/response code that does not
+need progressive output or intermediate events.
+
+</details>
 
 Continue to [Step 3: Add application-owned knowledge](03-local-tool.md).
