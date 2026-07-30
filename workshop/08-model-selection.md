@@ -145,7 +145,8 @@ import { stdin as input, stdout as output } from "node:process";
 
 export async function selectModel(client: CopilotClient): Promise<string | undefined> {
   const models = await client.listModels();
-  if (!models.length) {
+  const [defaultModel] = models;
+  if (!defaultModel) {
     console.log("No model list was returned; using the account default.");
     return undefined;
   }
@@ -161,8 +162,8 @@ export async function selectModel(client: CopilotClient): Promise<string | undef
     const choice = Number.parseInt(answer, 10);
     const selected =
       Number.isInteger(choice) && choice >= 1 && choice <= models.length
-        ? models[choice - 1]
-        : models[0];
+        ? models[choice - 1] ?? defaultModel
+        : defaultModel;
     console.log(`Using ${selected.name}\n`);
     return selected.id;
   } finally {
