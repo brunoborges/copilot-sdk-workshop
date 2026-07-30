@@ -31,10 +31,114 @@ Console application
 :::
 
 :::language nodejs
-The completed report is in [`samples/nodejs/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/nodejs/accessibility-report).
+The finished application is an agent host. Its session coordinates a model, an application-owned
+function, and a browser running in another process:
+
+```text
+Node.js application
+  |
+  +-- CopilotClient -------- runtime connection
+       |
+       `-- CopilotSession --- one conversation and its context
+            |
+            +-- accessibility_rule_lookup
+            |     same process, application-owned data
+            |
+            `-- Playwright MCP
+                  separate process, scoped permission handler
+                       |
+                       `-- Browser target
+```
+
+The completed report is also in
+[`samples/nodejs/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/nodejs/accessibility-report).
 :::
+
 :::language python
-The completed report is in [`samples/python/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/python/accessibility-report).
+The finished application is an agent host. Its session coordinates a model, an application-owned
+function, and a browser running in another process:
+
+```text
+Python application
+  |
+  +-- CopilotClient -------- runtime connection
+       |
+       `-- session ---------- one conversation and its context
+            |
+            +-- accessibility_rule_lookup
+            |     same process, application-owned data
+            |
+            `-- Playwright MCP
+                  separate process, scoped permission handler
+                       |
+                       `-- Browser target
+```
+
+The completed report is also in
+[`samples/python/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/python/accessibility-report).
+:::
+
+:::language go
+The finished application is an agent host. Its session coordinates a model, an application-owned
+function, and a browser running in another process:
+
+```text
+Go application
+  |
+  +-- Client ---------------- runtime connection
+       |
+       `-- Session ---------- one conversation and its context
+            |
+            +-- accessibility_rule_lookup
+            |     same process, application-owned data
+            |
+            `-- Playwright MCP
+                  separate process, scoped permission handler
+                       |
+                       `-- Browser target
+```
+:::
+
+:::language rust
+The finished application is an agent host. Its session coordinates a model, an application-owned
+function, and a browser running in another process:
+
+```text
+Rust application
+  |
+  +-- Client ---------------- runtime connection
+       |
+       `-- Session ---------- one conversation and its context
+            |
+            +-- accessibility_rule_lookup
+            |     same process, application-owned data
+            |
+            `-- Playwright MCP
+                  separate process, scoped permission handler
+                       |
+                       `-- Browser target
+```
+:::
+
+:::language java
+The finished application is an agent host. Its session coordinates a model, an application-owned
+function, and a browser running in another process:
+
+```text
+Java application
+  |
+  +-- CopilotClient -------- runtime connection
+       |
+       `-- session ---------- one conversation and its context
+            |
+            +-- accessibility_rule_lookup
+            |     same process, application-owned data
+            |
+            `-- Playwright MCP
+                  separate process, scoped permission handler
+                       |
+                       `-- Browser target
+```
 :::
 
 ## Take the design beyond this workshop
@@ -46,6 +150,31 @@ different tools, but the same ownership and trust questions apply.
 :::language dotnet
 The complete flow is
 `URL -> Playwright inspection -> C# WCAG lookup -> structured accessibility report`.
+:::
+
+:::language nodejs
+The complete flow is
+`URL -> Playwright inspection -> TypeScript WCAG lookup -> structured accessibility report`.
+:::
+
+:::language python
+The complete flow is
+`URL -> Playwright inspection -> Python WCAG lookup -> structured accessibility report`.
+:::
+
+:::language go
+The complete flow is
+`URL -> Playwright inspection -> Go WCAG lookup -> structured accessibility report`.
+:::
+
+:::language rust
+The complete flow is
+`URL -> Playwright inspection -> Rust WCAG lookup -> structured accessibility report`.
+:::
+
+:::language java
+The complete flow is
+`URL -> Playwright inspection -> Java WCAG lookup -> structured accessibility report`.
 :::
 
 ## Take a victory lap
@@ -99,6 +228,134 @@ Watch for all five stages:
 4. The local catalog is called for browser-supported findings.
 5. The response follows the report contract and states its limits.
 
+:::language dotnet
+Your transcript will vary, but it should have this shape:
+
+```text
+=== Accessibility Report Generator ===
+
+Enter URL to analyze: {{TARGET_APP_URL}}
+
+Connected to the Copilot runtime: ...
+Analyzing: {{TARGET_APP_URL}}
+
+[tool:start] browser_navigate / playwright-browser_navigate
+[tool:done] success=True
+[tool:start] read_latest_accessibility_snapshot
+[tool:done] success=True
+[tool:start] accessibility_rule_lookup
+[tool:done] success=True
+...
+
+# Accessibility review
+## Finding 1: ...
+- Evidence: ...
+- WCAG criterion: ...
+- Recommended remediation: ...
+## Review limits
+...
+```
+:::
+
+:::language nodejs
+Your transcript will vary, but it should have this shape:
+
+```text
+[tool:start] browser_navigate
+[tool:done] success=true
+[tool:start] read_latest_accessibility_snapshot
+[tool:done] success=true
+[tool:start] accessibility_rule_lookup
+[tool:done] success=true
+...
+
+# Accessibility review
+## Finding 1: ...
+- Evidence: ...
+- WCAG criterion: ...
+- Recommended remediation: ...
+## Review limits
+...
+```
+
+`streamResponse` prints tool start/done lines and streams the assistant text to stdout.
+:::
+
+:::language python
+Your transcript will vary, but it should have this shape:
+
+```text
+[tool:start] browser_navigate
+[tool:done] success=True
+[tool:start] read_latest_accessibility_snapshot
+[tool:done] success=True
+[tool:start] accessibility_rule_lookup
+[tool:done] success=True
+...
+
+# Accessibility review
+## Finding 1: ...
+- Evidence: ...
+- WCAG criterion: ...
+- Recommended remediation: ...
+## Review limits
+...
+```
+
+`main.py` launches `report.main`, which waits on `session.idle` after streaming deltas.
+:::
+
+:::language go
+Your transcript will vary, but it should have this shape:
+
+```text
+# Accessibility review
+## Finding 1: ...
+- Evidence: ...
+- WCAG criterion: ...
+- Recommended remediation: ...
+## Review limits
+...
+```
+
+Explain that `Client` owns the Copilot CLI lifecycle, the `Session` owns one conversation, and the
+permission handler gates external navigation. The expected report is evidence-bound.
+:::
+
+:::language rust
+Your transcript will vary, but it should have this shape:
+
+```text
+# Accessibility review
+## Finding 1: ...
+- Evidence: ...
+- WCAG criterion: ...
+- Recommended remediation: ...
+## Review limits
+...
+```
+
+Explain that `Client` manages the runtime, `Session` dispatches events, typed tools are app-owned,
+and the permission handler trusts only exact navigation.
+:::
+
+:::language java
+Your transcript will vary, but it should have this shape:
+
+```text
+# Accessibility review
+## Finding 1: ...
+- Evidence: ...
+- WCAG criterion: ...
+- Recommended remediation: ...
+## Review limits
+...
+```
+
+Explain that Maven compiles the Java 17 application, `CopilotClient` manages the runtime, tools
+remain scoped, and the permission callback accepts only the canonical URL.
+:::
+
 The controlled target intentionally includes browser-observable issues: a missing text alternative,
 no `main` landmark, an illogical heading sequence, and a textbox without an accessible name.
 Compare the report with the
@@ -114,6 +371,7 @@ do not accept a finding that is absent from both the snapshot and source.
 | A reported issue is not in the page | Reject it as ungrounded; the prompt requires specific browser evidence. |
 | A tool is denied | Check that `browser_navigate` uses the exact entered target. |
 | The reader finds no snapshot | Keep the prompt order: navigate before calling `read_latest_accessibility_snapshot`. |
+| The runtime cannot start | Re-authenticate with `copilot login`, confirm the CLI is on `PATH`, and retry the run command for your language. |
 
 </details>
 
@@ -155,12 +413,54 @@ Complete references:
 - [GitHub Copilot SDK for .NET](https://github.com/github/copilot-sdk/tree/main/dotnet)
 - [Playwright MCP](https://github.com/microsoft/playwright-mcp)
 :::
+
+:::language nodejs
+Complete references:
+
+- [Step 6 checkpoint](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/06-structured-report)
+- [Finished accessibility reporter](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/nodejs/accessibility-report)
+- [GitHub Copilot SDK for Node.js](https://github.com/github/copilot-sdk/tree/main/nodejs)
+- [Playwright MCP](https://github.com/microsoft/playwright-mcp)
+:::
+
+:::language python
+Complete references:
+
+- [Step 6 checkpoint](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/06-structured-report)
+- [Finished accessibility reporter](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/python/accessibility-report)
+- [GitHub Copilot SDK for Python](https://github.com/github/copilot-sdk/tree/main/python)
+- [Playwright MCP](https://github.com/microsoft/playwright-mcp)
+:::
+
 :::language go
-Run the completed reporter with `go -C samples/go/accessibility-report run . "{{TARGET_APP_URL}}"`. Explain that `Client` owns the Copilot CLI lifecycle, the `Session` owns one conversation, and the permission handler gates external navigation. The expected report is evidence-bound; if the CLI is missing, install it rather than granting broader permissions. Review [`samples/go/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/go/accessibility-report) and [`checkpoints/go/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/06-structured-report).
+Complete references:
+
+- [Step 6 checkpoint](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/06-structured-report)
+- [Finished accessibility reporter](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/go/accessibility-report)
+- [GitHub Copilot SDK for Go](https://github.com/github/copilot-sdk/tree/main/go)
+- [Playwright MCP](https://github.com/microsoft/playwright-mcp)
+
+If the CLI is missing, install it rather than granting broader permissions.
 :::
+
 :::language rust
-Run `cargo run --manifest-path samples/rust/accessibility-report/Cargo.toml -- "{{TARGET_APP_URL}}"`. Explain that `Client` manages the runtime, `Session` dispatches events, typed tools are app-owned, and the permission handler trusts only exact navigation. If it cannot start, install and authenticate the Copilot CLI. Review [`samples/rust/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/rust/accessibility-report) and [`checkpoints/rust/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/06-structured-report).
+Complete references:
+
+- [Step 6 checkpoint](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/06-structured-report)
+- [Finished accessibility reporter](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/rust/accessibility-report)
+- [GitHub Copilot SDK for Rust](https://github.com/github/copilot-sdk/tree/main/rust)
+- [Playwright MCP](https://github.com/microsoft/playwright-mcp)
+
+If it cannot start, install and authenticate the Copilot CLI.
 :::
+
 :::language java
-Run `mvn -f samples/java/accessibility-report/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"`. Explain that Maven compiles the Java 17 application, `CopilotClient` manages the runtime, tools remain scoped, and the permission callback accepts only the canonical URL. If the runtime is unavailable, install the Copilot CLI; do not replace Maven with JBang or Gradle. Review [`samples/java/accessibility-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/java/accessibility-report) and [`checkpoints/java/06-structured-report`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/06-structured-report).
+Complete references:
+
+- [Step 6 checkpoint](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/06-structured-report)
+- [Finished accessibility reporter](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/samples/java/accessibility-report)
+- [GitHub Copilot SDK for Java](https://github.com/github/copilot-sdk/tree/main/java)
+- [Playwright MCP](https://github.com/microsoft/playwright-mcp)
+
+If the runtime is unavailable, install the Copilot CLI; do not replace Maven with JBang or Gradle.
 :::

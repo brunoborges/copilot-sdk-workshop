@@ -139,11 +139,11 @@ PROCEDURE_MARKERS = {
     },
     "02-streaming.md": {
         "dotnet": "ResponseStreamer.SendAndPrintAsync",
-        "nodejs": "session.on(callback)",
+        "nodejs": "streamResponse",
         "python": "AssistantMessageDeltaData",
         "go": "session.On",
         "rust": "session.subscribe()",
-        "java": "SessionConfig",
+        "java": "setStreaming(true)",
     },
     "03-local-tool.md": {
         language: markers[1] for language, markers in STEP_3_TRACK_MARKERS.items()
@@ -153,8 +153,8 @@ PROCEDURE_MARKERS = {
         "nodejs": "workshop-app/src/index.ts",
         "python": "workshop-app/main.py",
         "go": "MCPStdioServerConfig",
-        "rust": "McpStdioServerConfig.tools",
-        "java": "McpStdioServerConfig.setTools",
+            "rust": 'tools: Some(vec!["browser_navigate"',
+            "java": '.setTools(List.of("browser_navigate"))',
     },
     "05-combine-tools.md": {
         "dotnet": "For each issue, call accessibility_rule_lookup",

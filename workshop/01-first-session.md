@@ -26,6 +26,101 @@ It also gives you a small working example before streaming and tools enter the p
 At this point, the console app is simply `CopilotClient -> CopilotSession -> model response`.
 :::
 
+:::language nodejs
+## Meet the GitHub Copilot SDK and runtime
+
+The **GitHub Copilot SDK** is the Node.js API your application uses to run Copilot as an agent. The
+**Copilot runtime** receives prompts, calls models, and manages tools. `CopilotClient` connects your
+TypeScript code to that runtime.
+
+A session from `createSession` represents one continuing conversation. It holds the messages and
+tool results that make up the conversation's context. Keep one client alive for the application,
+then create a session for each independent conversation.
+
+## Why clients and sessions stay separate
+
+Keeping those responsibilities separate lets the runtime connection outlive any one conversation.
+It also gives you a small working example before streaming and tools enter the picture.
+
+At this point, the console app is simply `CopilotClient -> session -> model response`.
+:::
+
+:::language python
+## Meet the GitHub Copilot SDK and runtime
+
+The **GitHub Copilot SDK** is the Python API your application uses to run Copilot as an agent. The
+**Copilot runtime** receives prompts, calls models, and manages tools. `CopilotClient` connects your
+Python code to that runtime.
+
+A session from `create_session` represents one continuing conversation. It holds the messages and
+tool results that make up the conversation's context. Keep one client alive for the application,
+then create a session for each independent conversation.
+
+## Why clients and sessions stay separate
+
+Keeping those responsibilities separate lets the runtime connection outlive any one conversation.
+It also gives you a small working example before streaming and tools enter the picture.
+
+At this point, the console app is simply `CopilotClient -> session -> model response`.
+:::
+
+:::language go
+## Meet the GitHub Copilot SDK and runtime
+
+The **GitHub Copilot SDK** is the Go API your application uses to run Copilot as an agent. The
+**Copilot runtime** receives prompts, calls models, and manages tools. `copilot.NewClient` connects
+your Go code to that runtime.
+
+A session from `CreateSession` represents one continuing conversation. It holds the messages and
+tool results that make up the conversation's context. Keep one client alive for the application,
+then create a session for each independent conversation.
+
+## Why clients and sessions stay separate
+
+Keeping those responsibilities separate lets the runtime connection outlive any one conversation.
+It also gives you a small working example before streaming and tools enter the picture.
+
+At this point, the console app is simply `Client -> Session -> model response`.
+:::
+
+:::language rust
+## Meet the GitHub Copilot SDK and runtime
+
+The **GitHub Copilot SDK** is the Rust API your application uses to run Copilot as an agent. The
+**Copilot runtime** receives prompts, calls models, and manages tools. `Client` connects your Rust
+code to that runtime.
+
+A session from `create_session` represents one continuing conversation. It holds the messages and
+tool results that make up the conversation's context. Keep one client alive for the application,
+then create a session for each independent conversation.
+
+## Why clients and sessions stay separate
+
+Keeping those responsibilities separate lets the runtime connection outlive any one conversation.
+It also gives you a small working example before streaming and tools enter the picture.
+
+At this point, the console app is simply `Client -> session -> model response`.
+:::
+
+:::language java
+## Meet the GitHub Copilot SDK and runtime
+
+The **GitHub Copilot SDK** is the Java API your application uses to run Copilot as an agent. The
+**Copilot runtime** receives prompts, calls models, and manages tools. `CopilotClient` connects your
+Java code to that runtime.
+
+A session from `createSession` represents one continuing conversation. It holds the messages and
+tool results that make up the conversation's context. Keep one client alive for the application,
+then create a session for each independent conversation.
+
+## Why clients and sessions stay separate
+
+Keeping those responsibilities separate lets the runtime connection outlive any one conversation.
+It also gives you a small working example before streaming and tools enter the picture.
+
+At this point, the console app is simply `CopilotClient -> session -> model response`.
+:::
+
 ## Fire up your first Copilot session
 
 :::language dotnet
@@ -53,29 +148,187 @@ if (response is null)
 
 Console.WriteLine($"\nCopilot: {response.Data.Content}");
 ```
-:::
+
 The ping verifies the runtime connection. The completed-response send waits until the session
 becomes idle, so it works well when you only need the finished answer.
+:::
 
 :::language nodejs
-Replace `workshop-app/src/index.ts` with a `CopilotClient`, `await client.start()`, a session from
-`createSession`, and `await session.sendAndWait({ prompt })`.
+Open `workshop-app/src/index.ts` and **replace the entire file**:
+
+```typescript
+import { CopilotClient } from "@github/copilot-sdk";
+
+const client = new CopilotClient();
+await client.start();
+try {
+  const session = await client.createSession({});
+  try {
+    const response = await session.sendAndWait({ prompt: "Reply with one sentence confirming this Copilot session is ready." });
+    console.log(response?.data && "content" in response.data ? response.data.content : response);
+  } finally {
+    await session.disconnect();
+  }
+} finally {
+  await client.stop();
+}
+```
+
+`sendAndWait` waits until the session becomes idle, so it works well when you only need the finished
+answer. Always stop the session and client in `finally` blocks so the runtime shuts down cleanly.
 :::
+
 :::language python
-Replace `workshop-app/main.py` with an `async with CopilotClient()` flow, create a session with
-`create_session`, send the prompt, and wait for the assistant and idle events.
+Open `workshop-app/main.py` and **replace the entire file**:
+
+```python
+import asyncio
+
+from copilot import CopilotClient
+from copilot.session_events import AssistantMessageData, SessionErrorData, SessionIdleData
+
+
+async def main() -> None:
+    async with CopilotClient() as client:
+        async with await client.create_session() as session:
+            done = asyncio.Event()
+            error: RuntimeError | None = None
+
+            def on_event(event) -> None:
+                nonlocal error
+                match event.data:
+                    case AssistantMessageData(content=content):
+                        print(content)
+                    case SessionErrorData(message=message):
+                        error = RuntimeError(message)
+                        done.set()
+                    case SessionIdleData():
+                        done.set()
+
+            session.on(on_event)
+            await session.send("In one sentence, explain why an accessible name matters for a form input.")
+            await done.wait()
+            if error is not None:
+                raise error
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+Python listens for session events instead of calling a single completed-response helper. Print the
+assistant message, treat session errors as failures, and wait for the idle event before exiting.
 :::
+
 :::language go
-In `workshop-app/main.go`, create `copilot.NewClient`, call `Start`, create a session, and call
-`SendAndWait` for the first prompt.
+Open `workshop-app/main.go` and **replace the entire file**:
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	copilot "github.com/github/copilot-sdk/go"
+)
+
+func main() {
+	client := copilot.NewClient(&copilot.ClientOptions{LogLevel: "error"})
+	if err := client.Start(context.Background()); err != nil {
+		panic(err)
+	}
+	defer client.Stop()
+
+	session, err := client.CreateSession(context.Background(), &copilot.SessionConfig{})
+	if err != nil {
+		panic(err)
+	}
+	defer session.Disconnect()
+
+	response, err := session.SendAndWait(context.Background(), copilot.MessageOptions{
+		Prompt: "In one sentence, explain why an accessible name matters for a form input.",
+	})
+	if err != nil {
+		panic(err)
+	}
+	if response != nil {
+		if message, ok := response.Data.(*copilot.AssistantMessageData); ok {
+			fmt.Println(message.Content)
+		}
+	}
+}
+```
+
+`SendAndWait` waits until the session becomes idle, so it works well when you only need the finished
+answer. `defer` disconnects the session and stops the client on the way out.
 :::
+
 :::language rust
-In `workshop-app/src/main.rs`, use `Client::start(ClientOptions::default()).await?`, create a
-session, and call `send_and_wait`.
+Open `workshop-app/src/main.rs` and **replace the entire file**:
+
+```rust
+use github_copilot_sdk::types::{MessageOptions, SessionConfig};
+use github_copilot_sdk::{Client, ClientOptions};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::start(ClientOptions::default()).await?;
+    let session = client.create_session(SessionConfig::default()).await?;
+    let response = session
+        .send_and_wait(MessageOptions::new(
+            "In one sentence, explain why an accessible name matters for a form input.",
+        ))
+        .await?;
+
+    if let Some(message) = response {
+        if let Some(content) = message.data.get("content").and_then(|value| value.as_str()) {
+            println!("{content}");
+        }
+    }
+
+    session.disconnect().await?;
+    client.stop().await?;
+    Ok(())
+}
+```
+
+`send_and_wait` waits until the session becomes idle, so it works well when you only need the
+finished answer. Disconnect the session and stop the client before returning.
 :::
+
 :::language java
-In `workshop-app/src/main/java/workshop/AccessibilityReport.java`, create `new CopilotClient()`,
-start it, create a session, and call `sendAndWait`.
+Open `workshop-app/src/main/java/workshop/AccessibilityReport.java` and **replace the entire file**:
+
+```java
+package workshop;
+
+import com.github.copilot.CopilotClient;
+import com.github.copilot.rpc.MessageOptions;
+import com.github.copilot.rpc.SessionConfig;
+
+public final class AccessibilityReport {
+    private AccessibilityReport() {
+    }
+
+    public static void main(String[] args) throws Exception {
+        try (var client = new CopilotClient()) {
+            client.start().get();
+            var session = client.createSession(new SessionConfig()).get();
+            var response = session.sendAndWait(new MessageOptions()
+                    .setPrompt("In one sentence, explain why an accessible name matters for a form input."))
+                    .get();
+            if (response == null) {
+                throw new IllegalStateException("Copilot completed without an assistant message.");
+            }
+            System.out.println(response.getData().content());
+        }
+    }
+}
+```
+
+`sendAndWait` waits until the session becomes idle, so it works well when you only need the finished
+answer. The try-with-resources block closes the client when `main` exits.
 :::
 
 ## Run it
@@ -110,6 +363,7 @@ cargo run --manifest-path workshop-app/Cargo.toml
 mvn -f workshop-app/pom.xml exec:java
 ```
 :::
+
 :::language dotnet
 Your exact response will vary, but the output should have this shape:
 
@@ -119,6 +373,46 @@ Your exact response will vary, but the output should have this shape:
 Connected to the Copilot runtime: ...
 
 Copilot: An accessible name lets assistive technology identify the input's purpose.
+```
+:::
+
+:::language nodejs
+Your exact response will vary, but the output should have this shape:
+
+```text
+This Copilot session is ready and waiting for your next prompt.
+```
+:::
+
+:::language python
+Your exact response will vary, but the output should have this shape:
+
+```text
+An accessible name lets assistive technology identify the input's purpose.
+```
+:::
+
+:::language go
+Your exact response will vary, but the output should have this shape:
+
+```text
+An accessible name lets assistive technology identify the input's purpose.
+```
+:::
+
+:::language rust
+Your exact response will vary, but the output should have this shape:
+
+```text
+An accessible name lets assistive technology identify the input's purpose.
+```
+:::
+
+:::language java
+Your exact response will vary, but the output should have this shape:
+
+```text
+An accessible name lets assistive technology identify the input's purpose.
 ```
 :::
 
@@ -146,6 +440,56 @@ conversation's context?
 
 Keep `CopilotClient` for the lifetime of the runtime connection. A `CopilotSession` owns the
 messages and tool context for one conversation.
+
+</details>
+:::
+
+:::language nodejs
+<details>
+<summary>Check your answer</summary>
+
+Keep `CopilotClient` for the lifetime of the runtime connection. A session from `createSession` owns
+the messages and tool context for one conversation.
+
+</details>
+:::
+
+:::language python
+<details>
+<summary>Check your answer</summary>
+
+Keep `CopilotClient` for the lifetime of the runtime connection. A session from `create_session`
+owns the messages and tool context for one conversation.
+
+</details>
+:::
+
+:::language go
+<details>
+<summary>Check your answer</summary>
+
+Keep the client from `copilot.NewClient` for the lifetime of the runtime connection. A session from
+`CreateSession` owns the messages and tool context for one conversation.
+
+</details>
+:::
+
+:::language rust
+<details>
+<summary>Check your answer</summary>
+
+Keep `Client` for the lifetime of the runtime connection. A session from `create_session` owns the
+messages and tool context for one conversation.
+
+</details>
+:::
+
+:::language java
+<details>
+<summary>Check your answer</summary>
+
+Keep `CopilotClient` for the lifetime of the runtime connection. A session from `createSession` owns
+the messages and tool context for one conversation.
 
 </details>
 :::
@@ -184,21 +528,196 @@ Console.WriteLine($"\nCopilot: {response.Data.Content}");
 :::
 
 :::language nodejs
-Compare your work with
-[`checkpoints/nodejs/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/01-first-session).
+<details>
+<summary>Complete Step 1 checkpoint</summary>
+
+To compare your work with a complete project, open the
+[`checkpoints/nodejs/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/nodejs/01-first-session)
+checkpoint.
+
+```typescript
+import { CopilotClient } from "@github/copilot-sdk";
+
+const client = new CopilotClient();
+await client.start();
+try {
+  const session = await client.createSession({});
+  try {
+    const response = await session.sendAndWait({ prompt: "Reply with one sentence confirming this Copilot session is ready." });
+    console.log(response?.data && "content" in response.data ? response.data.content : response);
+  } finally {
+    await session.disconnect();
+  }
+} finally {
+  await client.stop();
+}
+```
+</details>
 :::
+
 :::language python
-Compare your work with
-[`checkpoints/python/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/01-first-session).
+<details>
+<summary>Complete Step 1 checkpoint</summary>
+
+To compare your work with a complete project, open the
+[`checkpoints/python/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/python/01-first-session)
+checkpoint.
+
+```python
+import asyncio
+
+from copilot import CopilotClient
+from copilot.session_events import AssistantMessageData, SessionErrorData, SessionIdleData
+
+
+async def main() -> None:
+    async with CopilotClient() as client:
+        async with await client.create_session() as session:
+            done = asyncio.Event()
+            error: RuntimeError | None = None
+
+            def on_event(event) -> None:
+                nonlocal error
+                match event.data:
+                    case AssistantMessageData(content=content):
+                        print(content)
+                    case SessionErrorData(message=message):
+                        error = RuntimeError(message)
+                        done.set()
+                    case SessionIdleData():
+                        done.set()
+
+            session.on(on_event)
+            await session.send("In one sentence, explain why an accessible name matters for a form input.")
+            await done.wait()
+            if error is not None:
+                raise error
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+</details>
 :::
+
 :::language go
-Compare your work with [`checkpoints/go/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/01-first-session).
+<details>
+<summary>Complete Step 1 checkpoint</summary>
+
+To compare your work with a complete project, open the
+[`checkpoints/go/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/go/01-first-session)
+checkpoint.
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	copilot "github.com/github/copilot-sdk/go"
+)
+
+func main() {
+	client := copilot.NewClient(&copilot.ClientOptions{LogLevel: "error"})
+	if err := client.Start(context.Background()); err != nil {
+		panic(err)
+	}
+	defer client.Stop()
+
+	session, err := client.CreateSession(context.Background(), &copilot.SessionConfig{})
+	if err != nil {
+		panic(err)
+	}
+	defer session.Disconnect()
+
+	response, err := session.SendAndWait(context.Background(), copilot.MessageOptions{
+		Prompt: "In one sentence, explain why an accessible name matters for a form input.",
+	})
+	if err != nil {
+		panic(err)
+	}
+	if response != nil {
+		if message, ok := response.Data.(*copilot.AssistantMessageData); ok {
+			fmt.Println(message.Content)
+		}
+	}
+}
+```
+</details>
 :::
+
 :::language rust
-Compare your work with [`checkpoints/rust/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/01-first-session).
+<details>
+<summary>Complete Step 1 checkpoint</summary>
+
+To compare your work with a complete project, open the
+[`checkpoints/rust/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/rust/01-first-session)
+checkpoint.
+
+```rust
+use github_copilot_sdk::types::{MessageOptions, SessionConfig};
+use github_copilot_sdk::{Client, ClientOptions};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::start(ClientOptions::default()).await?;
+    let session = client.create_session(SessionConfig::default()).await?;
+    let response = session
+        .send_and_wait(MessageOptions::new(
+            "In one sentence, explain why an accessible name matters for a form input.",
+        ))
+        .await?;
+
+    if let Some(message) = response {
+        if let Some(content) = message.data.get("content").and_then(|value| value.as_str()) {
+            println!("{content}");
+        }
+    }
+
+    session.disconnect().await?;
+    client.stop().await?;
+    Ok(())
+}
+```
+</details>
 :::
+
 :::language java
-Compare your work with [`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session).
+<details>
+<summary>Complete Step 1 checkpoint</summary>
+
+To compare your work with a complete project, open the
+[`checkpoints/java/01-first-session`](https://github.com/jamesmontemagno/copilot-sdk-workshop/tree/main/checkpoints/java/01-first-session)
+checkpoint.
+
+```java
+package workshop;
+
+import com.github.copilot.CopilotClient;
+import com.github.copilot.rpc.MessageOptions;
+import com.github.copilot.rpc.SessionConfig;
+
+public final class AccessibilityReport {
+    private AccessibilityReport() {
+    }
+
+    public static void main(String[] args) throws Exception {
+        try (var client = new CopilotClient()) {
+            client.start().get();
+            var session = client.createSession(new SessionConfig()).get();
+            var response = session.sendAndWait(new MessageOptions()
+                    .setPrompt("In one sentence, explain why an accessible name matters for a form input."))
+                    .get();
+            if (response == null) {
+                throw new IllegalStateException("Copilot completed without an assistant message.");
+            }
+            System.out.println(response.getData().content());
+        }
+    }
+}
+```
+</details>
 :::
 
 Continue to [Step 2: Stream a response](02-streaming.md).
