@@ -51,7 +51,7 @@ output, and troubleshooting.
 ```text
 copilot-sdk-workshop/
 |-- docs/                         GitHub Pages site and controlled target page
-|-- workshop/                     Preflight, seven core lessons, optional extension
+|-- workshop/                     Preflight, seven core lessons, optional extensions
 |-- start/dotnet/                 .NET learner starter with WCAG data and permission helper
 |-- checkpoints/dotnet/           .NET compiling state after each build step
 |-- samples/dotnet/
