@@ -661,4 +661,5 @@ you to a useful Copilot response sooner and keeps the first lesson focused on cl
 
 </details>
 
-Return to [Step 7: Run and explain the application](07-run-explain.md).
+Continue to [Optional: Generate an interactive HTML report](09-interactive-html-report.md), or return
+to [Step 7: Run and explain the application](07-run-explain.md).

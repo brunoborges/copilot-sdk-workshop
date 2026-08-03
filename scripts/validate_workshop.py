@@ -24,6 +24,7 @@ LESSONS = (
     "06-structured-report.md",
     "07-run-explain.md",
     "08-model-selection.md",
+    "09-interactive-html-report.md",
 )
 CHECKPOINTS = (
     "01-first-session",
@@ -179,6 +180,14 @@ PROCEDURE_MARKERS = {
         "go": "client.ListModels",
         "rust": "models().list()",
         "java": "SessionConfig.setModel",
+    },
+    "09-interactive-html-report.md": {
+        "dotnet": "builtin:edit_file",
+        "nodejs": "builtin:edit_file",
+        "python": "builtin:edit_file",
+        "go": "builtin:edit_file",
+        "rust": "builtin:edit_file",
+        "java": "builtin:edit_file",
     },
 }
 UNSCOPED_TRACK_MARKERS = (
@@ -696,6 +705,19 @@ def validate_rendered_language_content(markdown_file: Path) -> None:
                 f"{markdown_file.relative_to(ROOT)} does not show the {selected_language} "
                 f"procedure before Run it: {procedure_marker}",
             )
+
+        if markdown_file.name == "09-interactive-html-report.md":
+            for marker in (
+                "accessibility-report.html",
+                "builtin:edit_file",
+                "exact target navigation",
+                "accessible text filter",
+            ):
+                require(
+                    marker.casefold() in rendered_folded,
+                    f"{markdown_file.relative_to(ROOT)} is missing {selected_language} "
+                    f"interactive HTML report guidance: {marker}",
+                )
 
 
 def validate_language_registry() -> None:

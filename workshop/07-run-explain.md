@@ -403,7 +403,8 @@ do not accept a finding that is absent from both the snapshot and source.
 ## Keep exploring
 
 Try [Optional: Select a model](08-model-selection.md) if your application needs explicit control
-over model choice. Otherwise, the core workshop is complete.
+over model choice, then continue to [Optional: Generate an interactive HTML report](09-interactive-html-report.md).
+You can also go straight to the HTML report extension. Otherwise, the core workshop is complete.
 
 :::language dotnet
 Complete references:
