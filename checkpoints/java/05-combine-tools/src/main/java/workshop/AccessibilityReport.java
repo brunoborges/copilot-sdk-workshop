@@ -31,7 +31,7 @@ public final class AccessibilityReport {
 
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
-            System.err.println("Usage: mvn exec:java -Dexec.args=<http-or-https-url>");
+            System.err.println("Usage: mvn compile exec:java -Dexec.args=<http-or-https-url>");
             return;
         }
         URI target = parseTarget(args[0]);
@@ -145,7 +145,7 @@ public final class AccessibilityReport {
 
     private record Rule(String criterion, String title, String whenItApplies, String recommendation, List<String> keywords) {
         private static final List<Rule> RULES = List.of(
-                new Rule("1.1.1", "Non-text Content", "An informative image has no useful text alternative.", "Add concise alt text that communicates the image purpose. Use alt=\\\"\\\" only for decorative images.", List.of("image", "alt text", "text alternative")),
+                new Rule("1.1.1", "Non-text Content", "An informative image has no useful text alternative.", "Add concise alt text that communicates the image purpose. Use alt=\"\" only for decorative images.", List.of("image", "alt text", "text alternative")),
                 new Rule("1.3.1", "Info and Relationships", "Page structure or relationships are only conveyed visually.", "Use semantic landmarks and a logical heading hierarchy so structure is programmatically available.", List.of("main landmark", "heading hierarchy", "page structure", "semantic")),
                 new Rule("1.4.3", "Contrast (Minimum)", "Text does not have enough contrast against its background.", "Provide at least 4.5:1 contrast for normal text and 3:1 for large text.", List.of("contrast", "low contrast", "color")),
                 new Rule("2.4.7", "Focus Visible", "Keyboard focus cannot be seen clearly.", "Keep a visible, high-contrast focus indicator on every interactive element.", List.of("focus", "keyboard", "outline")),

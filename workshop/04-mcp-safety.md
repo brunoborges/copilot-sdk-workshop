@@ -1325,7 +1325,7 @@ At the start of `main` in
 
 ```java
 if (args.length != 1) {
-    System.err.println("Usage: mvn exec:java -Dexec.args=<http-or-https-url>");
+    System.err.println("Usage: mvn compile exec:java -Dexec.args=<http-or-https-url>");
     return;
 }
 URI target = parseTarget(args[0]);
@@ -1541,7 +1541,7 @@ import com.github.copilot.rpc.PermissionRequestResult;
 ## Run it
 
 ```bash
-mvn -f workshop-app/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"
+mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="{{TARGET_APP_URL}}"
 ```
 
 The first run may take longer while `npx` starts Playwright.

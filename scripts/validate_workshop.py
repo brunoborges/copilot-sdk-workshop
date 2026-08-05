@@ -119,7 +119,7 @@ STEP_3_TRACK_MARKERS = {
     "python": ("workshop.py", '@define_tool(', "python workshop-app/main.py"),
     "go": ("main.go", "copilot.DefineTool(", "go -C workshop-app run ."),
     "rust": ("src/main.rs", 'Tool::new("accessibility_rule_lookup")', "cargo run --manifest-path workshop-app/Cargo.toml"),
-    "java": ("AccessibilityReport.java", "ToolDefinition.from(", "mvn -f workshop-app/pom.xml exec:java"),
+    "java": ("AccessibilityReport.java", "ToolDefinition.from(", "mvn -f workshop-app/pom.xml compile exec:java"),
 }
 RUN_COMMAND_MARKERS = {
     "dotnet": "dotnet run --project workshop-app",
@@ -127,7 +127,7 @@ RUN_COMMAND_MARKERS = {
     "python": "python workshop-app/main.py",
     "go": "go -C workshop-app run .",
     "rust": "cargo run --manifest-path workshop-app/Cargo.toml",
-    "java": "mvn -f workshop-app/pom.xml exec:java",
+    "java": "mvn -f workshop-app/pom.xml compile exec:java",
 }
 PROCEDURE_MARKERS = {
     "01-first-session.md": {
@@ -463,9 +463,10 @@ def validate_executable_stage(language: str, stage: str, directory: Path) -> str
         require(contains_any(text, markers),
                 f"{label} executable entrypoint does not wire {capability} for {stage}")
 
-    if stage == "01-first-session":
+    if stage == "01-first-session" or (
+            language == "java" and stage in {"02-streaming", "03-local-tool"}):
         require(DEFAULT_PERMISSION_HANDLERS[language] in text,
-                f"{label} does not approve permission requests by default")
+                f"{label} does not configure the required baseline permission handler")
 
     validate_runtime_flow(language, stage, runtime_source(directory, language, text), label)
     if stage == "04-mcp-safety":
@@ -488,8 +489,8 @@ def validate_executable_stage(language: str, stage: str, directory: Path) -> str
 
     forbidden_capabilities = {
         "01-first-session": ("stream", "local", "mcp", "browser", "snapshot", "report"),
-        "02-streaming": ("local", "mcp", "browser", "snapshot", "permission", "report"),
-        "03-local-tool": ("mcp", "browser", "snapshot", "permission", "report"),
+        "02-streaming": ("local", "mcp", "browser", "snapshot", "report"),
+        "03-local-tool": ("mcp", "browser", "snapshot", "report"),
     }.get(stage, ())
     for capability in forbidden_capabilities:
         markers = apis.get(capability, ()) + LATER_CAPABILITIES.get(capability, ())
@@ -541,7 +542,11 @@ def validate_hello_sample(language: str, directory: Path) -> None:
     source = project_source(directory)
     label = directory.relative_to(ROOT)
 
-    for capability in ("mcp", "browser", "snapshot", "permission", "report"):
+    forbidden_capabilities = ("mcp", "browser", "snapshot", "permission", "report")
+    if language == "java":
+        forbidden_capabilities = tuple(
+            capability for capability in forbidden_capabilities if capability != "permission")
+    for capability in forbidden_capabilities:
         markers = LANGUAGE_APIS[language].get(capability, ()) + LATER_CAPABILITIES[capability]
         require(not contains_any(source, markers),
                 f"{label} includes later-stage {capability} behavior")
@@ -718,6 +723,13 @@ def validate_rendered_language_content(markdown_file: Path) -> None:
                 f"{markdown_file.relative_to(ROOT)} does not show the {selected_language} "
                 f"procedure before Run it: {procedure_marker}",
             )
+
+        if markdown_file.name == "05-combine-tools.md" and selected_language == "java":
+            for marker in ("private record Rule", "Rule.RULES", "\"1.1.1\"", "\"4.1.2\""):
+                require(
+                    marker.casefold() in rendered_folded,
+                    f"{markdown_file.relative_to(ROOT)} does not teach the Java expanded rule catalog: {marker}",
+                )
 
         if markdown_file.name == "09-interactive-html-report.md":
             for marker in (

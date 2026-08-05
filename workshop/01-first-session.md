@@ -373,7 +373,7 @@ cargo run --manifest-path workshop-app/Cargo.toml
 :::
 :::language java
 ```bash
-mvn -f workshop-app/pom.xml exec:java
+mvn -f workshop-app/pom.xml compile exec:java
 ```
 :::
 

@@ -460,7 +460,7 @@ cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
 :::
 :::language java
 ```bash
-mvn -f workshop-app/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"
+mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="{{TARGET_APP_URL}}"
 ```
 :::
 
