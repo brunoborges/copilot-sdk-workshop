@@ -25,17 +25,20 @@ import java.util.stream.Stream;
 
 public final class AccessibilityReport {
     private static final long MAX_SNAPSHOT_BYTES = 1_000_000;
+    private static final String LOCAL_DEMO_MCP_FLAG = "--allow-local-demo-mcp";
 
     private AccessibilityReport() {
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
-            System.err.println("Usage: mvn compile exec:java -Dexec.args=<http-or-https-url>");
-            return;
-        }
-        URI target = parseTarget(args[0]);
+        RunOptions options = parseRunOptions(args);
+        URI target = options.target();
         Path workingDirectory = Path.of("").toAbsolutePath().normalize();
+        if (options.allowLocalDemoMcp()) {
+            System.err.println("WARNING: Local demo fallback enabled. MCP request payload fields are unavailable, "
+                    + "so this run approves only the mcp permission kind, not an exact target. "
+                    + "Use only with the controlled workshop target.");
+        }
         var lookup = ToolDefinition.from(
                 "accessibility_rule_lookup",
                 "Looks up read-only WCAG guidance maintained by this application.",
@@ -64,9 +67,16 @@ public final class AccessibilityReport {
                         return java.util.concurrent.CompletableFuture.completedFuture(
                                 PermissionRequestResult.approveOnce());
                     }
+                    // SDK issue #2273 currently prevents inspecting MCP request fields for the exact check.
+                    if (options.allowLocalDemoMcp() && "mcp".equals(request.getKind())) {
+                        return java.util.concurrent.CompletableFuture.completedFuture(
+                                PermissionRequestResult.approveOnce());
+                    }
                     return java.util.concurrent.CompletableFuture.completedFuture(
                             PermissionRequestResult.reject(
-                                    "This workshop allows Playwright to navigate only to the exact requested target."));
+                                    "This workshop allows Playwright to navigate only to the exact requested target. "
+                                            + "MCP requests without target data remain denied unless the explicit "
+                                            + LOCAL_DEMO_MCP_FLAG + " local-demo fallback is enabled."));
                 });
 
         try (var client = new CopilotClient()) {
@@ -89,6 +99,32 @@ public final class AccessibilityReport {
             throw new IllegalArgumentException("Enter an absolute HTTP or HTTPS URL.");
         }
         return target;
+    }
+
+    private static RunOptions parseRunOptions(String[] args) throws URISyntaxException {
+        boolean allowLocalDemoMcp = false;
+        String target = null;
+        for (String arg : args) {
+            if (LOCAL_DEMO_MCP_FLAG.equals(arg)) {
+                if (allowLocalDemoMcp) {
+                    throw new IllegalArgumentException("Specify " + LOCAL_DEMO_MCP_FLAG + " at most once.");
+                }
+                allowLocalDemoMcp = true;
+            } else if (target == null) {
+                target = arg;
+            } else {
+                throw new IllegalArgumentException(usage());
+            }
+        }
+        if (target == null) {
+            throw new IllegalArgumentException(usage());
+        }
+        return new RunOptions(parseTarget(target), allowLocalDemoMcp);
+    }
+
+    private static String usage() {
+        return "Usage: mvn compile exec:java -Dexec.args=\"["
+                + LOCAL_DEMO_MCP_FLAG + "] <http-or-https-url>\"";
     }
 
     private static boolean isExactNavigation(Map<String, Object> request, URI target) {
@@ -119,6 +155,9 @@ public final class AccessibilityReport {
 
     private static boolean equalsIgnoreCase(String left, String right) {
         return left == null ? right == null : right != null && left.equalsIgnoreCase(right);
+    }
+
+    private record RunOptions(URI target, boolean allowLocalDemoMcp) {
     }
 
     private static String lookupRule(String query) {

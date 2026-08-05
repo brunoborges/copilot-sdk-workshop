@@ -443,6 +443,11 @@ private static String reportPrompt(URI target) {
             Do not invent evidence, report unsupported statistics, or claim the page is WCAG compliant.""".formatted(target);
 }
 ```
+
+Keep the Step 4 permission callback unchanged. It remains fail-closed unless you explicitly pass
+`--allow-local-demo-mcp` for the controlled workshop target. That temporary `mcp`-kind-only fallback
+does not prove the exact URL because [github/copilot-sdk#2273](https://github.com/github/copilot-sdk/issues/2273)
+does not expose the request payload; do not use it outside a disposable local workshop demo.
 :::
 :::language java
 ### 2. Parse the target and use the contract
@@ -451,13 +456,17 @@ Replace `main` so it validates the URL argument, builds the three-tool session, 
 prompt:
 
 ```java
+private static final String LOCAL_DEMO_MCP_FLAG = "--allow-local-demo-mcp";
+
 public static void main(String[] args) throws Exception {
-    if (args.length != 1) {
-        System.err.println("Usage: mvn compile exec:java -Dexec.args=<http-or-https-url>");
-        return;
-    }
-    URI target = parseTarget(args[0]);
+    RunOptions options = parseRunOptions(args);
+    URI target = options.target();
     Path workingDirectory = Path.of("").toAbsolutePath().normalize();
+    if (options.allowLocalDemoMcp()) {
+        System.err.println("WARNING: Local demo fallback enabled. MCP request payload fields are unavailable, "
+                + "so this run approves only the mcp permission kind, not an exact target. "
+                + "Use only with the controlled workshop target.");
+    }
     var lookup = ToolDefinition.from(
             "accessibility_rule_lookup",
             "Looks up read-only WCAG guidance maintained by this application.",
@@ -486,9 +495,15 @@ public static void main(String[] args) throws Exception {
                     return java.util.concurrent.CompletableFuture.completedFuture(
                             PermissionRequestResult.approveOnce());
                 }
+                if (options.allowLocalDemoMcp() && "mcp".equals(request.getKind())) {
+                    return java.util.concurrent.CompletableFuture.completedFuture(
+                            PermissionRequestResult.approveOnce());
+                }
                 return java.util.concurrent.CompletableFuture.completedFuture(
                         PermissionRequestResult.reject(
-                                "This workshop allows Playwright to navigate only to the exact requested target."));
+                                "This workshop allows Playwright to navigate only to the exact requested target. "
+                                        + "MCP requests without target data remain denied unless the explicit "
+                                        + LOCAL_DEMO_MCP_FLAG + " local-demo fallback is enabled."));
             });
 
     try (var client = new CopilotClient()) {
@@ -503,7 +518,7 @@ public static void main(String[] args) throws Exception {
 }
 ```
 
-Keep the checkpoint's `parseTarget` helper next to `main`:
+Keep the checkpoint's `parseTarget` and fallback helpers next to `main`:
 
 ```java
 private static URI parseTarget(String value) throws URISyntaxException {
@@ -515,6 +530,35 @@ private static URI parseTarget(String value) throws URISyntaxException {
         throw new IllegalArgumentException("Enter an absolute HTTP or HTTPS URL.");
     }
     return target;
+}
+
+private static RunOptions parseRunOptions(String[] args) throws URISyntaxException {
+    boolean allowLocalDemoMcp = false;
+    String target = null;
+    for (String arg : args) {
+        if (LOCAL_DEMO_MCP_FLAG.equals(arg)) {
+            if (allowLocalDemoMcp) {
+                throw new IllegalArgumentException("Specify " + LOCAL_DEMO_MCP_FLAG + " at most once.");
+            }
+            allowLocalDemoMcp = true;
+        } else if (target == null) {
+            target = arg;
+        } else {
+            throw new IllegalArgumentException(usage());
+        }
+    }
+    if (target == null) {
+        throw new IllegalArgumentException(usage());
+    }
+    return new RunOptions(parseTarget(target), allowLocalDemoMcp);
+}
+
+private static String usage() {
+    return "Usage: mvn compile exec:java -Dexec.args=\"["
+            + LOCAL_DEMO_MCP_FLAG + "] <http-or-https-url>\"";
+}
+
+private record RunOptions(URI target, boolean allowLocalDemoMcp) {
 }
 ```
 :::
@@ -554,7 +598,7 @@ cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
 :::
 :::language java
 ```bash
-mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="{{TARGET_APP_URL}}"
+mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="--allow-local-demo-mcp {{TARGET_APP_URL}}"
 ```
 :::
 
@@ -1020,13 +1064,17 @@ For comparison, use the
 project. The report contract, argument parsing, and entrypoint:
 
 ```java
+private static final String LOCAL_DEMO_MCP_FLAG = "--allow-local-demo-mcp";
+
 public static void main(String[] args) throws Exception {
-    if (args.length != 1) {
-        System.err.println("Usage: mvn compile exec:java -Dexec.args=<http-or-https-url>");
-        return;
-    }
-    URI target = parseTarget(args[0]);
+    RunOptions options = parseRunOptions(args);
+    URI target = options.target();
     Path workingDirectory = Path.of("").toAbsolutePath().normalize();
+    if (options.allowLocalDemoMcp()) {
+        System.err.println("WARNING: Local demo fallback enabled. MCP request payload fields are unavailable, "
+                + "so this run approves only the mcp permission kind, not an exact target. "
+                + "Use only with the controlled workshop target.");
+    }
     var lookup = ToolDefinition.from(
             "accessibility_rule_lookup",
             "Looks up read-only WCAG guidance maintained by this application.",
@@ -1055,9 +1103,15 @@ public static void main(String[] args) throws Exception {
                     return java.util.concurrent.CompletableFuture.completedFuture(
                             PermissionRequestResult.approveOnce());
                 }
+                if (options.allowLocalDemoMcp() && "mcp".equals(request.getKind())) {
+                    return java.util.concurrent.CompletableFuture.completedFuture(
+                            PermissionRequestResult.approveOnce());
+                }
                 return java.util.concurrent.CompletableFuture.completedFuture(
                         PermissionRequestResult.reject(
-                                "This workshop allows Playwright to navigate only to the exact requested target."));
+                                "This workshop allows Playwright to navigate only to the exact requested target. "
+                                        + "MCP requests without target data remain denied unless the explicit "
+                                        + LOCAL_DEMO_MCP_FLAG + " local-demo fallback is enabled."));
             });
 
     try (var client = new CopilotClient()) {
@@ -1080,6 +1134,35 @@ private static URI parseTarget(String value) throws URISyntaxException {
         throw new IllegalArgumentException("Enter an absolute HTTP or HTTPS URL.");
     }
     return target;
+}
+
+private static RunOptions parseRunOptions(String[] args) throws URISyntaxException {
+    boolean allowLocalDemoMcp = false;
+    String target = null;
+    for (String arg : args) {
+        if (LOCAL_DEMO_MCP_FLAG.equals(arg)) {
+            if (allowLocalDemoMcp) {
+                throw new IllegalArgumentException("Specify " + LOCAL_DEMO_MCP_FLAG + " at most once.");
+            }
+            allowLocalDemoMcp = true;
+        } else if (target == null) {
+            target = arg;
+        } else {
+            throw new IllegalArgumentException(usage());
+        }
+    }
+    if (target == null) {
+        throw new IllegalArgumentException(usage());
+    }
+    return new RunOptions(parseTarget(target), allowLocalDemoMcp);
+}
+
+private static String usage() {
+    return "Usage: mvn compile exec:java -Dexec.args=\"["
+            + LOCAL_DEMO_MCP_FLAG + "] <http-or-https-url>\"";
+}
+
+private record RunOptions(URI target, boolean allowLocalDemoMcp) {
 }
 
 private static String reportPrompt(URI target) {

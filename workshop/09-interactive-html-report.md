@@ -381,6 +381,57 @@ private static boolean isReportWrite(Map<String, Object> request, Path workingDi
 }
 ```
 
+> **Prominent Java safety warning:** The default handler remains fail-closed: it approves an MCP
+> request only after exact-target validation and a write request only after
+> `accessibility-report.html` path validation. Current Java SDK releases do not expose these
+> permission request fields ([github/copilot-sdk#2273](https://github.com/github/copilot-sdk/issues/2273)).
+> The existing `--allow-local-demo-mcp` flag is limited to the `mcp` kind. Step 9 additionally
+> requires `--allow-local-demo-write`, which is limited to the `write` kind and the
+> `builtin:apply_patch` tool allowlist but **cannot enforce the output path**. Enable both flags
+> only for this disposable, controlled local workshop target. Never use either fallback for
+> production, shared, or untrusted worktrees.
+
+To add the separate write fallback, replace the Step 4 parser with:
+
+```java
+private static final String LOCAL_DEMO_MCP_FLAG = "--allow-local-demo-mcp";
+private static final String LOCAL_DEMO_WRITE_FLAG = "--allow-local-demo-write";
+
+private static RunOptions parseRunOptions(String[] args) throws URISyntaxException {
+    boolean allowLocalDemoMcp = false;
+    boolean allowLocalDemoWrite = false;
+    String target = null;
+    for (String arg : args) {
+        if (LOCAL_DEMO_MCP_FLAG.equals(arg)) {
+            if (allowLocalDemoMcp) {
+                throw new IllegalArgumentException("Specify " + LOCAL_DEMO_MCP_FLAG + " at most once.");
+            }
+            allowLocalDemoMcp = true;
+            continue;
+        }
+        if (LOCAL_DEMO_WRITE_FLAG.equals(arg)) {
+            if (allowLocalDemoWrite) {
+                throw new IllegalArgumentException("Specify " + LOCAL_DEMO_WRITE_FLAG + " at most once.");
+            }
+            allowLocalDemoWrite = true;
+            continue;
+        }
+        if (target == null) {
+            target = arg;
+        } else {
+            throw new IllegalArgumentException(usage());
+        }
+    }
+    if (target == null) {
+        throw new IllegalArgumentException(usage());
+    }
+    return new RunOptions(parseTarget(target), allowLocalDemoMcp, allowLocalDemoWrite);
+}
+
+private record RunOptions(URI target, boolean allowLocalDemoMcp, boolean allowLocalDemoWrite) {
+}
+```
+
 Extend the existing `setAvailableTools` call and permission callback:
 
 ```java
@@ -401,9 +452,19 @@ Extend the existing `setAvailableTools` call and permission callback:
         return java.util.concurrent.CompletableFuture.completedFuture(
                 PermissionRequestResult.approveOnce());
     }
+    if (options.allowLocalDemoMcp() && "mcp".equals(request.getKind())) {
+        return java.util.concurrent.CompletableFuture.completedFuture(
+                PermissionRequestResult.approveOnce());
+    }
+    if (options.allowLocalDemoWrite() && "write".equals(request.getKind())) {
+        return java.util.concurrent.CompletableFuture.completedFuture(
+                PermissionRequestResult.approveOnce());
+    }
     return java.util.concurrent.CompletableFuture.completedFuture(
             PermissionRequestResult.reject(
-                    "This workshop allows only exact target navigation and writing accessibility-report.html."));
+                    "This workshop allows only exact target navigation and writing accessibility-report.html. "
+                            + "Requests without target or path data remain denied unless the explicit "
+                            + "local-demo fallback for that permission kind is enabled."));
 })
 ```
 
@@ -461,7 +522,7 @@ cd workshop-app && cargo run -- "{{TARGET_APP_URL}}"
 :::
 :::language java
 ```bash
-cd workshop-app && mvn compile exec:java -Dexec.args="{{TARGET_APP_URL}}"
+cd workshop-app && mvn compile exec:java -Dexec.args="--allow-local-demo-mcp --allow-local-demo-write {{TARGET_APP_URL}}"
 ```
 :::
 
@@ -481,15 +542,16 @@ count update.
 
 | Symptom | Fix |
 |---|---|
-| The write is rejected | Confirm the requested name is exactly `accessibility-report.html` and the handler receives the application working directory. |
-| More than one file is requested | Keep only `builtin:apply_patch` in the new built-in capability and reject any path other than the report. |
+| The write is rejected | The default handler requires the exact `accessibility-report.html` path. If Java SDK payload fields are unavailable, use `--allow-local-demo-write` only for the controlled local demo; it approves the `write` kind but cannot prove the path. |
+| More than one file is requested | Keep only `builtin:apply_patch` in the new built-in capability. The default handler rejects other paths; the Java local-demo write fallback cannot make that guarantee. |
 | The filter does not work | The generated document must include embedded JavaScript that filters cards and updates its live result count. Rerun once if the agent omitted a required element. |
 | The report loads without styling | Keep CSS and JavaScript embedded in the one HTML file; the prompt intentionally disallows external assets and libraries. |
 
 </details>
 
-> **The extension is complete when:** `workshop-app/accessibility-report.html` opens locally,
-> filters evidence-grounded findings, and the session approves no other file path.
+> **The extension is complete when:** `workshop-app/accessibility-report.html` opens locally and
+> filters evidence-grounded findings. With the default exact handler, the session approves no other
+> file path; the Java local-demo write fallback deliberately cannot make that guarantee.
 
 ## Check your understanding
 
@@ -498,9 +560,11 @@ Why is allowing one named built-in write tool safer than broadly approving files
 <details>
 <summary>Check your answer</summary>
 
-`builtin:apply_patch` exposes only the required editing capability, and the permission callback binds
-that capability to one normalized output path. The model cannot use shell commands or write another
-file, while the existing local tools and scoped Playwright navigation remain unchanged.
+`builtin:apply_patch` exposes only the required editing capability, and the default permission
+callback binds that capability to one normalized output path. The model cannot use shell commands
+or write another file, while the existing local tools and scoped Playwright navigation remain
+unchanged. The Java local-demo fallback is an explicit exception while the SDK omits permission
+payload fields, so it must remain limited to a controlled local target.
 
 </details>
 

@@ -211,8 +211,15 @@ cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
 :::
 :::language java
 ```bash
-mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="{{TARGET_APP_URL}}"
+mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="--allow-local-demo-mcp {{TARGET_APP_URL}}"
 ```
+
+> **Java local-demo warning:** This explicit flag is a temporary workaround for
+> [github/copilot-sdk#2273](https://github.com/github/copilot-sdk/issues/2273). Without it,
+> the callback fails closed unless it can verify the exact URL from the permission payload. With it,
+> the session approves only the `mcp` permission kind, one request at a time, under the configured
+> Playwright `browser_navigate` allowlist; it cannot enforce the exact target. Use it only for the
+> controlled local workshop target, never for production, shared, or untrusted URLs.
 :::
 Use the workshop target:
 
@@ -352,8 +359,9 @@ Your transcript will vary, but it should have this shape:
 ...
 ```
 
-Explain that Maven compiles the Java 17 application, `CopilotClient` manages the runtime, tools
-remain scoped, and the permission callback accepts only the canonical URL.
+Explain that Maven compiles the Java 17 application, `CopilotClient` manages the runtime, and tools
+remain scoped. By default the permission callback accepts only the canonical URL; with the explicit
+local-demo flag it is limited to the configured `mcp` kind but cannot verify that URL.
 :::
 
 The controlled target intentionally includes browser-observable issues: a missing text alternative,

@@ -876,6 +876,29 @@ def validate_security_invariants() -> None:
                     and "None => extra.as_object()" in source,
                     f"{directory.relative_to(ROOT)} does not normalize the Rust SDK permission payload",
                 )
+            if language == "java":
+                strict_marker = '&& isExactNavigation(request.getExtensionData(), target)'
+                fallback_marker = 'if (options.allowLocalDemoMcp() && "mcp".equals(request.getKind()))'
+                reject_marker = "PermissionRequestResult.reject"
+                require(
+                    all(marker in source for marker in (
+                        'LOCAL_DEMO_MCP_FLAG = "--allow-local-demo-mcp"',
+                        "parseRunOptions(args)",
+                        strict_marker,
+                        fallback_marker,
+                        "PermissionRequestResult.approveOnce()",
+                        reject_marker,
+                    )),
+                    f"{directory.relative_to(ROOT)} does not implement the explicit Java local-demo MCP fallback",
+                )
+                require(
+                    source.index(strict_marker) < source.index(fallback_marker) < source.index(reject_marker),
+                    f"{directory.relative_to(ROOT)} does not preserve exact-target rejection before its Java fallback",
+                )
+                require(
+                    "APPROVE_ALL" not in source,
+                    f"{directory.relative_to(ROOT)} must not use unqualified Java permission approval",
+                )
     rust_permission_markers = (
         'match extra.get("permissionRequest")',
         "Some(request) => request.as_object()",
@@ -891,6 +914,36 @@ def validate_security_invariants() -> None:
     require(
         "permission_payload(&request.extra)" in report_lesson,
         "workshop/09-interactive-html-report.md does not use normalized Rust write permission data",
+    )
+    for lesson in (
+        "04-mcp-safety.md",
+        "05-combine-tools.md",
+        "06-structured-report.md",
+        "07-run-explain.md",
+        "08-model-selection.md",
+    ):
+        rendered = render_language_markdown(WORKSHOP / lesson, "java")
+        require(
+            all(marker in rendered for marker in (
+                "--allow-local-demo-mcp",
+                "https://github.com/github/copilot-sdk/issues/2273",
+                "exact",
+                "mcp",
+            )),
+            f"workshop/{lesson} does not document the Java local-demo MCP fallback boundary",
+        )
+    java_report_lesson = render_language_markdown(WORKSHOP / "09-interactive-html-report.md", "java")
+    require(
+        all(marker in java_report_lesson for marker in (
+            "--allow-local-demo-mcp",
+            "--allow-local-demo-write",
+            "options.allowLocalDemoWrite()",
+            '"write".equals(request.getKind())',
+            "builtin:apply_patch",
+            "cannot enforce the output path",
+            "https://github.com/github/copilot-sdk/issues/2273",
+        )),
+        "workshop/09-interactive-html-report.md does not constrain the Java local-demo write fallback",
     )
 
 
