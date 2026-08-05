@@ -380,6 +380,17 @@ def validate_runtime_flow(language: str, stage: str, text: str, label: Path) -> 
         )
         require(contains_all(text, markers),
                f"{label} does not print streamed output or a final-message fallback before propagating session errors")
+        if stage == "05-combine-tools":
+            tool_event_markers = (
+                "ToolExecutionStartData",
+                "[tool:start]",
+                "ToolExecutionCompleteData",
+                "[tool:done]",
+            )
+            require(
+                contains_all(text, tool_event_markers),
+                f"{label} does not print local and MCP tool lifecycle events",
+            )
     elif language == "go":
         if streaming:
             event_output = contains_all(text, ("session.On(", "AssistantMessageDeltaData", "AssistantMessageData", "receivedDelta", "fmt.Print"))
@@ -739,6 +750,17 @@ def validate_rendered_language_content(markdown_file: Path) -> None:
                 require(
                     marker.casefold() in rendered_folded,
                     f"{markdown_file.relative_to(ROOT)} does not teach the Java expanded rule catalog: {marker}",
+                )
+        if markdown_file.name == "05-combine-tools.md" and selected_language == "python":
+            for marker in (
+                "ToolExecutionStartData",
+                "[tool:start]",
+                "ToolExecutionCompleteData",
+                "[tool:done]",
+            ):
+                require(
+                    marker.casefold() in rendered_folded,
+                    f"{markdown_file.relative_to(ROOT)} does not teach Python tool lifecycle events: {marker}",
                 )
 
         if markdown_file.name == "09-interactive-html-report.md":
