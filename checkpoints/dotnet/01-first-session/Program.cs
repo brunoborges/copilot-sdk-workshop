@@ -1,4 +1,5 @@
 using GitHub.Copilot;
+using GitHub.Copilot.Rpc;
 
 Console.WriteLine("=== First Copilot session ===\n");
 
@@ -8,7 +9,10 @@ await client.StartAsync();
 var ping = await client.PingAsync("workshop");
 Console.WriteLine($"Connected to the Copilot runtime: {ping.Message}");
 
-await using var session = await client.CreateSessionAsync(new SessionConfig());
+await using var session = await client.CreateSessionAsync(new SessionConfig
+{
+    OnPermissionRequest = PermissionHandler.ApproveAll,
+});
 var response = await session.SendAndWaitAsync(
     "In one sentence, explain why an accessible name matters for a form input.");
 

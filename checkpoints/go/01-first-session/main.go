@@ -14,7 +14,9 @@ func main() {
 	}
 	defer client.Stop()
 
-	session, err := client.CreateSession(context.Background(), &copilot.SessionConfig{})
+	session, err := client.CreateSession(context.Background(), &copilot.SessionConfig{
+		OnPermissionRequest: copilot.PermissionHandler.ApproveAll,
+	})
 	if err != nil {
 		panic(err)
 	}
