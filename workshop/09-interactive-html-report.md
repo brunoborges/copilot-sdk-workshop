@@ -435,7 +435,7 @@ private static String reportPrompt(URI target) {
 
 :::language dotnet
 ```bash
-dotnet run --project workshop-app
+cd workshop-app && dotnet run
 ```
 :::
 :::language nodejs
@@ -445,7 +445,7 @@ npm --prefix workshop-app start -- "{{TARGET_APP_URL}}"
 :::
 :::language python
 ```bash
-python workshop-app/main.py "{{TARGET_APP_URL}}"
+cd workshop-app && python main.py "{{TARGET_APP_URL}}"
 ```
 :::
 :::language go
@@ -455,12 +455,12 @@ go -C workshop-app run . "{{TARGET_APP_URL}}"
 :::
 :::language rust
 ```bash
-cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
+cd workshop-app && cargo run -- "{{TARGET_APP_URL}}"
 ```
 :::
 :::language java
 ```bash
-mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="{{TARGET_APP_URL}}"
+cd workshop-app && mvn compile exec:java -Dexec.args="{{TARGET_APP_URL}}"
 ```
 :::
 
