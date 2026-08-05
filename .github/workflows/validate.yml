@@ -117,3 +117,29 @@ jobs:
 
       - name: Build ${{ matrix.name }}
         run: bash scripts/validate-workshop.sh "${{ matrix.language }}"
+
+  macos-portability:
+    name: macOS portable validation
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.x"
+
+      - name: Validate with macOS system Bash
+        run: |
+          /bin/bash --version
+          /bin/bash scripts/validate-workshop.sh dotnet
+          /bin/bash scripts/validate-workshop.sh python
+          /bin/bash scripts/validate-workshop.sh go
+          test -z "$(git status --porcelain --untracked-files=all)"

@@ -5,6 +5,13 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 target="${1:-all}"
+temporary_directory="$(mktemp -d)"
+
+cleanup() {
+    rm -rf "$temporary_directory"
+}
+
+trap cleanup EXIT
 
 validate_content() {
     python3 scripts/validate_workshop.py
@@ -12,7 +19,10 @@ validate_content() {
 }
 
 validate_dotnet() {
-    mapfile -t projects < <(find start/dotnet samples/dotnet checkpoints/dotnet -name '*.csproj' -print | sort)
+    projects=()
+    while IFS= read -r project; do
+        projects+=("$project")
+    done < <(find start/dotnet samples/dotnet checkpoints/dotnet -name '*.csproj' -print | sort)
     projects+=("src/BlazorApp/BlazorApp.csproj")
     for project in "${projects[@]}"; do
         echo "Restoring and building $project"
@@ -29,21 +39,27 @@ validate_nodejs() {
 }
 
 validate_python() {
+    python_venv="$temporary_directory/python-venv"
+    python3 -m venv "$python_venv"
+
     for project in start/python samples/python/* checkpoints/python/*; do
         echo "Installing and smoke-checking $project"
         (
             cd "$project"
-            python3 -m pip install --disable-pip-version-check --no-input --requirement requirements.txt
-            python3 -m py_compile *.py
-            python3 -c "import importlib, pathlib; [importlib.import_module(path.stem) for path in pathlib.Path('.').glob('*.py')]; from copilot import CopilotClient"
+            "$python_venv/bin/python" -m pip install --disable-pip-version-check --no-input --requirement requirements.txt
+            "$python_venv/bin/python" -m py_compile *.py
+            "$python_venv/bin/python" -c "import importlib, pathlib; [importlib.import_module(path.stem) for path in pathlib.Path('.').glob('*.py')]; from copilot import CopilotClient"
         )
     done
 }
 
 validate_go() {
+    go_build_directory="$temporary_directory/go-build"
+    mkdir -p "$go_build_directory"
+
     for project in start/go samples/go/* checkpoints/go/*; do
         echo "Resolving and testing $project"
-        (cd "$project" && go mod download && go mod verify && go build -mod=readonly ./... && go test -mod=readonly ./...)
+        (cd "$project" && go mod download && go mod verify && go build -mod=readonly -o "$go_build_directory/" ./... && go test -mod=readonly ./...)
     done
 }
 
