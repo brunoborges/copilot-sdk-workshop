@@ -129,6 +129,14 @@ RUN_COMMAND_MARKERS = {
     "rust": "cargo run --manifest-path workshop-app/Cargo.toml",
     "java": "mvn -f workshop-app/pom.xml compile exec:java",
 }
+STEP_9_RUN_COMMAND_MARKERS = {
+    "dotnet": "cd workshop-app && dotnet run",
+    "nodejs": "npm --prefix workshop-app start",
+    "python": "cd workshop-app && python main.py",
+    "go": "go -C workshop-app run .",
+    "rust": "cd workshop-app && cargo run --",
+    "java": "cd workshop-app && mvn compile exec:java",
+}
 PROCEDURE_MARKERS = {
     "01-first-session.md": {
         "dotnet": "SendAndWaitAsync",
@@ -728,7 +736,12 @@ def validate_rendered_language_content(markdown_file: Path) -> None:
 
         if markdown_file.name != "00-preflight.md":
             run_section = markdown_section(rendered, "## Run it")
-            run_marker = RUN_COMMAND_MARKERS[selected_language]
+            run_markers = (
+                STEP_9_RUN_COMMAND_MARKERS
+                if markdown_file.name == "09-interactive-html-report.md"
+                else RUN_COMMAND_MARKERS
+            )
+            run_marker = run_markers[selected_language]
             require(
                 run_marker.casefold() in run_section.casefold(),
                 f"{markdown_file.relative_to(ROOT)} has no {selected_language} "
