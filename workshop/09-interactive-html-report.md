@@ -286,13 +286,14 @@ Created accessibility-report.html`, target)
 :::language rust
 ## Scope the Rust write permission
 
-Add `report_path: PathBuf` to `ScopedPermissions`, then add this write branch before its rejecting
-`else`:
+Add `report_path: PathBuf` to `ScopedPermissions`. Keep the Step 4 `permission_payload` extraction:
+it prefers the nested `permissionRequest` object when the SDK sends one, falls back to the direct
+object for older payloads, and rejects malformed nested values. Then add this write branch before
+its rejecting `else`:
 
 ```rust
-let file_name = request
-    .extra
-    .get("fileName")
+let file_name = permission_payload(&request.extra)
+    .and_then(|payload| payload.get("fileName"))
     .and_then(serde_json::Value::as_str);
 let report_write = file_name.is_some_and(|name| {
     let candidate = Path::new(name);

@@ -231,6 +231,15 @@ struct ScopedPermissions {
     target: Url,
 }
 
+fn permission_payload(
+    extra: &serde_json::Value,
+) -> Option<&serde_json::Map<String, serde_json::Value>> {
+    match extra.get("permissionRequest") {
+        Some(request) => request.as_object(),
+        None => extra.as_object(),
+    }
+}
+
 #[async_trait]
 impl PermissionHandler for ScopedPermissions {
     async fn handle(
@@ -239,17 +248,15 @@ impl PermissionHandler for ScopedPermissions {
         _request_id: RequestId,
         request: PermissionRequestData,
     ) -> PermissionResult {
-        let server = request
-            .extra
-            .get("serverName")
+        let payload = permission_payload(&request.extra);
+        let server = payload
+            .and_then(|payload| payload.get("serverName"))
             .and_then(serde_json::Value::as_str);
-        let tool = request
-            .extra
-            .get("toolName")
+        let tool = payload
+            .and_then(|payload| payload.get("toolName"))
             .and_then(serde_json::Value::as_str);
-        let requested = request
-            .extra
-            .get("args")
+        let requested = payload
+            .and_then(|payload| payload.get("args"))
             .and_then(|args| args.get("url"))
             .and_then(serde_json::Value::as_str)
             .and_then(|value| Url::parse(value).ok());
@@ -374,4 +381,48 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     session.disconnect().await?;
     client.stop().await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::permission_payload;
+    use serde_json::json;
+
+    #[test]
+    fn permission_payload_prefers_a_valid_nested_request() {
+        let payload = permission_payload(&json!({
+            "serverName": "untrusted",
+            "permissionRequest": { "serverName": "playwright" }
+        }));
+
+        assert_eq!(
+            payload
+                .and_then(|payload| payload.get("serverName"))
+                .and_then(serde_json::Value::as_str),
+            Some("playwright")
+        );
+    }
+
+    #[test]
+    fn permission_payload_supports_the_legacy_direct_shape() {
+        let payload = permission_payload(&json!({ "serverName": "playwright" }));
+
+        assert_eq!(
+            payload
+                .and_then(|payload| payload.get("serverName"))
+                .and_then(serde_json::Value::as_str),
+            Some("playwright")
+        );
+    }
+
+    #[test]
+    fn permission_payload_rejects_malformed_nested_requests() {
+        assert!(
+            permission_payload(&json!({
+                "permissionRequest": "not an object",
+                "serverName": "playwright"
+            }))
+            .is_none()
+        );
+    }
 }

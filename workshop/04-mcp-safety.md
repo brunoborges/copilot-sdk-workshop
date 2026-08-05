@@ -1049,6 +1049,15 @@ struct ScopedPermissions {
     target: Url,
 }
 
+fn permission_payload(
+    extra: &serde_json::Value,
+) -> Option<&serde_json::Map<String, serde_json::Value>> {
+    match extra.get("permissionRequest") {
+        Some(request) => request.as_object(),
+        None => extra.as_object(),
+    }
+}
+
 #[async_trait]
 impl PermissionHandler for ScopedPermissions {
     async fn handle(
@@ -1057,17 +1066,15 @@ impl PermissionHandler for ScopedPermissions {
         _request_id: RequestId,
         request: PermissionRequestData,
     ) -> PermissionResult {
-        let server = request
-            .extra
-            .get("serverName")
+        let payload = permission_payload(&request.extra);
+        let server = payload
+            .and_then(|payload| payload.get("serverName"))
             .and_then(serde_json::Value::as_str);
-        let tool = request
-            .extra
-            .get("toolName")
+        let tool = payload
+            .and_then(|payload| payload.get("toolName"))
             .and_then(serde_json::Value::as_str);
-        let requested = request
-            .extra
-            .get("args")
+        let requested = payload
+            .and_then(|payload| payload.get("args"))
             .and_then(|args| args.get("url"))
             .and_then(serde_json::Value::as_str)
             .and_then(|value| Url::parse(value).ok());

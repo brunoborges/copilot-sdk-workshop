@@ -828,6 +828,29 @@ def validate_security_invariants() -> None:
                 "java": "boolean sameUrl",
             }
             require(exact_url_markers[language] in source, f"{directory.relative_to(ROOT)} does not compare target URL components exactly")
+            if language == "rust":
+                require(
+                    'match extra.get("permissionRequest")' in source
+                    and "Some(request) => request.as_object()" in source
+                    and "None => extra.as_object()" in source,
+                    f"{directory.relative_to(ROOT)} does not normalize the Rust SDK permission payload",
+                )
+    rust_permission_markers = (
+        'match extra.get("permissionRequest")',
+        "Some(request) => request.as_object()",
+        "None => extra.as_object()",
+    )
+    for lesson in ("04-mcp-safety.md", "05-combine-tools.md"):
+        rendered = render_language_markdown(WORKSHOP / lesson, "rust")
+        require(
+            all(marker in rendered for marker in rust_permission_markers),
+            f"workshop/{lesson} does not preserve Rust permission payload normalization",
+        )
+    report_lesson = render_language_markdown(WORKSHOP / "09-interactive-html-report.md", "rust")
+    require(
+        "permission_payload(&request.extra)" in report_lesson,
+        "workshop/09-interactive-html-report.md does not use normalized Rust write permission data",
+    )
 
 
 def validate_playwright_file_output(text: str, label: Path) -> None:
