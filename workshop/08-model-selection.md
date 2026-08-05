@@ -586,9 +586,15 @@ try (var client = new CopilotClient()) {
                     return java.util.concurrent.CompletableFuture.completedFuture(
                             PermissionRequestResult.approveOnce());
                 }
+                if (options.allowLocalDemoMcp() && "mcp".equals(request.getKind())) {
+                    return java.util.concurrent.CompletableFuture.completedFuture(
+                            PermissionRequestResult.approveOnce());
+                }
                 return java.util.concurrent.CompletableFuture.completedFuture(
                         PermissionRequestResult.reject(
-                                "This workshop allows Playwright to navigate only to the exact requested target."));
+                                "This workshop allows Playwright to navigate only to the exact requested target. "
+                                        + "MCP requests without target data remain denied unless the explicit "
+                                        + LOCAL_DEMO_MCP_FLAG + " local-demo fallback is enabled."));
             });
 
     var session = client.createSession(config).get();
@@ -601,7 +607,10 @@ try (var client = new CopilotClient()) {
 ```
 
 Keep every existing tool, MCP, and permission setting from Step 6. Only add
-`SessionConfig.setModel(selectedModel)`.
+`SessionConfig.setModel(selectedModel)`. In particular, preserve the default exact-target rejection
+and the explicitly opted-in `--allow-local-demo-mcp` workaround for
+[github/copilot-sdk#2273](https://github.com/github/copilot-sdk/issues/2273); that fallback
+approves only the `mcp` kind and cannot prove the target URL.
 :::
 
 ## Run it
@@ -633,7 +642,7 @@ cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
 :::
 :::language java
 ```bash
-mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="{{TARGET_APP_URL}}"
+mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="--allow-local-demo-mcp {{TARGET_APP_URL}}"
 ```
 :::
 Enter the workshop target URL, then choose a model, and confirm the same scoped tools still run.

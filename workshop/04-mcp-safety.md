@@ -1339,12 +1339,14 @@ At the start of `main` in
 `workshop-app/src/main/java/workshop/AccessibilityReport.java`, validate the startup URL:
 
 ```java
-if (args.length != 1) {
-    System.err.println("Usage: mvn compile exec:java -Dexec.args=<http-or-https-url>");
-    return;
-}
-URI target = parseTarget(args[0]);
+RunOptions options = parseRunOptions(args);
+URI target = options.target();
 Path workingDirectory = Path.of("").toAbsolutePath().normalize();
+if (options.allowLocalDemoMcp()) {
+    System.err.println("WARNING: Local demo fallback enabled. MCP request payload fields are unavailable, "
+            + "so this run approves only the mcp permission kind, not an exact target. "
+            + "Use only with the controlled workshop target.");
+}
 ```
 
 Add the parser helper:
@@ -1374,10 +1376,62 @@ Approve only exact-target Playwright navigation on the session configuration:
         return java.util.concurrent.CompletableFuture.completedFuture(
                 PermissionRequestResult.approveOnce());
     }
+    // SDK issue #2273 currently prevents inspecting MCP request fields for the exact check.
+    if (options.allowLocalDemoMcp() && "mcp".equals(request.getKind())) {
+        return java.util.concurrent.CompletableFuture.completedFuture(
+                PermissionRequestResult.approveOnce());
+    }
     return java.util.concurrent.CompletableFuture.completedFuture(
             PermissionRequestResult.reject(
-                    "This workshop allows Playwright to navigate only to the exact requested target."));
+                    "This workshop allows Playwright to navigate only to the exact requested target. "
+                            + "MCP requests without target data remain denied unless the explicit "
+                            + LOCAL_DEMO_MCP_FLAG + " local-demo fallback is enabled."));
 })
+```
+
+> **Temporary Java SDK limitation and local-demo fallback:** By default this is fail-closed: it
+> approves only an `mcp` request whose payload proves the configured Playwright navigation is the
+> exact entered URL. Current Java SDK releases do not expose those MCP request fields
+> ([github/copilot-sdk#2273](https://github.com/github/copilot-sdk/issues/2273)), so the
+> default path rejects that request rather than guessing. For the controlled workshop target only,
+> pass `--allow-local-demo-mcp`. That explicit flag approves one `mcp` request at a time; it does
+> **not** use `APPROVE_ALL`, and the MCP configuration still exposes only Playwright
+> `browser_navigate`. It cannot enforce the exact URL while the SDK payload is unavailable. Never
+> enable it for a production, shared, or untrusted target.
+
+Add this option parser beside `parseTarget`:
+
+```java
+private static final String LOCAL_DEMO_MCP_FLAG = "--allow-local-demo-mcp";
+
+private static RunOptions parseRunOptions(String[] args) throws URISyntaxException {
+    boolean allowLocalDemoMcp = false;
+    String target = null;
+    for (String arg : args) {
+        if (LOCAL_DEMO_MCP_FLAG.equals(arg)) {
+            if (allowLocalDemoMcp) {
+                throw new IllegalArgumentException("Specify " + LOCAL_DEMO_MCP_FLAG + " at most once.");
+            }
+            allowLocalDemoMcp = true;
+        } else if (target == null) {
+            target = arg;
+        } else {
+            throw new IllegalArgumentException(usage());
+        }
+    }
+    if (target == null) {
+        throw new IllegalArgumentException(usage());
+    }
+    return new RunOptions(parseTarget(target), allowLocalDemoMcp);
+}
+
+private static String usage() {
+    return "Usage: mvn compile exec:java -Dexec.args=\"["
+            + LOCAL_DEMO_MCP_FLAG + "] <http-or-https-url>\"";
+}
+
+private record RunOptions(URI target, boolean allowLocalDemoMcp) {
+}
 ```
 
 Add the URL-matching helpers:
@@ -1522,9 +1576,15 @@ var config = new SessionConfig()
                 return java.util.concurrent.CompletableFuture.completedFuture(
                         PermissionRequestResult.approveOnce());
             }
+            if (options.allowLocalDemoMcp() && "mcp".equals(request.getKind())) {
+                return java.util.concurrent.CompletableFuture.completedFuture(
+                        PermissionRequestResult.approveOnce());
+            }
             return java.util.concurrent.CompletableFuture.completedFuture(
                     PermissionRequestResult.reject(
-                            "This workshop allows Playwright to navigate only to the exact requested target."));
+                            "This workshop allows Playwright to navigate only to the exact requested target. "
+                                    + "MCP requests without target data remain denied unless the explicit "
+                                    + LOCAL_DEMO_MCP_FLAG + " local-demo fallback is enabled."));
         });
 
 try (var client = new CopilotClient()) {
@@ -1556,10 +1616,11 @@ import com.github.copilot.rpc.PermissionRequestResult;
 ## Run it
 
 ```bash
-mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="{{TARGET_APP_URL}}"
+mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="--allow-local-demo-mcp {{TARGET_APP_URL}}"
 ```
 
-The first run may take longer while `npx` starts Playwright.
+The first run may take longer while `npx` starts Playwright. This command intentionally opts into
+the temporary local-demo fallback above; omit the flag to keep the strict fail-closed policy.
 
 Look for a page title such as:
 
@@ -1574,7 +1635,7 @@ Page title: Blazor Accessibility Target
 |---|---|
 | `npx` cannot be started | Rerun the preflight MCP command and verify Node.js is on `PATH`. |
 | Playwright cannot find a browser | Install Edge or Chrome, or configure an installed browser as described by Playwright MCP. |
-| A permission is rejected | Use the exact target URL above. The handler intentionally denies other URLs and tools. |
+| A permission is rejected | The default handler intentionally denies missing or non-exact request payloads. Use the exact target when the SDK provides it; for this controlled target only, add `--allow-local-demo-mcp` until [#2273](https://github.com/github/copilot-sdk/issues/2273) is fixed. |
 | No current-run snapshot is available | Keep the prompt order: call `browser_navigate` before `read_latest_accessibility_snapshot`. |
 | MCP or permission types unresolved | Add the `McpStdioServerConfig` and `PermissionRequestResult` imports. |
 
@@ -1607,9 +1668,15 @@ var config = new SessionConfig()
                 return java.util.concurrent.CompletableFuture.completedFuture(
                         PermissionRequestResult.approveOnce());
             }
+            if (options.allowLocalDemoMcp() && "mcp".equals(request.getKind())) {
+                return java.util.concurrent.CompletableFuture.completedFuture(
+                        PermissionRequestResult.approveOnce());
+            }
             return java.util.concurrent.CompletableFuture.completedFuture(
                     PermissionRequestResult.reject(
-                            "This workshop allows Playwright to navigate only to the exact requested target."));
+                            "This workshop allows Playwright to navigate only to the exact requested target. "
+                                    + "MCP requests without target data remain denied unless the explicit "
+                                    + LOCAL_DEMO_MCP_FLAG + " local-demo fallback is enabled."));
         });
 ```
 
