@@ -221,7 +221,7 @@ func main() {
 		MCPServers: map[string]copilot.MCPServerConfig{
 			"playwright": copilot.MCPStdioServerConfig{
 				Command:          "npx",
-				Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge"},
+				Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"},
 				WorkingDirectory: workingDirectory,
 				Tools:            []string{"browser_navigate"},
 			},

@@ -13,7 +13,7 @@ try {
     onPermissionRequest: permissionForTarget(target),
     tools: [accessibilityRuleLookup, createSnapshotReader(process.cwd())],
     availableTools: ["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"],
-    mcpServers: { playwright: { command: "npx", args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"], workingDirectory: process.cwd(), tools: ["browser_navigate"] } },
+    mcpServers: { playwright: { command: "npx", args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"], workingDirectory: process.cwd(), tools: ["browser_navigate"] } },
   });
   try {
     await streamResponse(session, `Use browser_navigate to open ${target.href}, then read_latest_accessibility_snapshot and report the page title.`);

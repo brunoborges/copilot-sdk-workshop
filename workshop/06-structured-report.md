@@ -119,7 +119,7 @@ try {
     streaming: true, onPermissionRequest: permissionForTarget(target),
     tools: [accessibilityRuleLookup, createSnapshotReader(process.cwd())],
     availableTools: ["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"],
-    mcpServers: { playwright: { command: "npx", args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"], workingDirectory: process.cwd(), tools: ["browser_navigate"] } },
+    mcpServers: { playwright: { command: "npx", args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"], workingDirectory: process.cwd(), tools: ["browser_navigate"] } },
   });
   try { await streamResponse(session, reportPrompt(target)); } finally { await session.disconnect(); }
 } finally { await client.stop(); }
@@ -183,7 +183,7 @@ async def main() -> None:
     if urlsplit(target).scheme not in {"http", "https"}:
         raise ValueError("Enter an absolute HTTP or HTTPS URL.")
     async with CopilotClient() as client:
-        async with await client.create_session(streaming=True, on_permission_request=permission_for_target(target), tools=[accessibility_rule_lookup, create_snapshot_reader(".")], available_tools=["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"], mcp_servers={"playwright": {"command": "npx", "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"], "working_directory": ".", "tools": ["browser_navigate"]}}) as session:
+        async with await client.create_session(streaming=True, on_permission_request=permission_for_target(target), tools=[accessibility_rule_lookup, create_snapshot_reader(".")], available_tools=["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"], mcp_servers={"playwright": {"command": "npx", "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"], "working_directory": ".", "tools": ["browser_navigate"]}}) as session:
             done = asyncio.Event()
             error: RuntimeError | None = None
             received_delta = False
@@ -294,7 +294,7 @@ func main() {
 		MCPServers: map[string]copilot.MCPServerConfig{
 			"playwright": copilot.MCPStdioServerConfig{
 				Command:          "npx",
-				Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge"},
+				Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"},
 				WorkingDirectory: workingDirectory,
 				Tools:            []string{"browser_navigate"},
 			},
@@ -393,6 +393,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "-y".to_owned(),
                 "@playwright/mcp@0.0.78".to_owned(),
                 "--browser=msedge".to_owned(),
+                "--output-dir".to_owned(),
+                ".playwright-mcp".to_owned(),
+                "--output-mode".to_owned(),
+                "file".to_owned(),
             ],
             tools: Some(vec!["browser_navigate".to_owned()]),
             working_directory: Some(working_directory.display().to_string()),
@@ -473,7 +477,7 @@ public static void main(String[] args) throws Exception {
                     "playwright-browser_navigate"))
             .setMcpServers(Map.of("playwright", new McpStdioServerConfig()
                     .setCommand("npx")
-                    .setArgs(List.of("-y", "@playwright/mcp@0.0.78", "--browser=msedge"))
+                    .setArgs(List.of("-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"))
                     .setWorkingDirectory(workingDirectory.toString())
                     .setTools(List.of("browser_navigate"))))
             .setOnPermissionRequest((request, ignored) -> {
@@ -659,7 +663,7 @@ await using var session = await client.CreateSessionAsync(new SessionConfig
         ["playwright"] = new McpStdioServerConfig
         {
             Command = "npx",
-            Args = ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"],
+            Args = ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"],
             WorkingDirectory = workingDirectory,
             Tools = ["browser_navigate"]
         }
@@ -703,7 +707,7 @@ try {
     streaming: true, onPermissionRequest: permissionForTarget(target),
     tools: [accessibilityRuleLookup, createSnapshotReader(process.cwd())],
     availableTools: ["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"],
-    mcpServers: { playwright: { command: "npx", args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"], workingDirectory: process.cwd(), tools: ["browser_navigate"] } },
+    mcpServers: { playwright: { command: "npx", args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"], workingDirectory: process.cwd(), tools: ["browser_navigate"] } },
   });
   try { await streamResponse(session, reportPrompt(target)); } finally { await session.disconnect(); }
 } finally { await client.stop(); }
@@ -772,7 +776,7 @@ async def main() -> None:
     if urlsplit(target).scheme not in {"http", "https"}:
         raise ValueError("Enter an absolute HTTP or HTTPS URL.")
     async with CopilotClient() as client:
-        async with await client.create_session(streaming=True, on_permission_request=permission_for_target(target), tools=[accessibility_rule_lookup, create_snapshot_reader(".")], available_tools=["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"], mcp_servers={"playwright": {"command": "npx", "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"], "working_directory": ".", "tools": ["browser_navigate"]}}) as session:
+        async with await client.create_session(streaming=True, on_permission_request=permission_for_target(target), tools=[accessibility_rule_lookup, create_snapshot_reader(".")], available_tools=["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"], mcp_servers={"playwright": {"command": "npx", "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"], "working_directory": ".", "tools": ["browser_navigate"]}}) as session:
             done = asyncio.Event()
             error: RuntimeError | None = None
             received_delta = False
@@ -887,7 +891,7 @@ func main() {
 		MCPServers: map[string]copilot.MCPServerConfig{
 			"playwright": copilot.MCPStdioServerConfig{
 				Command:          "npx",
-				Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge"},
+				Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"},
 				WorkingDirectory: workingDirectory,
 				Tools:            []string{"browser_navigate"},
 			},
@@ -982,6 +986,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "-y".to_owned(),
                 "@playwright/mcp@0.0.78".to_owned(),
                 "--browser=msedge".to_owned(),
+                "--output-dir".to_owned(),
+                ".playwright-mcp".to_owned(),
+                "--output-mode".to_owned(),
+                "file".to_owned(),
             ],
             tools: Some(vec!["browser_navigate".to_owned()]),
             working_directory: Some(working_directory.display().to_string()),
@@ -1038,7 +1046,7 @@ public static void main(String[] args) throws Exception {
                     "playwright-browser_navigate"))
             .setMcpServers(Map.of("playwright", new McpStdioServerConfig()
                     .setCommand("npx")
-                    .setArgs(List.of("-y", "@playwright/mcp@0.0.78", "--browser=msedge"))
+                    .setArgs(List.of("-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"))
                     .setWorkingDirectory(workingDirectory.toString())
                     .setTools(List.of("browser_navigate"))))
             .setOnPermissionRequest((request, ignored) -> {

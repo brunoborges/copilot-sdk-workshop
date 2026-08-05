@@ -159,7 +159,7 @@ await using var session = await client.CreateSessionAsync(new SessionConfig
         ["playwright"] = new McpStdioServerConfig
         {
             Command = "npx",
-            Args = ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"],
+            Args = ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"],
             WorkingDirectory = workingDirectory,
             Tools = ["browser_navigate"]
         }
@@ -262,7 +262,7 @@ await using var session = await client.CreateSessionAsync(new SessionConfig
         ["playwright"] = new McpStdioServerConfig
         {
             Command = "npx",
-            Args = ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"],
+            Args = ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"],
             WorkingDirectory = workingDirectory,
             Tools = ["browser_navigate"]
         }
@@ -415,7 +415,7 @@ try {
     mcpServers: {
       playwright: {
         command: "npx",
-        args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"],
+        args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"],
         workingDirectory: process.cwd(),
         tools: ["browser_navigate"],
       },
@@ -493,7 +493,7 @@ try {
     onPermissionRequest: permissionForTarget(target),
     tools: [accessibilityRuleLookup, createSnapshotReader(process.cwd())],
     availableTools: ["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"],
-    mcpServers: { playwright: { command: "npx", args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"], workingDirectory: process.cwd(), tools: ["browser_navigate"] } },
+    mcpServers: { playwright: { command: "npx", args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"], workingDirectory: process.cwd(), tools: ["browser_navigate"] } },
   });
   try {
     await streamResponse(session, `Use browser_navigate to open ${target.href}, then read_latest_accessibility_snapshot and report the page title.`);
@@ -652,7 +652,7 @@ Replace the session creation block in `main.py`:
             mcp_servers={
                 "playwright": {
                     "command": "npx",
-                    "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"],
+                    "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"],
                     "working_directory": ".",
                     "tools": ["browser_navigate"],
                 }
@@ -747,7 +747,7 @@ async def main() -> None:
             on_permission_request=permission_for_target(target),
             tools=[accessibility_rule_lookup, create_snapshot_reader(".")],
             available_tools=["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"],
-            mcp_servers={"playwright": {"command": "npx", "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"], "working_directory": ".", "tools": ["browser_navigate"]}},
+            mcp_servers={"playwright": {"command": "npx", "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"], "working_directory": ".", "tools": ["browser_navigate"]}},
         ) as session:
             done = asyncio.Event()
             error: RuntimeError | None = None
@@ -924,7 +924,7 @@ session, err := client.CreateSession(context.Background(), &copilot.SessionConfi
 	MCPServers: map[string]copilot.MCPServerConfig{
 		"playwright": copilot.MCPStdioServerConfig{
 			Command:          "npx",
-			Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge"},
+			Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"},
 			WorkingDirectory: workingDirectory,
 			Tools:            []string{"browser_navigate"},
 		},
@@ -1000,7 +1000,7 @@ session, err := client.CreateSession(context.Background(), &copilot.SessionConfi
 	MCPServers: map[string]copilot.MCPServerConfig{
 		"playwright": copilot.MCPStdioServerConfig{
 			Command:          "npx",
-			Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge"},
+			Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"},
 			WorkingDirectory: workingDirectory,
 			Tools:            []string{"browser_navigate"},
 		},
@@ -1218,6 +1218,10 @@ config.mcp_servers = Some(IndexMap::from([(
             "-y".to_owned(),
             "@playwright/mcp@0.0.78".to_owned(),
             "--browser=msedge".to_owned(),
+            "--output-dir".to_owned(),
+            ".playwright-mcp".to_owned(),
+            "--output-mode".to_owned(),
+            "file".to_owned(),
         ],
         tools: Some(vec!["browser_navigate".to_owned()]),
         working_directory: Some(working_directory.display().to_string()),
@@ -1297,6 +1301,10 @@ config.mcp_servers = Some(IndexMap::from([(
             "-y".to_owned(),
             "@playwright/mcp@0.0.78".to_owned(),
             "--browser=msedge".to_owned(),
+            "--output-dir".to_owned(),
+            ".playwright-mcp".to_owned(),
+            "--output-mode".to_owned(),
+            "file".to_owned(),
         ],
         tools: Some(vec!["browser_navigate".to_owned()]),
         working_directory: Some(working_directory.display().to_string()),
@@ -1498,7 +1506,7 @@ var config = new SessionConfig()
                 "playwright-browser_navigate"))
         .setMcpServers(Map.of("playwright", new McpStdioServerConfig()
                 .setCommand("npx")
-                .setArgs(List.of("-y", "@playwright/mcp@0.0.78", "--browser=msedge"))
+                .setArgs(List.of("-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"))
                 .setWorkingDirectory(workingDirectory.toString())
                 .setTools(List.of("browser_navigate"))))
         .setOnPermissionRequest((request, ignored) -> {
@@ -1583,7 +1591,7 @@ var config = new SessionConfig()
                 "playwright-browser_navigate"))
         .setMcpServers(Map.of("playwright", new McpStdioServerConfig()
                 .setCommand("npx")
-                .setArgs(List.of("-y", "@playwright/mcp@0.0.78", "--browser=msedge"))
+                .setArgs(List.of("-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"))
                 .setWorkingDirectory(workingDirectory.toString())
                 .setTools(List.of("browser_navigate"))))
         .setOnPermissionRequest((request, ignored) -> {
