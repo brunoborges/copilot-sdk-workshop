@@ -304,6 +304,7 @@ Open `workshop-app/src/main/java/workshop/AccessibilityReport.java` and **replac
 package workshop;
 
 import com.github.copilot.CopilotClient;
+import com.github.copilot.rpc.PermissionHandler;
 import com.github.copilot.rpc.MessageOptions;
 import com.github.copilot.rpc.SessionConfig;
 
