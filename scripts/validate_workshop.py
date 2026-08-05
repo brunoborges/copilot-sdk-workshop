@@ -182,12 +182,12 @@ PROCEDURE_MARKERS = {
         "java": "SessionConfig.setModel",
     },
     "09-interactive-html-report.md": {
-        "dotnet": "builtin:edit_file",
-        "nodejs": "builtin:edit_file",
-        "python": "builtin:edit_file",
-        "go": "builtin:edit_file",
-        "rust": "builtin:edit_file",
-        "java": "builtin:edit_file",
+        "dotnet": "builtin:apply_patch",
+        "nodejs": "builtin:apply_patch",
+        "python": "builtin:apply_patch",
+        "go": "builtin:apply_patch",
+        "rust": "builtin:apply_patch",
+        "java": "builtin:apply_patch",
     },
 }
 UNSCOPED_TRACK_MARKERS = (
@@ -722,7 +722,7 @@ def validate_rendered_language_content(markdown_file: Path) -> None:
         if markdown_file.name == "09-interactive-html-report.md":
             for marker in (
                 "accessibility-report.html",
-                "builtin:edit_file",
+                "builtin:apply_patch",
                 "exact target navigation",
                 "accessible text filter",
             ):

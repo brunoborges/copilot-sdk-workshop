@@ -13,7 +13,7 @@ open it locally and filter its findings.
 ## Add a narrow write capability
 
 The previous application-owned tools are read-only, and Playwright can navigate only to one exact
-URL. This extension adds one runtime built-in tool: `builtin:edit_file`.
+URL. This extension adds one runtime built-in tool: `builtin:apply_patch`.
 
 That does **not** mean approving every file change. Keep the existing browser-navigation rule and
 approve a write only when it targets `accessibility-report.html` directly in the application working
@@ -66,7 +66,7 @@ AvailableTools =
     "accessibility_rule_lookup",
     "read_latest_accessibility_snapshot",
     "playwright-browser_navigate",
-    "builtin:edit_file"
+    "builtin:apply_patch"
 ],
 ```
 
@@ -80,7 +80,7 @@ public static string CreateReportPrompt(Uri targetUri) => $"""
     2. Call read_latest_accessibility_snapshot to inspect its accessibility tree.
     3. Identify three to five high-confidence issues supported by the snapshot.
     4. Call accessibility_rule_lookup for each issue before recommending a fix.
-    5. Use edit_file to create exactly accessibility-report.html in the current working directory.
+    5. Use apply_patch to create exactly accessibility-report.html in the current working directory.
 
     Write one complete, standalone HTML document. Use semantic HTML, embedded CSS, and embedded
     JavaScript only; do not use external assets, URLs, or libraries. Include a title, target URL,
@@ -128,7 +128,7 @@ availableTools: [
   "accessibility_rule_lookup",
   "read_latest_accessibility_snapshot",
   "playwright-browser_navigate",
-  "builtin:edit_file",
+  "builtin:apply_patch",
 ],
 ```
 
@@ -141,7 +141,7 @@ export function reportPrompt(target: URL): string {
 2. Call read_latest_accessibility_snapshot to inspect its accessibility tree.
 3. Identify three to five high-confidence issues supported by the snapshot.
 4. Call accessibility_rule_lookup for each issue before recommending a fix.
-5. Use edit_file to create exactly accessibility-report.html in the current working directory.
+5. Use apply_patch to create exactly accessibility-report.html in the current working directory.
 
 Write one complete, standalone HTML document. Use semantic HTML, embedded CSS, and embedded
 JavaScript only; do not use external assets, URLs, or libraries. Include a title, target URL,
@@ -188,7 +188,7 @@ available_tools=[
     "accessibility_rule_lookup",
     "read_latest_accessibility_snapshot",
     "playwright-browser_navigate",
-    "builtin:edit_file",
+    "builtin:apply_patch",
 ],
 ```
 
@@ -201,7 +201,7 @@ def report_prompt(target: str) -> str:
 2. Call read_latest_accessibility_snapshot to inspect its accessibility tree.
 3. Identify three to five high-confidence issues supported by the snapshot.
 4. Call accessibility_rule_lookup for each issue before recommending a fix.
-5. Use edit_file to create exactly accessibility-report.html in the current working directory.
+5. Use apply_patch to create exactly accessibility-report.html in the current working directory.
 
 Write one complete, standalone HTML document. Use semantic HTML, embedded CSS, and embedded
 JavaScript only; do not use external assets, URLs, or libraries. Include a title, target URL,
@@ -255,7 +255,7 @@ func permissionForTarget(target, workingDirectory string) copilot.PermissionHand
 Pass `workingDirectory` to the helper and append the source-qualified built-in tool:
 
 ```go
-AvailableTools:      []string{"accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate", "builtin:edit_file"},
+AvailableTools:      []string{"accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate", "builtin:apply_patch"},
 OnPermissionRequest: permissionForTarget(target, workingDirectory),
 ```
 
@@ -268,7 +268,7 @@ func reportPrompt(target string) string {
 2. Call read_latest_accessibility_snapshot to inspect its accessibility tree.
 3. Identify three to five high-confidence issues supported by the snapshot.
 4. Call accessibility_rule_lookup for each issue before recommending a fix.
-5. Use edit_file to create exactly accessibility-report.html in the current working directory.
+5. Use apply_patch to create exactly accessibility-report.html in the current working directory.
 
 Write one complete, standalone HTML document. Use semantic HTML, embedded CSS, and embedded
 JavaScript only; do not use external assets, URLs, or libraries. Include a title, target URL,
@@ -326,7 +326,7 @@ config.available_tools = Some(vec![
     "accessibility_rule_lookup".to_owned(),
     "read_latest_accessibility_snapshot".to_owned(),
     "playwright-browser_navigate".to_owned(),
-    "builtin:edit_file".to_owned(),
+    "builtin:apply_patch".to_owned(),
 ]);
 let config = config.with_permission_handler(Arc::new(ScopedPermissions {
     target: target.clone(),
@@ -344,7 +344,7 @@ fn report_prompt(target: &Url) -> String {
 2. Call read_latest_accessibility_snapshot to inspect its accessibility tree.
 3. Identify three to five high-confidence issues supported by the snapshot.
 4. Call accessibility_rule_lookup for each issue before recommending a fix.
-5. Use edit_file to create exactly accessibility-report.html in the current working directory.
+5. Use apply_patch to create exactly accessibility-report.html in the current working directory.
 
 Write one complete, standalone HTML document. Use semantic HTML, embedded CSS, and embedded
 JavaScript only; do not use external assets, URLs, or libraries. Include a title, target URL,
@@ -387,7 +387,7 @@ Extend the existing `setAvailableTools` call and permission callback:
         "accessibility_rule_lookup",
         "read_latest_accessibility_snapshot",
         "playwright-browser_navigate",
-        "builtin:edit_file"))
+        "builtin:apply_patch"))
 // Keep the existing MCP server configuration.
 .setOnPermissionRequest((request, ignored) -> {
     if ("mcp".equals(request.getKind())
@@ -416,7 +416,7 @@ private static String reportPrompt(URI target) {
             2. Call read_latest_accessibility_snapshot to inspect its accessibility tree.
             3. Identify three to five high-confidence issues supported by the snapshot.
             4. Call accessibility_rule_lookup for each issue before recommending a fix.
-            5. Use edit_file to create exactly accessibility-report.html in the current working directory.
+            5. Use apply_patch to create exactly accessibility-report.html in the current working directory.
 
             Write one complete, standalone HTML document. Use semantic HTML, embedded CSS, and embedded
             JavaScript only; do not use external assets, URLs, or libraries. Include a title, target URL,
@@ -471,7 +471,7 @@ Use the workshop target:
 ```
 
 The tool transcript should include the existing navigation, snapshot, and catalog calls plus an
-`edit_file` write. Open `workshop-app/accessibility-report.html` in a browser. Type a word from a
+`apply_patch` write. Open `workshop-app/accessibility-report.html` in a browser. Type a word from a
 finding, WCAG criterion, or evidence line into the filter and confirm the visible cards and result
 count update.
 
@@ -481,7 +481,7 @@ count update.
 | Symptom | Fix |
 |---|---|
 | The write is rejected | Confirm the requested name is exactly `accessibility-report.html` and the handler receives the application working directory. |
-| More than one file is requested | Keep only `builtin:edit_file` in the new built-in capability and reject any path other than the report. |
+| More than one file is requested | Keep only `builtin:apply_patch` in the new built-in capability and reject any path other than the report. |
 | The filter does not work | The generated document must include embedded JavaScript that filters cards and updates its live result count. Rerun once if the agent omitted a required element. |
 | The report loads without styling | Keep CSS and JavaScript embedded in the one HTML file; the prompt intentionally disallows external assets and libraries. |
 
@@ -497,7 +497,7 @@ Why is allowing one named built-in write tool safer than broadly approving files
 <details>
 <summary>Check your answer</summary>
 
-`builtin:edit_file` exposes only the required editing capability, and the permission callback binds
+`builtin:apply_patch` exposes only the required editing capability, and the permission callback binds
 that capability to one normalized output path. The model cannot use shell commands or write another
 file, while the existing local tools and scoped Playwright navigation remain unchanged.
 
