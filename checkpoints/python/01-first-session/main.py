@@ -1,12 +1,14 @@
 import asyncio
 
-from copilot import CopilotClient
+from copilot import CopilotClient, PermissionHandler
 from copilot.session_events import AssistantMessageData, SessionErrorData, SessionIdleData
 
 
 async def main() -> None:
     async with CopilotClient() as client:
-        async with await client.create_session() as session:
+        async with await client.create_session(
+            on_permission_request=PermissionHandler.approve_all
+        ) as session:
             done = asyncio.Event()
             error: RuntimeError | None = None
 

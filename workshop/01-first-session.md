@@ -128,6 +128,7 @@ Open `workshop-app/Program.cs` and **replace the entire file**:
 
 ```csharp
 using GitHub.Copilot;
+using GitHub.Copilot.Rpc;
 
 Console.WriteLine("=== First Copilot session ===\n");
 
@@ -137,7 +138,10 @@ await client.StartAsync();
 var ping = await client.PingAsync("workshop");
 Console.WriteLine($"Connected to the Copilot runtime: {ping.Message}");
 
-await using var session = await client.CreateSessionAsync(new SessionConfig());
+await using var session = await client.CreateSessionAsync(new SessionConfig
+{
+    OnPermissionRequest = PermissionHandler.ApproveAll,
+});
 var response = await session.SendAndWaitAsync(
     "In one sentence, explain why an accessible name matters for a form input.");
 
@@ -157,12 +161,12 @@ becomes idle, so it works well when you only need the finished answer.
 Open `workshop-app/src/index.ts` and **replace the entire file**:
 
 ```typescript
-import { CopilotClient } from "@github/copilot-sdk";
+import { approveAll, CopilotClient } from "@github/copilot-sdk";
 
 const client = new CopilotClient();
 await client.start();
 try {
-  const session = await client.createSession({});
+  const session = await client.createSession({ onPermissionRequest: approveAll });
   try {
     const response = await session.sendAndWait({ prompt: "Reply with one sentence confirming this Copilot session is ready." });
     console.log(response?.data && "content" in response.data ? response.data.content : response);
@@ -184,13 +188,15 @@ Open `workshop-app/main.py` and **replace the entire file**:
 ```python
 import asyncio
 
-from copilot import CopilotClient
+from copilot import CopilotClient, PermissionHandler
 from copilot.session_events import AssistantMessageData, SessionErrorData, SessionIdleData
 
 
 async def main() -> None:
     async with CopilotClient() as client:
-        async with await client.create_session() as session:
+        async with await client.create_session(
+            on_permission_request=PermissionHandler.approve_all
+        ) as session:
             done = asyncio.Event()
             error: RuntimeError | None = None
 
@@ -240,7 +246,9 @@ func main() {
 	}
 	defer client.Stop()
 
-	session, err := client.CreateSession(context.Background(), &copilot.SessionConfig{})
+	session, err := client.CreateSession(context.Background(), &copilot.SessionConfig{
+		OnPermissionRequest: copilot.PermissionHandler.ApproveAll,
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -268,13 +276,16 @@ answer. `defer` disconnects the session and stops the client on the way out.
 Open `workshop-app/src/main.rs` and **replace the entire file**:
 
 ```rust
+use github_copilot_sdk::permission;
 use github_copilot_sdk::types::{MessageOptions, SessionConfig};
 use github_copilot_sdk::{Client, ClientOptions};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::start(ClientOptions::default()).await?;
-    let session = client.create_session(SessionConfig::default()).await?;
+    let session = client
+        .create_session(SessionConfig::default().with_permission_handler(permission::approve_all()))
+        .await?;
     let response = session
         .send_and_wait(MessageOptions::new(
             "In one sentence, explain why an accessible name matters for a form input.",
@@ -315,9 +326,9 @@ public final class AccessibilityReport {
     public static void main(String[] args) throws Exception {
         try (var client = new CopilotClient()) {
             client.start().get();
-			var session = client
-					.createSession(new SessionConfig().setOnPermissionRequest(PermissionHandler.APPROVE_ALL)).get();
-			var response = session.sendAndWait(new MessageOptions()
+            var session = client
+                    .createSession(new SessionConfig().setOnPermissionRequest(PermissionHandler.APPROVE_ALL)).get();
+            var response = session.sendAndWait(new MessageOptions()
                     .setPrompt("In one sentence, explain why an accessible name matters for a form input."))
                     .get();
             if (response == null) {

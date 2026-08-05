@@ -422,6 +422,15 @@ LATER_CAPABILITIES = {
     "report": ("Review limits", "review limits", "reportPrompt", "report_prompt"),
 }
 
+DEFAULT_PERMISSION_HANDLERS = {
+    "dotnet": "OnPermissionRequest = PermissionHandler.ApproveAll",
+    "nodejs": "onPermissionRequest: approveAll",
+    "python": "on_permission_request=PermissionHandler.approve_all",
+    "go": "OnPermissionRequest: copilot.PermissionHandler.ApproveAll",
+    "rust": "with_permission_handler(permission::approve_all())",
+    "java": "setOnPermissionRequest(PermissionHandler.APPROVE_ALL)",
+}
+
 
 def validate_executable_stage(language: str, stage: str, directory: Path) -> str:
     text = executable_source(directory, language)
@@ -454,6 +463,10 @@ def validate_executable_stage(language: str, stage: str, directory: Path) -> str
         require(contains_any(text, markers),
                 f"{label} executable entrypoint does not wire {capability} for {stage}")
 
+    if stage == "01-first-session":
+        require(DEFAULT_PERMISSION_HANDLERS[language] in text,
+                f"{label} does not approve permission requests by default")
+
     validate_runtime_flow(language, stage, runtime_source(directory, language, text), label)
     if stage == "04-mcp-safety":
         require("evidence-backed" not in text and "Review limits" not in text,
@@ -474,7 +487,7 @@ def validate_executable_stage(language: str, stage: str, directory: Path) -> str
                 f"{label} executable entrypoint does not request the structured report limits")
 
     forbidden_capabilities = {
-        "01-first-session": ("stream", "local", "mcp", "browser", "snapshot", "permission", "report"),
+        "01-first-session": ("stream", "local", "mcp", "browser", "snapshot", "report"),
         "02-streaming": ("local", "mcp", "browser", "snapshot", "permission", "report"),
         "03-local-tool": ("mcp", "browser", "snapshot", "permission", "report"),
     }.get(stage, ())
