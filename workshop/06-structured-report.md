@@ -449,7 +449,7 @@ prompt:
 ```java
 public static void main(String[] args) throws Exception {
     if (args.length != 1) {
-        System.err.println("Usage: mvn exec:java -Dexec.args=<http-or-https-url>");
+        System.err.println("Usage: mvn compile exec:java -Dexec.args=<http-or-https-url>");
         return;
     }
     URI target = parseTarget(args[0]);
@@ -550,7 +550,7 @@ cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
 :::
 :::language java
 ```bash
-mvn -f workshop-app/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"
+mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="{{TARGET_APP_URL}}"
 ```
 :::
 
@@ -1014,7 +1014,7 @@ project. The report contract, argument parsing, and entrypoint:
 ```java
 public static void main(String[] args) throws Exception {
     if (args.length != 1) {
-        System.err.println("Usage: mvn exec:java -Dexec.args=<http-or-https-url>");
+        System.err.println("Usage: mvn compile exec:java -Dexec.args=<http-or-https-url>");
         return;
     }
     URI target = parseTarget(args[0]);

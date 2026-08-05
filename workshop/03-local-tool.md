@@ -875,7 +875,8 @@ var lookup = ToolDefinition.from(
 var config = new SessionConfig()
         .setStreaming(true)
         .setTools(List.of(lookup))
-        .setAvailableTools(List.of("accessibility_rule_lookup"));
+        .setAvailableTools(List.of("accessibility_rule_lookup"))
+        .setOnPermissionRequest(PermissionHandler.APPROVE_ALL);
 ```
 
 Replace session creation and the prompt inside the client block:
@@ -893,13 +894,14 @@ System.out.println(response.getData().content());
 
 `setTools` registers the implementation. `setAvailableTools` is the allowlist the model may call.
 `skipPermission(true)` is intentional because this tool only returns application-owned read-only
-data. The Java checkpoint uses a streaming-enabled session with `sendAndWait`, so it prints the
+data. Keep the Step 1 permission handler until Step 4 replaces it with the scoped Playwright
+handler. The Java checkpoint uses a streaming-enabled session with `sendAndWait`, so it prints the
 completed response when the turn finishes.
 
 ## Run it
 
 ```bash
-mvn -f workshop-app/pom.xml exec:java
+mvn -f workshop-app/pom.xml compile exec:java
 ```
 
 The response should use the lookup result for WCAG 4.1.2:
@@ -934,6 +936,7 @@ package workshop;
 
 import com.github.copilot.CopilotClient;
 import com.github.copilot.rpc.MessageOptions;
+import com.github.copilot.rpc.PermissionHandler;
 import com.github.copilot.rpc.SessionConfig;
 import com.github.copilot.rpc.ToolDefinition;
 import com.github.copilot.tool.Param;
@@ -953,7 +956,8 @@ public final class AccessibilityReport {
         var config = new SessionConfig()
                 .setStreaming(true)
                 .setTools(List.of(lookup))
-                .setAvailableTools(List.of("accessibility_rule_lookup"));
+                .setAvailableTools(List.of("accessibility_rule_lookup"))
+                .setOnPermissionRequest(PermissionHandler.APPROVE_ALL);
 
         try (var client = new CopilotClient()) {
             client.start().get();

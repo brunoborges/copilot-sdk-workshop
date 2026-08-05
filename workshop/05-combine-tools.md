@@ -427,7 +427,7 @@ cargo run --manifest-path workshop-app/Cargo.toml -- "{{TARGET_APP_URL}}"
 :::
 :::language java
 ```bash
-mvn -f workshop-app/pom.xml exec:java -Dexec.args="{{TARGET_APP_URL}}"
+mvn -f workshop-app/pom.xml compile exec:java -Dexec.args="{{TARGET_APP_URL}}"
 ```
 :::
 
@@ -1226,6 +1226,50 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 :::
 
 :::language java
+## Expand the Java accessibility catalog
+
+### 1. Replace the single-rule lookup
+
+Step 3 used one criterion to focus on local-tool wiring. Before asking the model to find a
+browser-observable issue, replace `lookupRule` with this application-owned catalog and add the
+`Rule` record before `SnapshotReader`:
+
+```java
+private static String lookupRule(String query) {
+    String normalized = query.trim().toLowerCase(java.util.Locale.ROOT);
+    for (Rule rule : Rule.RULES) {
+        if (normalized.contains(rule.criterion().toLowerCase(java.util.Locale.ROOT))
+                || normalized.contains(rule.title().toLowerCase(java.util.Locale.ROOT))
+                || rule.keywords().stream().anyMatch(normalized::contains)) {
+            return rule.toJson();
+        }
+    }
+    return """
+            {"criterion":"No exact match","title":"Criterion not found","when_it_applies":"The issue is not represented in the workshop catalog.","recommendation":"Verify the evidence and consult the complete WCAG reference."}""";
+}
+
+private record Rule(String criterion, String title, String whenItApplies, String recommendation, List<String> keywords) {
+    private static final List<Rule> RULES = List.of(
+            new Rule("1.1.1", "Non-text Content", "An informative image has no useful text alternative.", "Add concise alt text that communicates the image purpose. Use alt=\"\" only for decorative images.", List.of("image", "alt text", "text alternative")),
+            new Rule("1.3.1", "Info and Relationships", "Page structure or relationships are only conveyed visually.", "Use semantic landmarks and a logical heading hierarchy so structure is programmatically available.", List.of("main landmark", "heading hierarchy", "page structure", "semantic")),
+            new Rule("1.4.3", "Contrast (Minimum)", "Text does not have enough contrast against its background.", "Provide at least 4.5:1 contrast for normal text and 3:1 for large text.", List.of("contrast", "low contrast", "color")),
+            new Rule("2.4.7", "Focus Visible", "Keyboard focus cannot be seen clearly.", "Keep a visible, high-contrast focus indicator on every interactive element.", List.of("focus", "keyboard", "outline")),
+            new Rule("3.3.2", "Labels or Instructions", "A form does not provide a persistent visible label or necessary instructions.", "Provide visible labels and instructions that explain the expected input.", List.of("visible label", "instructions", "required field", "input format")),
+            new Rule("4.1.2", "Name, Role, Value", "A form control has no programmatically determinable accessible name.", "Associate a visible <label> with the input by using matching for and id values.", List.of("accessible name", "programmatic label", "unlabeled input", "name role value")));
+
+    private String toJson() {
+        return "{\"criterion\":\"%s\",\"title\":\"%s\",\"when_it_applies\":\"%s\",\"recommendation\":\"%s\"}"
+                .formatted(criterion, title, whenItApplies, recommendation.replace("\"", "\\\""));
+    }
+}
+```
+
+The catalog still provides only application-owned guidance. Keyword matching lets the later prompt
+ask about observed issues while requiring every recommendation to use a criterion returned by this
+bounded source of truth.
+
+### 2. Combine browser evidence with catalog guidance
+
 <details>
 <summary>Complete Step 5 checkpoint</summary>
 
@@ -1266,7 +1310,7 @@ public final class AccessibilityReport {
 
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
-            System.err.println("Usage: mvn exec:java -Dexec.args=<http-or-https-url>");
+            System.err.println("Usage: mvn compile exec:java -Dexec.args=<http-or-https-url>");
             return;
         }
         URI target = parseTarget(args[0]);
@@ -1380,7 +1424,7 @@ public final class AccessibilityReport {
 
     private record Rule(String criterion, String title, String whenItApplies, String recommendation, List<String> keywords) {
         private static final List<Rule> RULES = List.of(
-                new Rule("1.1.1", "Non-text Content", "An informative image has no useful text alternative.", "Add concise alt text that communicates the image purpose. Use alt=\\\"\\\" only for decorative images.", List.of("image", "alt text", "text alternative")),
+                new Rule("1.1.1", "Non-text Content", "An informative image has no useful text alternative.", "Add concise alt text that communicates the image purpose. Use alt=\"\" only for decorative images.", List.of("image", "alt text", "text alternative")),
                 new Rule("1.3.1", "Info and Relationships", "Page structure or relationships are only conveyed visually.", "Use semantic landmarks and a logical heading hierarchy so structure is programmatically available.", List.of("main landmark", "heading hierarchy", "page structure", "semantic")),
                 new Rule("1.4.3", "Contrast (Minimum)", "Text does not have enough contrast against its background.", "Provide at least 4.5:1 contrast for normal text and 3:1 for large text.", List.of("contrast", "low contrast", "color")),
                 new Rule("2.4.7", "Focus Visible", "Keyboard focus cannot be seen clearly.", "Keep a visible, high-contrast focus indicator on every interactive element.", List.of("focus", "keyboard", "outline")),
@@ -1455,4 +1499,3 @@ public final class AccessibilityReport {
 :::
 
 Continue to [Step 6: Produce a structured report](06-structured-report.md).
-

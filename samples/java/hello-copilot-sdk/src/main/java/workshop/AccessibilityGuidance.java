@@ -4,6 +4,7 @@ import com.github.copilot.CopilotClient;
 import com.github.copilot.generated.AssistantMessageDeltaEvent;
 import com.github.copilot.generated.AssistantMessageEvent;
 import com.github.copilot.rpc.MessageOptions;
+import com.github.copilot.rpc.PermissionHandler;
 import com.github.copilot.rpc.SessionConfig;
 import com.github.copilot.rpc.ToolDefinition;
 import com.github.copilot.tool.Param;
@@ -32,7 +33,8 @@ public final class AccessibilityGuidance {
         var config = new SessionConfig()
                 .setStreaming(true)
                 .setTools(List.of(lookup))
-                .setAvailableTools(List.of("accessibility_rule_lookup"));
+                .setAvailableTools(List.of("accessibility_rule_lookup"))
+                .setOnPermissionRequest(PermissionHandler.APPROVE_ALL);
 
         try (var client = new CopilotClient()) {
             client.start().get();
