@@ -3,7 +3,7 @@ import sys
 from urllib.parse import urlsplit
 
 from copilot import CopilotClient
-from copilot.session_events import AssistantMessageData, AssistantMessageDeltaData, SessionErrorData, SessionIdleData
+from copilot.session_events import AssistantMessageData, AssistantMessageDeltaData, SessionErrorData, SessionIdleData, ToolExecutionCompleteData, ToolExecutionStartData
 
 from workshop import accessibility_rule_lookup, create_snapshot_reader, permission_for_target
 
@@ -34,6 +34,10 @@ async def main() -> None:
                         print(delta, end="", flush=True)
                     case AssistantMessageData(content=content) if content and not received_delta:
                         print(content)
+                    case ToolExecutionStartData(tool_name=name):
+                        print(f"\n[tool:start] {name}")
+                    case ToolExecutionCompleteData(success=success):
+                        print(f"[tool:done] success={success}")
                     case SessionErrorData(message=message):
                         error = RuntimeError(message)
                         done.set()
