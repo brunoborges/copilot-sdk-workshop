@@ -754,6 +754,12 @@ def validate_rendered_language_content(markdown_file: Path) -> None:
                     f"interactive HTML report guidance: {marker}",
                 )
 
+        if markdown_file.name == "08-model-selection.md":
+            require(
+                "Enter the workshop target URL, then choose a model" in rendered,
+                f"{markdown_file.relative_to(ROOT)} does not preserve target URL input before model selection",
+            )
+
 
 def validate_language_registry() -> None:
     registry = read(DOCS / "language-registry.js")
