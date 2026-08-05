@@ -20,7 +20,7 @@ async def main() -> None:
             on_permission_request=permission_for_target(target),
             tools=[accessibility_rule_lookup, create_snapshot_reader(".")],
             available_tools=["accessibility_rule_lookup", "read_latest_accessibility_snapshot", "playwright-browser_navigate"],
-            mcp_servers={"playwright": {"command": "npx", "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"], "working_directory": ".", "tools": ["browser_navigate"]}},
+            mcp_servers={"playwright": {"command": "npx", "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"], "working_directory": ".", "tools": ["browser_navigate"]}},
         ) as session:
             done = asyncio.Event()
             error: RuntimeError | None = None

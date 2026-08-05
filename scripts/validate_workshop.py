@@ -431,6 +431,16 @@ DEFAULT_PERMISSION_HANDLERS = {
     "java": "setOnPermissionRequest(PermissionHandler.APPROVE_ALL)",
 }
 
+PLAYWRIGHT_MCP_PACKAGE = "@playwright/mcp@0.0.78"
+PLAYWRIGHT_OUTPUT_DIRECTORY = re.compile(
+    r'--output-dir(?:(?!--[a-z]).){0,80}["\']\.playwright-mcp["\']',
+    re.DOTALL,
+)
+PLAYWRIGHT_OUTPUT_MODE = re.compile(
+    r'--output-mode(?:(?!--[a-z]).){0,80}["\']file["\']',
+    re.DOTALL,
+)
+
 
 def validate_executable_stage(language: str, stage: str, directory: Path) -> str:
     text = executable_source(directory, language)
@@ -808,6 +818,38 @@ def validate_security_invariants() -> None:
             require(exact_url_markers[language] in source, f"{directory.relative_to(ROOT)} does not compare target URL components exactly")
 
 
+def validate_playwright_file_output(text: str, label: Path) -> None:
+    configurations = text.split(PLAYWRIGHT_MCP_PACKAGE)[1:]
+    for index, configuration in enumerate(configurations, start=1):
+        configuration = configuration.split(PLAYWRIGHT_MCP_PACKAGE, maxsplit=1)[0]
+        require(
+            PLAYWRIGHT_OUTPUT_DIRECTORY.search(configuration) is not None,
+            f"{label} Playwright MCP configuration {index} must pair --output-dir with .playwright-mcp",
+        )
+        require(
+            PLAYWRIGHT_OUTPUT_MODE.search(configuration) is not None,
+            f"{label} Playwright MCP configuration {index} must pair --output-mode with file",
+        )
+
+
+def validate_playwright_output_configuration() -> None:
+    directories = [
+        *(ROOT / "start" / language for language in LANGUAGES),
+        *(ROOT / "samples" / language / "accessibility-report" for language in LANGUAGES),
+        *(ROOT / "checkpoints" / language / checkpoint for language in LANGUAGES for checkpoint in CHECKPOINTS),
+    ]
+    for directory in directories:
+        validate_playwright_file_output(project_source(directory), directory.relative_to(ROOT))
+
+    for lesson in ("04-mcp-safety.md", "05-combine-tools.md", "06-structured-report.md", "08-model-selection.md"):
+        lesson_path = WORKSHOP / lesson
+        for language in LANGUAGES:
+            validate_playwright_file_output(
+                render_language_markdown(lesson_path, language),
+                Path(f"workshop/{lesson} ({language})"),
+            )
+
+
 def validate_checkpoint_progression() -> None:
     for language in LANGUAGES:
         executable_hashes: set[str] = set()
@@ -989,6 +1031,7 @@ for lesson in LESSONS:
 validate_layout()
 validate_python_dependencies()
 validate_security_invariants()
+validate_playwright_output_configuration()
 validate_checkpoint_progression()
 validate_site_behavior()
 validate_documentation()

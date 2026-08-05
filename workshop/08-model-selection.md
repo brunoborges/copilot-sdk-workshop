@@ -209,7 +209,7 @@ try {
     mcpServers: {
       playwright: {
         command: "npx",
-        args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"],
+        args: ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"],
         workingDirectory: process.cwd(),
         tools: ["browser_navigate"],
       },
@@ -310,7 +310,7 @@ async def main() -> None:
             mcp_servers={
                 "playwright": {
                     "command": "npx",
-                    "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"],
+                    "args": ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"],
                     "working_directory": ".",
                     "tools": ["browser_navigate"],
                 }
@@ -415,7 +415,7 @@ session, err := client.CreateSession(context.Background(), &copilot.SessionConfi
 	MCPServers: map[string]copilot.MCPServerConfig{
 		"playwright": copilot.MCPStdioServerConfig{
 			Command:          "npx",
-			Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge"},
+			Args:             []string{"-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"},
 			WorkingDirectory: workingDirectory,
 			Tools:            []string{"browser_navigate"},
 		},
@@ -484,6 +484,10 @@ config.mcp_servers = Some(IndexMap::from([(
             "-y".to_owned(),
             "@playwright/mcp@0.0.78".to_owned(),
             "--browser=msedge".to_owned(),
+            "--output-dir".to_owned(),
+            ".playwright-mcp".to_owned(),
+            "--output-mode".to_owned(),
+            "file".to_owned(),
         ],
         tools: Some(vec!["browser_navigate".to_owned()]),
         working_directory: Some(working_directory.display().to_string()),
@@ -573,7 +577,7 @@ try (var client = new CopilotClient()) {
                     "playwright-browser_navigate"))
             .setMcpServers(Map.of("playwright", new McpStdioServerConfig()
                     .setCommand("npx")
-                    .setArgs(List.of("-y", "@playwright/mcp@0.0.78", "--browser=msedge"))
+                    .setArgs(List.of("-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"))
                     .setWorkingDirectory(workingDirectory.toString())
                     .setTools(List.of("browser_navigate"))))
             .setOnPermissionRequest((request, ignored) -> {

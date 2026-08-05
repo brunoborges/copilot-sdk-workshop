@@ -55,7 +55,7 @@ public final class AccessibilityReport {
                         "playwright-browser_navigate"))
                 .setMcpServers(Map.of("playwright", new McpStdioServerConfig()
                         .setCommand("npx")
-                        .setArgs(List.of("-y", "@playwright/mcp@0.0.78", "--browser=msedge"))
+                        .setArgs(List.of("-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"))
                         .setWorkingDirectory(workingDirectory.toString())
                         .setTools(List.of("browser_navigate"))))
                 .setOnPermissionRequest((request, ignored) -> {

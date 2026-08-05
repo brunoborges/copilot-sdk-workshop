@@ -52,7 +52,7 @@ await using var session = await client.CreateSessionAsync(new SessionConfig
         ["playwright"] = new McpStdioServerConfig
         {
             Command = "npx",
-            Args = ["-y", "@playwright/mcp@0.0.78", "--browser=msedge"],
+            Args = ["-y", "@playwright/mcp@0.0.78", "--browser=msedge", "--output-dir", ".playwright-mcp", "--output-mode", "file"],
             WorkingDirectory = workingDirectory,
             Tools = ["browser_navigate"]
         }
