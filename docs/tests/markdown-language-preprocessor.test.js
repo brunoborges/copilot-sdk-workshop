@@ -33,7 +33,9 @@ assert.throws(() => preprocess(':::unexpected', 'dotnet'), /expected :::language
 assert.equal(lessonUrl('04-mcp-safety', 'rust'), '?step=04-mcp-safety&lang=rust');
 assert.equal(lessonUrl('04-mcp-safety'), '?step=04-mcp-safety');
 assert.equal(firstLessonUrl('java'), 'workshop/step.html?step=00-preflight&lang=java');
+assert.equal(firstLessonUrl('python', 'museum'), 'workshop/step.html?step=museum-00-preflight&lang=python');
 assert.equal(homeUrl('python'), '../index.html?lang=python');
+assert.equal(homeUrl('python', 'museum'), '../index.html?lang=python&workshop=museum');
 assert.equal(homeUrl(), '../index.html');
 assert.equal(resolveLanguage('?lang=go', 'rust', getLanguage).id, 'go');
 assert.equal(resolveLanguage('', 'rust', getLanguage).id, 'rust');

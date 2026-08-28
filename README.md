@@ -1,24 +1,29 @@
-# Copilot SDK Workshop
+# Copilot SDK Workshops
 
-Build an AI-powered accessibility reviewer with .NET, Node.js/TypeScript, Python, Go, Rust, or Maven Java and the GitHub Copilot SDK.
+Choose one of two hands-on GitHub Copilot SDK workshops in .NET, Node.js/TypeScript, Python, Go,
+Rust, or Maven Java:
 
-In this self-guided workshop, you'll:
+- **Accessibility Reviewer:** build an SDLC developer tool that inspects a web page, consults
+  application-owned WCAG guidance, and produces an evidence-based report.
+- **Museum Exhibit Studio:** build a non-SDLC curator that transforms approved facts into
+  visitor-ready exhibit copy behind deterministic application boundaries.
+
+Across the workshops, you'll:
 
 1. Create a Copilot client and conversation session.
-2. Stream responses through session events.
-3. Expose application-owned Web Content Accessibility Guidelines (WCAG) data as a local tool.
-4. Connect Playwright MCP through a scoped permission boundary.
-5. Combine browser evidence and catalog guidance in a structured report.
-6. Explain the ownership, process, and trust boundaries in the completed application.
+2. Separate durable agent policy from task-specific data.
+3. Choose between local tools, MCP tools, and a deliberately tool-free session.
+4. Enforce capability, input, timeout, validation, and lifecycle boundaries in application code.
+5. Explain what the model can infer and what the application must prove.
 
-Plan on about 90 minutes for the seven core steps. Machine setup happens separately in an untimed
-preflight.
+Plan on about 90 minutes for Accessibility Reviewer or 75 minutes for Museum Exhibit Studio.
+Machine setup happens separately in an untimed preflight for each workshop.
 
 ## Start the workshop
 
-Open the GitHub Pages URL produced by the repository's **Deploy to GitHub Pages** workflow, then
-select **Start workshop**. The site derives its Pages base URL at runtime, so there is no hardcoded
-organization or user Pages hostname.
+Open the GitHub Pages URL produced by the repository's **Deploy to GitHub Pages** workflow. Choose a
+workshop outcome, choose a language, then start the selected workshop. The site derives its Pages
+base URL at runtime, so there is no hardcoded organization or user Pages hostname.
 
 To preview the site from a clone:
 
@@ -51,12 +56,13 @@ output, and troubleshooting.
 ```text
 copilot-sdk-workshop/
 |-- docs/                         GitHub Pages site and controlled target page
-|-- workshop/                     Preflight, seven core lessons, optional extensions
+|-- workshop/                     Two complete workshop tracks and optional extensions
 |-- start/dotnet/                 .NET learner starter with WCAG data and permission helper
 |-- checkpoints/dotnet/           .NET compiling state after each build step
 |-- samples/dotnet/
 |   |-- hello-copilot-sdk/        Completed local-tool example in every language
-|   `-- accessibility-report/     Completed .NET local + MCP reporter
+|   |-- accessibility-report/     Completed .NET local + MCP reporter
+|   `-- museum-exhibit-studio/    Tool-free, grounded museum curator sample
 |-- start/nodejs/                 Node.js/TypeScript learner starter
 |-- checkpoints/nodejs/           Node.js/TypeScript checkpoint projects
 |-- samples/nodejs/               Completed TypeScript examples
@@ -96,6 +102,17 @@ bash scripts/validate-workshop.sh nodejs
 
 Pull requests run content validation and all six language smoke builds as separate GitHub Actions
 jobs, so a failure identifies the affected SDK track.
+
+## Museum Exhibit Studio workshop
+
+Museum Exhibit Studio is available in every workshop language under
+`samples/<language>/museum-exhibit-studio`. Each implementation demonstrates a complete custom
+system message, a task-specific approved fact list, an empty tool allowlist, and deterministic
+output checks in a non-software-engineering agent harness.
+
+The learner-facing track begins at
+[`workshop/museum-00-preflight.md`](workshop/museum-00-preflight.md), continues through six required
+steps, and ends with an optional Wikipedia-grounding design lab.
 
 Rust checks share one Cargo target directory across all workshop projects, avoiding repeated SDK
 dependency compilation.

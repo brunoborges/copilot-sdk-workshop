@@ -28,8 +28,8 @@
     --focus: #ffd166;
     --danger: #ff8f8f;
     --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-    --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    --font-sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 }
 
 * {
@@ -64,18 +64,6 @@ body {
     color: var(--text);
     font-family: var(--font-sans);
     line-height: 1.65;
-}
-
-body::before {
-    position: fixed;
-    z-index: -1;
-    inset: 0;
-    background:
-        linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px);
-    background-size: 50px 50px;
-    content: "";
-    pointer-events: none;
 }
 
 body.navigation-open {
@@ -250,11 +238,13 @@ button {
 
 .progress-track span {
     display: block;
-    width: 0;
+    width: 100%;
     height: 100%;
     border-radius: inherit;
     background: linear-gradient(90deg, var(--accent-strong), var(--violet));
-    transition: width 220ms ease;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 220ms ease;
 }
 
 .navigation-overlay {
@@ -837,15 +827,11 @@ button {
 
 .header-title {
     overflow: hidden;
-    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--neon-cyan);
     font-size: 1.25rem;
     font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
-    -webkit-text-fill-color: transparent;
 }
 
 .header-nav {
@@ -1008,7 +994,7 @@ button {
     color: var(--text-secondary);
     font-size: 0.875rem;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .flyout-link:hover {
@@ -1017,8 +1003,7 @@ button {
 }
 
 .flyout-link.active {
-    border-left: 3px solid var(--neon-cyan);
-    background: linear-gradient(135deg, rgba(0, 245, 255, 0.2), rgba(255, 0, 255, 0.2));
+    background: rgba(0, 245, 255, 0.16);
     color: var(--text-primary);
 }
 
@@ -1058,11 +1043,7 @@ button {
 }
 
 .markdown h1 {
-    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
 }
 
 .markdown h2 {

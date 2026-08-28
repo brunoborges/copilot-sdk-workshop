@@ -390,10 +390,11 @@ mod tests {
 
     #[test]
     fn permission_payload_prefers_a_valid_nested_request() {
-        let payload = permission_payload(&json!({
+        let request = json!({
             "serverName": "untrusted",
             "permissionRequest": { "serverName": "playwright" }
-        }));
+        });
+        let payload = permission_payload(&request);
 
         assert_eq!(
             payload
@@ -405,7 +406,8 @@ mod tests {
 
     #[test]
     fn permission_payload_supports_the_legacy_direct_shape() {
-        let payload = permission_payload(&json!({ "serverName": "playwright" }));
+        let request = json!({ "serverName": "playwright" });
+        let payload = permission_payload(&request);
 
         assert_eq!(
             payload

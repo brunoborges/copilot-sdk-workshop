@@ -29,8 +29,8 @@
     --terminal-label: var(--neon-cyan);
     --focus: #ffd166;
     --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-    --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    --font-sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 }
 
 * {
@@ -48,18 +48,6 @@ body {
     color: var(--text);
     font-family: var(--font-sans);
     line-height: 1.6;
-}
-
-body::before {
-    position: fixed;
-    z-index: -1;
-    inset: 0;
-    background:
-        linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px);
-    background-size: 50px 50px;
-    content: "";
-    pointer-events: none;
 }
 
 a {
@@ -125,11 +113,7 @@ a {
 }
 
 .site-brand > span:last-child {
-    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
+    color: var(--neon-cyan);
 }
 
 .site-nav {
@@ -197,11 +181,7 @@ h1 {
     font-size: clamp(2.55rem, 5.3vw, 5.2rem);
     line-height: 0.98;
     letter-spacing: -0.055em;
-    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
+    color: var(--text);
 }
 
 .hero-copy > p:not(.eyebrow) {
@@ -220,29 +200,72 @@ h1 {
     color: var(--neon-cyan);
 }
 
-.flow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.55rem;
-    margin: 1.55rem 0 1.8rem;
+.workshop-picker {
+    margin: 1.75rem 0 0;
     padding: 0;
-    list-style: none;
+    border: 0;
 }
 
-.flow li {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    color: var(--text);
+.workshop-picker legend {
+    margin-bottom: 0.55rem;
+    color: var(--muted);
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 
-.flow li:not(:last-child)::after {
-    color: var(--neon-magenta);
-    content: ">";
+.workshop-option {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.85rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 150ms ease, color 150ms ease;
+}
+
+.workshop-option:last-of-type {
+    border-bottom: 1px solid var(--border);
+}
+
+.workshop-option:hover,
+.workshop-option.selected {
+    border-color: var(--neon-cyan);
+}
+
+.workshop-option input {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin: 0.28rem 0 0;
+    accent-color: var(--neon-cyan);
+}
+
+.workshop-option-copy {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.workshop-option-copy strong {
+    font-size: 1.1rem;
+}
+
+.workshop-option-copy > span:not(.workshop-kicker):not(.workshop-capabilities) {
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.workshop-kicker,
+.workshop-capabilities {
+    color: var(--neon-cyan);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+}
+
+.workshop-capabilities {
+    margin-top: 0.2rem;
+    color: var(--muted);
 }
 
 .hero-action {
@@ -296,21 +319,68 @@ h1 {
     font-size: 0.9rem;
 }
 
-.language-picker label {
-    display: block;
-    margin-bottom: 0.3rem;
-    font-size: 0.85rem;
-    font-weight: 700;
+.language-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
 }
 
-.language-picker select {
-    width: min(100%, 20rem);
-    padding: 0.6rem 0.7rem;
+.language-options:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.language-option {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr auto;
+    gap: 0.65rem;
+    align-items: center;
+    min-height: 3.4rem;
+    padding: 0.55rem 0.65rem;
     border: 1px solid var(--border);
-    border-radius: 0.45rem;
+    border-radius: 0.5rem;
     background: var(--bg);
-    color: var(--text);
-    font: inherit;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 700;
+    transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.language-option:hover,
+.language-option.selected {
+    border-color: var(--neon-cyan);
+    background: rgba(0, 245, 255, 0.07);
+}
+
+.language-option input {
+    grid-column: 3;
+    grid-row: 1;
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    accent-color: var(--neon-cyan);
+}
+
+.language-logo {
+    display: block;
+    grid-column: 1;
+    grid-row: 1;
+    width: 2.25rem;
+    height: 2.25rem;
+}
+
+.language-logo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.language-logo-rust img {
+    filter: invert(1);
 }
 
 .language-picker .language-detail {
@@ -489,6 +559,10 @@ h1 {
     .hero-action {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .language-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .outcomes {
