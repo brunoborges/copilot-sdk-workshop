@@ -23,14 +23,23 @@
         return `?${parameters.toString()}`;
     }
 
-    function homeUrl(languageId) {
-        return languageId
-            ? `../index.html?lang=${encodeURIComponent(languageId)}`
-            : '../index.html';
+    function homeUrl(languageId, workshopId) {
+        const parameters = new URLSearchParams();
+        if (languageId) {
+            parameters.set('lang', languageId);
+        }
+        if (workshopId) {
+            parameters.set('workshop', workshopId);
+        }
+        const query = parameters.toString();
+        return query ? `../index.html?${query}` : '../index.html';
     }
 
-    function firstLessonUrl(languageId) {
-        return `workshop/step.html${lessonUrl('00-preflight', languageId)}`;
+    function firstLessonUrl(languageId, workshopId = 'sdlc') {
+        const firstStep = workshopId === 'museum'
+            ? 'museum-00-preflight'
+            : '00-preflight';
+        return `workshop/step.html${lessonUrl(firstStep, languageId)}`;
     }
 
     return Object.freeze({ resolveLanguage, lessonUrl, homeUrl, firstLessonUrl });

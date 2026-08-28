@@ -13,8 +13,8 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 WORKSHOP = ROOT / "workshop"
 DOCS = ROOT / "docs"
-LANGUAGES = ("dotnet", "nodejs", "python", "go", "rust", "java")
-LESSONS = (
+LANGUAGES = ("dotnet", "go", "java", "nodejs", "python", "rust")
+SDLC_LESSONS = (
     "00-preflight.md",
     "01-first-session.md",
     "02-streaming.md",
@@ -26,6 +26,17 @@ LESSONS = (
     "08-model-selection.md",
     "09-interactive-html-report.md",
 )
+MUSEUM_LESSONS = (
+    "museum-00-preflight.md",
+    "museum-01-curator-role.md",
+    "museum-02-tool-free-session.md",
+    "museum-03-approved-facts.md",
+    "museum-04-deterministic-validation.md",
+    "museum-05-lifecycle-tests.md",
+    "museum-06-run-review.md",
+    "museum-07-wikipedia-grounding.md",
+)
+LESSONS = SDLC_LESSONS + MUSEUM_LESSONS
 CHECKPOINTS = (
     "01-first-session",
     "02-streaming",
@@ -137,6 +148,39 @@ STEP_9_RUN_COMMAND_MARKERS = {
     "rust": "cd workshop-app && cargo run --",
     "java": "cd workshop-app && mvn compile exec:java",
 }
+MUSEUM_COMMAND_MARKERS = {
+    "dotnet": (
+        "dotnet build museum-workshop-app",
+        "dotnet test museum-workshop-app/",
+        "dotnet run --project museum-workshop-app",
+    ),
+    "nodejs": (
+        "npm --prefix museum-workshop-app run build",
+        "npm --prefix museum-workshop-app test",
+        "npm --prefix museum-workshop-app start",
+    ),
+    "python": (
+        "museum-workshop-app/.venv/bin/python",
+        "python3 -m py_compile museum-workshop-app/",
+        "python3 -m unittest",
+        "python -m unittest",
+        "python3 museum-workshop-app/main.py",
+    ),
+    "go": (
+        "go -C museum-workshop-app test",
+        "go -C museum-workshop-app run .",
+    ),
+    "rust": (
+        "cargo check --manifest-path museum-workshop-app/Cargo.toml",
+        "cargo test --manifest-path museum-workshop-app/Cargo.toml",
+        "cargo run --manifest-path museum-workshop-app/Cargo.toml",
+    ),
+    "java": (
+        "mvn -f museum-workshop-app/pom.xml test",
+        "mvn -f museum-workshop-app/pom.xml -Dtest=",
+        "mvn -f museum-workshop-app/pom.xml compile exec:java",
+    ),
+}
 PROCEDURE_MARKERS = {
     "01-first-session.md": {
         "dotnet": "SendAndWaitAsync",
@@ -196,6 +240,54 @@ PROCEDURE_MARKERS = {
         "go": "builtin:apply_patch",
         "rust": "builtin:apply_patch",
         "java": "builtin:apply_patch",
+    },
+    "museum-01-curator-role.md": {
+        "dotnet": "public const string SystemMessage",
+        "nodejs": "export const systemMessage",
+        "python": "SYSTEM_MESSAGE =",
+        "go": "curatorSystemMessage =",
+        "rust": "pub const SYSTEM_MESSAGE",
+        "java": "public static final String SYSTEM_MESSAGE",
+    },
+    "museum-02-tool-free-session.md": {
+        "dotnet": "AvailableTools = []",
+        "nodejs": "availableTools: []",
+        "python": '"available_tools": []',
+        "go": "AvailableTools: []string{}",
+        "rust": "config.available_tools = Some(Vec::new())",
+        "java": ".setAvailableTools(List.of())",
+    },
+    "museum-03-approved-facts.md": {
+        "dotnet": "BuildExhibitPrompt",
+        "nodejs": "buildExhibitPrompt",
+        "python": "build_exhibit_prompt",
+        "go": "buildExhibitPrompt",
+        "rust": "build_exhibit_prompt",
+        "java": "buildExhibitPrompt",
+    },
+    "museum-04-deterministic-validation.md": {
+        "dotnet": "ExhibitValidator.Validate",
+        "nodejs": "validateExhibit",
+        "python": "validate_exhibit",
+        "go": "validateExhibit",
+        "rust": "validate_exhibit",
+        "java": "ExhibitValidator.validate",
+    },
+    "museum-05-lifecycle-tests.md": {
+        "dotnet": "GenerateAsync",
+        "nodejs": "async generate(",
+        "python": "async def generate(",
+        "go": "func (service museumExhibitService) Generate(",
+        "rust": "pub async fn generate_exhibit(",
+        "java": "GeneratedExhibit generate(",
+    },
+    "museum-06-run-review.md": {
+        "dotnet": "new CopilotCuratorClient()",
+        "nodejs": "createCopilotCuratorClient()",
+        "python": "MuseumExhibitService(CopilotClient())",
+        "go": "newCopilotCuratorClient()",
+        "rust": "CopilotCuratorClient::new()",
+        "java": "new CopilotCuratorClient()",
     },
 }
 UNSCOPED_TRACK_MARKERS = (
@@ -734,16 +826,19 @@ def validate_rendered_language_content(markdown_file: Path) -> None:
                     f"Step 3 guidance: {marker}",
                 )
 
-        if markdown_file.name != "00-preflight.md":
+        if markdown_file.name not in {"00-preflight.md", "museum-00-preflight.md"}:
             run_section = markdown_section(rendered, "## Run it")
-            run_markers = (
-                STEP_9_RUN_COMMAND_MARKERS
-                if markdown_file.name == "09-interactive-html-report.md"
-                else RUN_COMMAND_MARKERS
-            )
+            if markdown_file.name == "09-interactive-html-report.md":
+                run_markers = STEP_9_RUN_COMMAND_MARKERS
+            elif markdown_file.name.startswith("museum-"):
+                run_markers = MUSEUM_COMMAND_MARKERS
+            else:
+                run_markers = RUN_COMMAND_MARKERS
             run_marker = run_markers[selected_language]
             require(
-                run_marker.casefold() in run_section.casefold(),
+                contains_any(run_section, run_marker)
+                if isinstance(run_marker, tuple)
+                else run_marker.casefold() in run_section.casefold(),
                 f"{markdown_file.relative_to(ROOT)} has no {selected_language} "
                 f"run command in its Run it section: {run_marker}",
             )
@@ -1068,13 +1163,23 @@ def validate_site_behavior() -> None:
     step = read(DOCS / "workshop" / "step.html")
     navigation = read(DOCS / "language-navigation.js")
     require(index.count('class="primary-action"') == 1, "Homepage must have exactly one primary action")
-    require('option value="" selected' in index, "Homepage must not choose a default language")
+    require(index.count('name="workshop"') == 2, "Homepage must offer exactly two workshop choices")
+    require('value="sdlc"' in index and 'value="museum"' in index,
+            "Homepage must offer SDLC and museum workshop choices")
+    require(index.count('name="language"') == len(LANGUAGES),
+            "Homepage must offer exactly six language choices")
+    require('name="language" value="dotnet" required' in index and "checked" not in index,
+            "Homepage must require a language without choosing a default")
     require('id="languagePicker"' in index and "homepage.js" in index, "Homepage is missing language selection behavior")
     require("language-navigation.js" in index and "language-navigation.js" in step, "Homepage and lessons must share language navigation")
     require("resolveLanguage" in navigation and "lessonUrl" in navigation and "firstLessonUrl" in navigation, "Language navigation must preserve URL propagation")
     require("localStorage" in read(DOCS / "homepage.js") and "localStorage" in step, "Homepage and lessons must persist language selection")
     require("Choose a workshop language" in step and "if (!language)" in step, "Lessons must not load without a valid language")
     require("preprocessLanguageDirectives" in step, "Lesson viewer must filter language directives")
+    require("workshopTracks" in step and "activeWorkshopId" in step,
+            "Lesson viewer must scope navigation to the active workshop")
+    require("museum-00-preflight" in navigation,
+            "Language navigation must route the museum workshop to its own preflight")
     for hook in ("event.key === 'Escape'", "trapNavigationFocus", "toggleAttribute('inert'", "initializeTabs", 'id="lessonStatus"', 'id="progressTrack"'):
         require(hook in step, f"Lesson viewer is missing behavior hook: {hook}")
     for html_file in (DOCS / "index.html", DOCS / "workshop" / "step.html", DOCS / "target-app" / "index.html"):
@@ -1107,15 +1212,32 @@ def validate_documentation() -> None:
         require("python workshop-app/main.py" in read(WORKSHOP / lesson),
                 f"{lesson} must run the Python checkpoint through main.py")
 
+    lesson_viewer = read(DOCS / "workshop" / "step.html")
+    for step_id in (
+        "09-interactive-html-report",
+        "museum-00-preflight",
+        "museum-01-curator-role",
+        "museum-02-tool-free-session",
+        "museum-03-approved-facts",
+        "museum-04-deterministic-validation",
+        "museum-05-lifecycle-tests",
+        "museum-06-run-review",
+        "museum-07-wikipedia-grounding",
+    ):
+        require(
+            f"id: '{step_id}'" in lesson_viewer,
+            f"Lesson viewer navigation is missing {step_id}",
+        )
+
 
 def validate_workflows() -> None:
     required_setup = (
-        ("actions/setup-dotnet@v4", "dotnet-version: 10.0.x"),
-        ("actions/setup-node@v4", "node-version: 22"),
-        ("actions/setup-python@v5", 'python-version: "3.11"'),
-        ("actions/setup-go@v5", 'go-version: "1.24.x"'),
+        ("actions/setup-dotnet@v6", "dotnet-version: 10.0.x"),
+        ("actions/setup-node@v7", "node-version: 22"),
+        ("actions/setup-python@v7", 'python-version: "3.11"'),
+        ("actions/setup-go@v7", 'go-version: "1.24.x"'),
         ("dtolnay/rust-toolchain@stable", 'toolchain: "1.94.0"'),
-        ("actions/setup-java@v4", 'java-version: "17"'),
+        ("actions/setup-java@v6", 'java-version: "17"'),
         ("mvn --version", "bash scripts/validate-workshop.sh"),
     )
     validation_workflow = read(ROOT / ".github" / "workflows" / "validate.yml")
@@ -1139,8 +1261,8 @@ def validate_workflows() -> None:
         )
     for required in (
         "Prepare deployment",
-        "actions/configure-pages@v5",
-        "actions/upload-pages-artifact@v3",
+        "actions/configure-pages@v6",
+        "actions/upload-pages-artifact@v5",
         "actions/deploy-pages@v5",
     ):
         require(required in deployment_workflow, f"deploy.yml is missing deployment step: {required}")
@@ -1155,7 +1277,7 @@ for lesson in LESSONS:
         validate_shared_language_content(lesson_path)
         validate_rendered_language_content(lesson_path)
         for section in ("## Run it", "## Check your understanding"):
-            if lesson.startswith("0") and lesson != "00-preflight.md":
+            if lesson not in {"00-preflight.md", "museum-00-preflight.md"}:
                 require(section in read(lesson_path), f"{lesson} is missing required section: {section}")
 validate_layout()
 validate_python_dependencies()
@@ -1172,4 +1294,9 @@ if errors:
         print(f"- {error}")
     sys.exit(1)
 
-print(f"Workshop content validation passed: {len(LANGUAGES)} languages, {len(LESSONS)} lessons, {len(CHECKPOINTS)} checkpoints per language, and local site assets.")
+print(
+    f"Workshop content validation passed: {len(LANGUAGES)} languages, "
+    f"{len(SDLC_LESSONS)} SDLC lessons, {len(MUSEUM_LESSONS)} museum lessons, "
+    f"{len(CHECKPOINTS)} checkpoints per language, "
+    "and local site assets."
+)
