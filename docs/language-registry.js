@@ -16,6 +16,20 @@
             runtimeNote: 'Requires the .NET SDK and a supported C# runtime.'
         },
         {
+            id: 'go',
+            displayName: 'Go',
+            docsUrl: 'https://github.com/github/copilot-sdk/tree/main/go',
+            installCommand: 'go get github.com/github/copilot-sdk/go',
+            runtimeNote: 'Requires a supported Go toolchain and module.'
+        },
+        {
+            id: 'java',
+            displayName: 'Java',
+            docsUrl: 'https://github.com/github/copilot-sdk/tree/main/java',
+            installCommand: 'mvn dependency:get -Dartifact=com.github:copilot-sdk:latest',
+            runtimeNote: 'Requires a supported JDK and a Maven or Gradle project.'
+        },
+        {
             id: 'nodejs',
             displayName: 'Node.js',
             docsUrl: 'https://github.com/github/copilot-sdk/tree/main/nodejs',
@@ -30,25 +44,11 @@
             runtimeNote: 'Requires Python and an isolated virtual environment.'
         },
         {
-            id: 'go',
-            displayName: 'Go',
-            docsUrl: 'https://github.com/github/copilot-sdk/tree/main/go',
-            installCommand: 'go get github.com/github/copilot-sdk/go',
-            runtimeNote: 'Requires a supported Go toolchain and module.'
-        },
-        {
             id: 'rust',
             displayName: 'Rust',
             docsUrl: 'https://github.com/github/copilot-sdk/tree/main/rust',
             installCommand: 'cargo add copilot-sdk',
             runtimeNote: 'Requires Rust and Cargo from rustup.'
-        },
-        {
-            id: 'java',
-            displayName: 'Java',
-            docsUrl: 'https://github.com/github/copilot-sdk/tree/main/java',
-            installCommand: 'mvn dependency:get -Dartifact=com.github:copilot-sdk:latest',
-            runtimeNote: 'Requires a supported JDK and a Maven or Gradle project.'
         }
     ]);
 

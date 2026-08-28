@@ -28,13 +28,21 @@ validate_dotnet() {
         echo "Restoring and building $project"
         dotnet restore "$project" --nologo --verbosity quiet
         dotnet build "$project" --no-restore --nologo --verbosity quiet
+        if [[ "$project" == *.Tests.csproj ]]; then
+            dotnet test "$project" --no-build --nologo --verbosity quiet
+        fi
     done
 }
 
 validate_nodejs() {
     for project in start/nodejs samples/nodejs/* checkpoints/nodejs/*; do
         echo "Installing and type-checking $project"
-        (cd "$project" && npm ci --ignore-scripts --no-audit --fund=false && npm run build)
+        (
+            cd "$project"
+            npm ci --ignore-scripts --no-audit --fund=false
+            npm run build
+            npm test --if-present
+        )
     done
 }
 
@@ -49,6 +57,9 @@ validate_python() {
             "$python_venv/bin/python" -m pip install --disable-pip-version-check --no-input --requirement requirements.txt
             "$python_venv/bin/python" -m py_compile *.py
             "$python_venv/bin/python" -c "import importlib, pathlib; [importlib.import_module(path.stem) for path in pathlib.Path('.').glob('*.py')]; from copilot import CopilotClient"
+            if [[ -d tests ]]; then
+                "$python_venv/bin/python" -m unittest discover -s tests
+            fi
         )
     done
 }
@@ -66,8 +77,8 @@ validate_go() {
 validate_rust() {
     export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$repo_root/.cargo-target}"
     for project in start/rust samples/rust/* checkpoints/rust/*; do
-        echo "Checking $project"
-        (cd "$project" && cargo check --locked)
+        echo "Checking and testing $project"
+        (cd "$project" && cargo check --locked && cargo test --locked)
     done
 }
 

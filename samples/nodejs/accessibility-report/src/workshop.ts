@@ -48,8 +48,12 @@ async function safeSnapshotNames(directory: string): Promise<string[]> {
 export function permissionForTarget(target: URL): PermissionHandler {
   return (request) => {
     if (request.kind === "mcp" && request.serverName === "playwright" &&
-      (request.toolName === "browser_navigate" || request.toolName === "playwright-browser_navigate") &&
-      typeof request.args?.url === "string" && sameUrl(new URL(request.args.url), target)) return { kind: "approve-once" };
+      (request.toolName === "browser_navigate" || request.toolName === "playwright-browser_navigate")) {
+      const args = request.args;
+      const requestedUrl = args !== null && typeof args === "object" && !Array.isArray(args) &&
+        typeof args.url === "string" ? args.url : undefined;
+      if (requestedUrl && sameUrl(new URL(requestedUrl), target)) return { kind: "approve-once" };
+    }
     return { kind: "reject", feedback: "This workshop allows Playwright to navigate only to the exact requested target." };
   };
 }

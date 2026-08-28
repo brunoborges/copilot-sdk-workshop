@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A self-guided .NET workshop for building an accessibility reviewer with the GitHub Copilot SDK.">
+    <meta name="description" content="Self-guided, multilingual workshops for building agents with the GitHub Copilot SDK.">
     <title>Copilot SDK Workshop</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
@@ -42,11 +42,11 @@
                 <select class="language-select" id="languageSelector" aria-label="Workshop language">
                     <option value="">Choose language</option>
                     <option value="dotnet">.NET</option>
+                    <option value="go">Go</option>
+                    <option value="java">Java</option>
                     <option value="nodejs">Node.js</option>
                     <option value="python">Python</option>
-                    <option value="go">Go</option>
                     <option value="rust">Rust</option>
-                    <option value="java">Java</option>
                 </select>
                 <a href="../index.html" class="nav-btn" id="hubLink">🏠 Hub</a>
                 <a class="nav-btn" id="headerDocsLink" target="_blank" rel="noopener" hidden>📚 Docs ↗</a>
@@ -106,7 +106,7 @@
     </div>
 
     <script>
-        const steps = [
+        const sdlcSteps = [
             {
                 id: '00-preflight',
                 file: 'workshop/00-preflight.md',
@@ -185,8 +185,94 @@
                 navTitle: 'Model selection',
                 kind: 'optional',
                 time: '10 min'
+            },
+            {
+                id: '09-interactive-html-report',
+                file: 'workshop/09-interactive-html-report.md',
+                title: 'Generate an interactive HTML report',
+                navTitle: 'Interactive report',
+                kind: 'optional',
+                time: '15 min'
             }
         ];
+
+        const museumSteps = [
+            {
+                id: 'museum-00-preflight',
+                file: 'workshop/museum-00-preflight.md',
+                title: 'Prepare Museum Exhibit Studio',
+                navTitle: 'Preflight',
+                kind: 'preflight',
+                time: 'Untimed'
+            },
+            {
+                id: 'museum-01-curator-role',
+                file: 'workshop/museum-01-curator-role.md',
+                title: 'Define the curator contract',
+                navTitle: 'Curator contract',
+                kind: 'core',
+                number: 1,
+                time: '10 min'
+            },
+            {
+                id: 'museum-02-tool-free-session',
+                file: 'workshop/museum-02-tool-free-session.md',
+                title: 'Create a tool-free session',
+                navTitle: 'Tool-free session',
+                kind: 'core',
+                number: 2,
+                time: '10 min'
+            },
+            {
+                id: 'museum-03-approved-facts',
+                file: 'workshop/museum-03-approved-facts.md',
+                title: 'Ground the exhibit in approved facts',
+                navTitle: 'Approved facts',
+                kind: 'core',
+                number: 3,
+                time: '15 min'
+            },
+            {
+                id: 'museum-04-deterministic-validation',
+                file: 'workshop/museum-04-deterministic-validation.md',
+                title: 'Validate the exhibit deterministically',
+                navTitle: 'Validation',
+                kind: 'core',
+                number: 4,
+                time: '15 min'
+            },
+            {
+                id: 'museum-05-lifecycle-tests',
+                file: 'workshop/museum-05-lifecycle-tests.md',
+                title: 'Own the lifecycle and tests',
+                navTitle: 'Lifecycle and tests',
+                kind: 'core',
+                number: 5,
+                time: '15 min'
+            },
+            {
+                id: 'museum-06-run-review',
+                file: 'workshop/museum-06-run-review.md',
+                title: 'Run and review the exhibit',
+                navTitle: 'Run and review',
+                kind: 'core',
+                number: 6,
+                time: '10 min'
+            },
+            {
+                id: 'museum-07-wikipedia-grounding',
+                file: 'workshop/museum-07-wikipedia-grounding.md',
+                title: 'Add live Wikipedia grounding',
+                navTitle: 'Wikipedia grounding',
+                kind: 'optional',
+                time: '15 min'
+            }
+        ];
+
+        const workshopTracks = {
+            sdlc: { title: 'Accessibility Reviewer', steps: sdlcSteps },
+            museum: { title: 'Museum Exhibit Studio', steps: museumSteps }
+        };
 
         const legacyStepMap = {
             '00-overview': '00-preflight',
@@ -203,6 +289,11 @@
             '11-generate-tests': '07-run-explain',
             '12-run-review': '07-run-explain'
         };
+        const requestedStepParameter = new URLSearchParams(window.location.search).get('step');
+        const mappedStepParameter = legacyStepMap[requestedStepParameter] ?? requestedStepParameter;
+        const activeWorkshopId = mappedStepParameter?.startsWith('museum-') ? 'museum' : 'sdlc';
+        const activeWorkshop = workshopTracks[activeWorkshopId];
+        const steps = activeWorkshop.steps;
 
         const menuButton = document.getElementById('menuButton');
         const navigationPanel = document.getElementById('navigationPanel');
@@ -242,9 +333,9 @@
         }
 
         function getRequestedStepId() {
-            const requested = new URLSearchParams(window.location.search).get('step');
-            const mapped = legacyStepMap[requested] ?? requested;
-            return steps.some(step => step.id === mapped) ? mapped : steps[0].id;
+            return steps.some(step => step.id === mappedStepParameter)
+                ? mappedStepParameter
+                : steps[0].id;
         }
 
         function getStoredLanguageId() {
@@ -272,7 +363,7 @@
         }
 
         function homeUrl(language) {
-            return WorkshopLanguageNavigation.homeUrl(language?.id);
+            return WorkshopLanguageNavigation.homeUrl(language?.id, activeWorkshopId);
         }
 
         function updateLanguageControls(language) {
@@ -415,21 +506,23 @@
             const estimate = document.getElementById('stepEstimate');
             const track = document.getElementById('progressTrack');
             const fill = document.getElementById('progressFill');
+            const coreStepCount = steps.filter(candidate => candidate.kind === 'core').length;
             let progressValue = 0;
 
             if (step.kind === 'core') {
-                position.textContent = `Step ${step.number} of 7`;
+                position.textContent = `Step ${step.number} of ${coreStepCount}`;
                 progressValue = step.number;
             } else if (step.kind === 'optional') {
                 position.textContent = 'Optional extension';
-                progressValue = 7;
+                progressValue = coreStepCount;
             } else {
                 position.textContent = 'Preflight';
             }
 
             estimate.textContent = step.time;
+            track.setAttribute('aria-valuemax', String(coreStepCount));
             track.setAttribute('aria-valuenow', String(progressValue));
-            fill.style.width = `${(progressValue / 7) * 100}%`;
+            fill.style.transform = `scaleX(${progressValue / coreStepCount})`;
         }
 
         function processMarkdown(markdown) {
@@ -440,7 +533,7 @@
                 WorkshopLanguages.getLanguage
             )
                 .replaceAll('{{TARGET_APP_URL}}', targetUrl)
-                .replace(/\]\((\d{2}-[a-z0-9-]+)\.md\)/g, (match, stepId) => {
+                .replace(/\]\(([a-z0-9-]+)\.md\)/g, (match, stepId) => {
                     const target = steps.find(step => step.id === stepId);
                     return target ? `](${stepUrl(target)})` : match;
                 });
@@ -593,6 +686,8 @@
             const status = document.getElementById('lessonStatus');
 
             updateLanguageControls(language);
+            document.querySelector('.header-title').textContent = activeWorkshop.title;
+            document.getElementById('navigationTitle').textContent = `${activeWorkshop.title} steps`;
             if (!language) {
                 document.title = 'Choose a language | Copilot SDK Workshop';
                 document.getElementById('headerLessonTitle').textContent = 'Choose a language';
