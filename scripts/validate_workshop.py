@@ -1232,12 +1232,12 @@ def validate_documentation() -> None:
 
 def validate_workflows() -> None:
     required_setup = (
-        ("actions/setup-dotnet@v4", "dotnet-version: 10.0.x"),
-        ("actions/setup-node@v4", "node-version: 22"),
-        ("actions/setup-python@v5", 'python-version: "3.11"'),
-        ("actions/setup-go@v5", 'go-version: "1.24.x"'),
+        ("actions/setup-dotnet@v6", "dotnet-version: 10.0.x"),
+        ("actions/setup-node@v7", "node-version: 22"),
+        ("actions/setup-python@v7", 'python-version: "3.11"'),
+        ("actions/setup-go@v7", 'go-version: "1.24.x"'),
         ("dtolnay/rust-toolchain@stable", 'toolchain: "1.94.0"'),
-        ("actions/setup-java@v4", 'java-version: "17"'),
+        ("actions/setup-java@v6", 'java-version: "17"'),
         ("mvn --version", "bash scripts/validate-workshop.sh"),
     )
     validation_workflow = read(ROOT / ".github" / "workflows" / "validate.yml")
@@ -1261,8 +1261,8 @@ def validate_workflows() -> None:
         )
     for required in (
         "Prepare deployment",
-        "actions/configure-pages@v5",
-        "actions/upload-pages-artifact@v3",
+        "actions/configure-pages@v6",
+        "actions/upload-pages-artifact@v5",
         "actions/deploy-pages@v5",
     ):
         require(required in deployment_workflow, f"deploy.yml is missing deployment step: {required}")
