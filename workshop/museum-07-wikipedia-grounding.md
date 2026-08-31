@@ -1,10 +1,10 @@
 # Add Wikipedia grounding
 
-> **Time:** 30 minutes
+> **Time:** 60 minutes
 > **Goal:** Add a reviewed research stage without weakening the tool-free curator.
 
-The completed sample intentionally stops at the tool-free application from the previous lesson.
-This final lab starts from that working sample and adds a separate research session. The
+The completed sample includes the finished research flow for reference. Build the same result from
+the tool-free application created in the previous lesson. Research uses a separate session, and the
 generation session must remain tool-free so retrieved text cannot silently enter the exhibit.
 
 The finished flow is:
@@ -29,7 +29,9 @@ Verify the pinned server can start:
 npx -y wikipedia-mcp@1.0.3
 ```
 
-Press <kbd>Ctrl</kbd>+<kbd>C</kbd> after the server starts and waits for MCP input.
+In an interactive terminal, press <kbd>Ctrl</kbd>+<kbd>C</kbd> after the server starts and waits for
+MCP input. A noninteractive shell may close standard input immediately, causing a successful exit
+without a visible ready message.
 
 Version `1.0.3` exposes the bare MCP tools `search` and `readArticle`. With a server key of
 `wikipedia`, the Copilot runtime names are `wikipedia-search` and `wikipedia-readArticle`.
@@ -73,10 +75,20 @@ ResearchResult
   consultedSources: Source[]
   completed: boolean
   failureMessage: string | null
+
+Source
+  title: string
+  url: string
 ```
 
 `not found` means that the limited search did not locate evidence. It does not mean the supplied
 fact is false. Use `not checked` when startup, parsing, or a timeout prevents research.
+
+Serialize the result as one JSON object. Statuses are the exact lowercase strings shown above,
+property names use the casing shown in the contract, and each completed result contains exactly one
+review for each supplied fact in the original order. Reject duplicate or missing reviews, unknown
+statuses, blank explanations, and evidence or additions without a canonical
+`https://<language>.wikipedia.org/wiki/...` URL.
 
 ## 3. Create the research session
 
@@ -112,6 +124,9 @@ static SessionConfig CreateResearchSessionConfiguration(string? model) => new()
     }
 };
 ```
+
+Continue with the complete [.NET implementation guide](museum-07-guides/dotnet.md), which includes
+the models, permission handler, parser, CLI changes, mock server, and tests.
 :::
 :::language nodejs
 Add the MCP configuration in `src/service.ts`:
@@ -138,6 +153,9 @@ export function createResearchSessionConfiguration(model?: string): SessionConfi
   };
 }
 ```
+
+Continue with the complete [Node.js implementation guide](museum-07-guides/nodejs.md), which
+includes the models, permission handler, parser, CLI changes, mock server, and tests.
 :::
 :::language python
 Add the MCP configuration in `museum_exhibit_service.py`:
@@ -160,6 +178,9 @@ def create_research_session_configuration(model: str | None = None) -> dict[str,
         },
     }
 ```
+
+Continue with the complete [Python implementation guide](museum-07-guides/python.md), which includes
+the models, permission handler, parser, CLI changes, mock strategy, and tests.
 :::
 :::language go
 Add the MCP configuration in `service.go`:
@@ -186,6 +207,9 @@ func createResearchSessionConfiguration(model string) *copilot.SessionConfig {
 	}
 }
 ```
+
+Continue with the complete [Go implementation guide](museum-07-guides/go.md), which includes the
+models, permission handler, parser, CLI changes, mock server, and tests.
 :::
 :::language rust
 Add a second `SessionConfig` builder in `src/lib.rs`:
@@ -221,6 +245,9 @@ fn research_session_config(model: Option<&str>) -> SessionConfig {
     config
 }
 ```
+
+Continue with the complete [Rust implementation guide](museum-07-guides/rust.md), which includes
+the required dependencies and imports, models, permission handler, parser, CLI changes, and tests.
 :::
 :::language java
 Add a second configuration builder in `MuseumExhibitService.java`:
@@ -249,15 +276,20 @@ private static SessionConfig createResearchSessionConfiguration(String model) {
     return configuration;
 }
 ```
+
+Continue with the complete [Java implementation guide](museum-07-guides/java.md), which includes
+the records, mandatory permission handler, parser, CLI changes, mock server, and tests.
 :::
 
-During initial discovery only, temporarily set the server's `tools` value to `["*"]` and inspect the
-tool names reported by the connected session. Restore the two-tool allowlist before continuing.
-Never leave wildcard access in the finished application.
+During initial discovery only, temporarily set the server's `tools` value to `["*"]` and inspect an
+MCP `tools/list` response as shown in your language guide. Restore the two-tool allowlist before
+continuing. Never leave wildcard access in the finished application.
 
 Add a permission handler using the same deny-by-default pattern as the MCP safety lesson. Approve
-only requests from the `wikipedia` server for the two allowlisted read-only tools, and reject every
-other external request.
+only requests whose server is exactly `wikipedia` and whose tool name is `search`, `readArticle`,
+`wikipedia-search`, or `wikipedia-readArticle`. Reject every other external request. The pinned
+server and SDK do not reliably mark these requests as `readOnly`, so do not authorize them from
+that metadata flag.
 
 ## 4. Implement bounded research
 
@@ -266,7 +298,9 @@ Create a `research` operation separate from `generate`. It should:
 1. Start the client and create the research session.
 2. Send the supplied facts in a prompt that requests the `ResearchResult` shape.
 3. Tell the researcher to call `search` before `readArticle`.
-4. Limit each search to a small number of results and retrieve only the most relevant article.
+4. Allow at most five search calls and one article-retrieval call. The pinned `search` schema has no
+   result-limit argument, so bound calls and accepted output rather than sending an unsupported
+   parameter.
 5. Require source article titles and canonical Wikipedia URLs.
 6. Reject malformed results instead of guessing missing provenance.
 7. Disconnect the session and stop the client on success or failure.
@@ -286,9 +320,12 @@ Do not write exhibit copy and do not silently modify a supplied fact.
 Return only the requested structured research result.
 ```
 
-Apply a shorter timeout than generation and bound the accepted response size. If startup, a tool
-call, parsing, or validation fails, return all supplied facts as `not checked`, set
-`completed: false`, and preserve an actionable failure message.
+Use a 45-second research timeout and reject responses above 65,536 UTF-8 bytes. If the first
+response contains prose or a fenced JSON block, permit one bounded retry that asks the model to
+reformat the existing result without calling tools again. If startup, a tool call, parsing,
+validation, or that retry fails, return all supplied facts as `not checked`, set `completed: false`,
+and preserve an actionable failure message. If cleanup fails, surface that failure rather than
+reporting completed research.
 
 ## 5. Add the approval gate
 
@@ -311,12 +348,14 @@ If Wikipedia is unavailable, print:
 Wikipedia research was not completed. Generating from the original approved facts only.
 ```
 
-Then continue through the existing generation path. Do not claim that validation succeeded.
+Then continue through the existing generation path. Do not claim that Wikipedia research
+succeeded. The later structural validator may still independently report that the generated
+Markdown structure passed.
 
 ## 6. Test with a mock MCP server
 
-Do not make automated tests depend on live Wikipedia. Use a fixture MCP server that implements the
-same two tool names and deterministic responses.
+Do not make automated tests depend on live Wikipedia. Each language guide includes a deterministic
+fixture or mock strategy that implements the same two tool names and responses.
 
 Cover these paths:
 
@@ -378,7 +417,8 @@ mvn -f museum-workshop-app/pom.xml compile exec:java
 2. Confirm every original fact receives a visible status.
 3. Reject one sourced addition and verify it is absent from the generation prompt.
 4. Approve one sourced addition and verify its title and URL remain visible in the sources list.
-5. Stop or misconfigure the MCP server and verify generation continues from only the original facts.
+5. Use the documented configuration seam or mock startup failure; do not manually kill the
+   SDK-managed subprocess. Verify generation continues from only the original facts.
 6. Confirm the exhibit itself does not contain fabricated citations or a hidden sources section.
 
 ## Check your understanding

@@ -1252,7 +1252,7 @@ def validate_documentation() -> None:
     )
     require(
         "id: 'museum-07-wikipedia-grounding'" in lesson_viewer
-        and "kind: 'core',\n                number: 7,\n                time: '30 min'" in lesson_viewer,
+        and "kind: 'core',\n                number: 7,\n                time: '60 min'" in lesson_viewer,
         "Wikipedia grounding must be registered as required museum step 7",
     )
 
