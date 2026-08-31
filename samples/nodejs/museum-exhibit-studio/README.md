@@ -54,12 +54,13 @@ require human review or a separate evaluator.
 4. Review the prose for claims not present in the approved facts.
 5. Confirm no tool events or permission requests appear.
 
-## Optional Wikipedia grounding exercise
+## Wikipedia grounding exercise
 
-Keep the tool-free sample intact and add Wikipedia only as a separate follow-up.
-Choose either the Python `wikipedia-mcp` package over stdio or the Node.js package
-invoked with `npx -y wikipedia-mcp`; do not configure both. Discover the effective
-tool names, then allow only read-only search and article retrieval.
+The final workshop step keeps this tool-free sample intact and adds Wikipedia through
+a separate research session. Choose either the Python `wikipedia-mcp` package over
+stdio or the Node.js package invoked with `npx -y wikipedia-mcp`; do not configure
+both. Discover the effective tool names, then allow only read-only search and
+article retrieval.
 
 Use a visible two-stage flow: research each supplied fact, label it `supported`,
 `contradicted`, `not found`, or `not checked`, and present sourced additions for
