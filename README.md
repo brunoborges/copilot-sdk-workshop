@@ -16,7 +16,7 @@ Across the workshops, you'll:
 4. Enforce capability, input, timeout, validation, and lifecycle boundaries in application code.
 5. Explain what the model can infer and what the application must prove.
 
-Plan on about 90 minutes for Accessibility Reviewer or 75 minutes for Museum Exhibit Studio.
+Plan on about 90 minutes for Accessibility Reviewer or 105 minutes for Museum Exhibit Studio.
 Machine setup happens separately in an untimed preflight for each workshop.
 
 ## Start the workshop

@@ -1256,6 +1256,12 @@ def validate_documentation() -> None:
         and "kind: 'core',\n                number: 7,\n                time: '30 min'" in lesson_viewer,
         "Wikipedia MCP must be registered as required 30-minute museum step 7",
     )
+    landing_page = read(DOCS / "index.html")
+    require(
+        "Non-SDLC tool · 105 minutes" in landing_page
+        and "105 minutes for Museum Exhibit Studio" in read(ROOT / "README.md"),
+        "Museum workshop duration must include all 105 timed minutes",
+    )
 
     museum_preflight = read(WORKSHOP / "museum-00-preflight.md")
     for clean_clone_step in (
