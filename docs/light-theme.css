@@ -28,10 +28,6 @@ html[data-theme="light"] .primary-action {
     color: #ffffff;
 }
 
-html[data-theme="light"] .language-logo-rust img {
-    filter: none;
-}
-
 html[data-theme="light"] .terminal-preview {
     --border: #303a4f;
 }

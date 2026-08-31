@@ -85,7 +85,7 @@ validate_rust() {
 validate_java() {
     for project in start/java samples/java/* checkpoints/java/*; do
         echo "Resolving and testing $project"
-        (cd "$project" && mvn --batch-mode --no-transfer-progress dependency:go-offline)
+        (cd "$project" && mvn --batch-mode --no-transfer-progress dependency:go-offline test)
         (cd "$project" && mvn --batch-mode --no-transfer-progress --offline test)
     done
 }
