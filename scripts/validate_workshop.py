@@ -1256,6 +1256,22 @@ def validate_documentation() -> None:
         "Wikipedia grounding must be registered as required museum step 7",
     )
 
+    museum_preflight = read(WORKSHOP / "museum-00-preflight.md")
+    for clean_clone_step in (
+        "git clone https://github.com/jamesmontemagno/copilot-sdk-workshop.git",
+        'test "$(git rev-parse --show-toplevel)" = "$PWD"',
+        'test -z "$(git status --short)"',
+        "test ! -e museum-workshop-app",
+    ):
+        require(
+            clean_clone_step in museum_preflight,
+            f"Museum preflight is missing clean-clone guidance: {clean_clone_step}",
+        )
+    require(
+        "rm -rf museum-workshop-app" not in museum_preflight,
+        "Museum preflight must fail safely instead of deleting an existing learner project",
+    )
+
 
 def validate_workflows() -> None:
     required_setup = (
