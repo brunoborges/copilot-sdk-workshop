@@ -1229,6 +1229,33 @@ def validate_documentation() -> None:
             f"Lesson viewer navigation is missing {step_id}",
         )
 
+    wikipedia_lesson = read(WORKSHOP / "museum-07-wikipedia-grounding.md")
+    for required_step in (
+        "# Add Wikipedia grounding",
+        "## 1. Choose one Wikipedia MCP server",
+        "## 2. Add a separate research contract",
+        "## 3. Create the research session",
+        "## 4. Implement bounded research",
+        "## 5. Add the approval gate",
+        "## 6. Test with a mock MCP server",
+        '"wikipedia-search"',
+        '"wikipedia-readArticle"',
+        "The original generation configuration still has an empty tool allowlist.",
+    ):
+        require(
+            required_step in wikipedia_lesson,
+            f"Wikipedia grounding lesson is missing required implementation guidance: {required_step}",
+        )
+    require(
+        "# Optional: Add Wikipedia grounding" not in wikipedia_lesson,
+        "Wikipedia grounding must be a required museum workshop step",
+    )
+    require(
+        "id: 'museum-07-wikipedia-grounding'" in lesson_viewer
+        and "kind: 'core',\n                number: 7,\n                time: '60 min'" in lesson_viewer,
+        "Wikipedia grounding must be registered as required museum step 7",
+    )
+
 
 def validate_workflows() -> None:
     required_setup = (

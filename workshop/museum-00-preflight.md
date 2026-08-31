@@ -34,7 +34,8 @@ temporary entrypoint with the finished CLI.
 :::
 
 :::language nodejs
-Copy only the package and TypeScript configuration files. The lockfile preserves SDK 1.0.11:
+Copy only the package and TypeScript configuration files. The lockfile preserves SDK 1.0.11 and
+the compatible `@github/copilot` 1.0.80 platform package:
 
 ```bash
 rm -rf museum-workshop-app
