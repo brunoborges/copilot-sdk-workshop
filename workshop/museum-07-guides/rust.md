@@ -1,4 +1,4 @@
-# Rust guide: add Wikipedia grounding
+# Rust guide: Wikipedia MCP
 
 This guide starts after `museum-06-run-review.md`, with a working
 `museum-workshop-app` Rust project. It adds a separate Wikipedia research session

@@ -1,6 +1,6 @@
-# Add Wikipedia grounding
+# Wikipedia MCP
 
-> **Time:** 60 minutes
+> **Time:** 30 minutes
 > **Goal:** Add a reviewed research stage without weakening the tool-free curator.
 
 The completed sample includes the finished research flow for reference. Build the same result from

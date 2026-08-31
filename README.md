@@ -112,7 +112,7 @@ output checks in a non-software-engineering agent harness.
 
 The learner-facing track begins at
 [`workshop/museum-00-preflight.md`](workshop/museum-00-preflight.md), then continues through seven
-required steps ending with live Wikipedia grounding.
+required steps ending with Wikipedia MCP.
 
 Rust checks share one Cargo target directory across all workshop projects, avoiding repeated SDK
 dependency compilation.

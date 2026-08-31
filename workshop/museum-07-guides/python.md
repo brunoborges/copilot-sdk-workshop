@@ -1,4 +1,4 @@
-# Python guide: add reviewed Wikipedia grounding
+# Python guide: Wikipedia MCP
 
 This guide starts from the completed Python application at the end of
 `museum-06-run-review.md`. It adds a separate Wikipedia research session without

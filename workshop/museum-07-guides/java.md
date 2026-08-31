@@ -1,4 +1,4 @@
-# Java/Maven guide: Wikipedia-grounded museum research
+# Java/Maven guide: Wikipedia MCP
 
 This guide starts from the completed Java application from lesson 6 in
 `museum-workshop-app`. It adds a separate Wikipedia research session without weakening the

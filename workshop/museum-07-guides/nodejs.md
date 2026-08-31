@@ -1,4 +1,4 @@
-# Node.js/TypeScript: add reviewed Wikipedia grounding
+# Node.js/TypeScript guide: Wikipedia MCP
 
 This guide starts from the completed Node.js application after
 `workshop/museum-06-run-review.md`. It adds a separate Wikipedia research

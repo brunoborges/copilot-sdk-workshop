@@ -1,4 +1,4 @@
-# Go guide: add reviewed Wikipedia grounding
+# Go guide: Wikipedia MCP
 
 This guide starts after `museum-06-run-review.md`. Your `museum-workshop-app` should already contain
 the tool-free curator, prompt builder, validator, lifecycle tests, and CLI.

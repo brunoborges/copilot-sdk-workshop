@@ -1,4 +1,4 @@
-# .NET guide: Wikipedia grounding
+# .NET guide: Wikipedia MCP
 
 This guide starts from the completed .NET application at the end of
 `workshop/museum-06-run-review.md`. It adds a separate Wikipedia research session without changing

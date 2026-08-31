@@ -1231,7 +1231,7 @@ def validate_documentation() -> None:
 
     wikipedia_lesson = read(WORKSHOP / "museum-07-wikipedia-grounding.md")
     for required_step in (
-        "# Add Wikipedia grounding",
+        "# Wikipedia MCP",
         "## 1. Choose one Wikipedia MCP server",
         "## 2. Add a separate research contract",
         "## 3. Create the research session",
@@ -1244,16 +1244,17 @@ def validate_documentation() -> None:
     ):
         require(
             required_step in wikipedia_lesson,
-            f"Wikipedia grounding lesson is missing required implementation guidance: {required_step}",
+            f"Wikipedia MCP lesson is missing required implementation guidance: {required_step}",
         )
     require(
-        "# Optional: Add Wikipedia grounding" not in wikipedia_lesson,
-        "Wikipedia grounding must be a required museum workshop step",
+        "# Optional: Wikipedia MCP" not in wikipedia_lesson,
+        "Wikipedia MCP must be a required museum workshop step",
     )
     require(
         "id: 'museum-07-wikipedia-grounding'" in lesson_viewer
-        and "kind: 'core',\n                number: 7,\n                time: '60 min'" in lesson_viewer,
-        "Wikipedia grounding must be registered as required museum step 7",
+        and "title: 'Wikipedia MCP',\n                navTitle: 'Wikipedia MCP'" in lesson_viewer
+        and "kind: 'core',\n                number: 7,\n                time: '30 min'" in lesson_viewer,
+        "Wikipedia MCP must be registered as required 30-minute museum step 7",
     )
 
     museum_preflight = read(WORKSHOP / "museum-00-preflight.md")
